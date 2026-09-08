@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { get, put, BlobPreconditionFailedError } from "@vercel/blob";
-import { catalogSchema, type Photo } from "../lib/photography";
+import { catalogSchema, newestFirst, type Photo } from "../lib/photography";
 async function main() {
   const args = process.argv.slice(2);
   const arg = (name: string, fallback: string) => {
@@ -29,6 +29,7 @@ async function main() {
     preview: string;
     rating: number;
     takenAt: string;
+    capturedAt: string;
     place: string;
     people: { id: string; name: string }[];
   };
@@ -58,18 +59,14 @@ async function main() {
       height: info.height,
       preview,
       takenAt: photo.takenAt,
+      capturedAt: photo.capturedAt,
       place: photo.place,
       people: photo.people.map((p) => ({ id: opaque(`person:${p.id}`), name: p.name })),
     });
     if (index % 100 === 0)
       console.log(`Prepared ${index + 1}/${source.photos.length} previews`);
   }
-  photos.sort(
-    (a, b) =>
-      b.rating - a.rating ||
-      b.takenAt.localeCompare(a.takenAt) ||
-      a.id.localeCompare(b.id),
-  );
+  photos.sort(newestFirst);
   const catalog = catalogSchema.parse({
     version: 1,
     revision: hash(JSON.stringify(photos)),

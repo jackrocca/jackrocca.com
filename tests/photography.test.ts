@@ -139,3 +139,107 @@ test("publication schema rejects unrated photos, original paths and duplicate ID
     false,
   );
 });
+
+test("all grids use capture chronology before rating, filtering and pagination", async () => {
+  const { gallery } = await import("../lib/photography");
+  const photos = Array.from({ length: 55 }, (_, i) => ({
+    id: i.toString(16).padStart(24, "0"),
+    rating: i % 2 ? 5 : 1,
+    width: 100,
+    height: 100,
+    preview: `previews/${"a".repeat(64)}.webp`,
+    takenAt: "2026-01-01",
+    capturedAt: `2026-01-01T12:${String(i).padStart(2, "0")}:00`,
+    place: i >= 50 ? "Recent place" : "Older place",
+    people: [
+      {
+        id: (i >= 50 ? "a" : "b").repeat(24),
+        name: i >= 50 ? "Recent person" : "Older person",
+      },
+    ],
+  }));
+  const catalog: Catalog = {
+    version: 1,
+    revision: "a".repeat(64),
+    publishedAt: new Date().toISOString(),
+    photos,
+  };
+  const member = gallery(catalog, true, new URLSearchParams());
+  assert.deepEqual(
+    member.photos.map((p) => p.id),
+    photos
+      .slice()
+      .reverse()
+      .slice(0, 48)
+      .map((p) => p.id),
+  );
+  assert.equal(member.people[0].name, "Recent person");
+  assert.equal(member.places[0].name, "Recent place");
+  const next = gallery(catalog, true, new URLSearchParams("offset=48"));
+  assert.deepEqual(
+    next.photos.map((p) => p.id),
+    photos
+      .slice()
+      .reverse()
+      .slice(48)
+      .map((p) => p.id),
+  );
+  const pub = gallery(catalog, false, new URLSearchParams());
+  assert.deepEqual(
+    pub.photos.map((p) => p.id),
+    photos
+      .filter((p) => p.rating >= 4)
+      .reverse()
+      .map((p) => p.id),
+  );
+  assert.ok(pub.photos.every((p) => !("capturedAt" in p) && !p.takenAt));
+  const filtered = gallery(
+    catalog,
+    true,
+    new URLSearchParams("place=Recent+place&rating=5"),
+  );
+  assert.deepEqual(
+    filtered.photos.map((p) => p.id),
+    photos
+      .filter((p) => p.place === "Recent place" && p.rating === 5)
+      .reverse()
+      .map((p) => p.id),
+  );
+  assert.equal(
+    catalog.photos[0].id,
+    photos[0].id,
+    "reading a gallery does not mutate its catalog",
+  );
+});
+
+test("undated photos sort last, equal times remain stable, and zones compare chronologically", async () => {
+  const { newestFirst } = await import("../lib/photography");
+  const base = {
+    rating: 4,
+    width: 100,
+    height: 100,
+    preview: `previews/${"a".repeat(64)}.webp`,
+    place: "",
+    people: [],
+  };
+  const photos = [
+    { ...base, id: "a".repeat(24), takenAt: "" },
+    {
+      ...base,
+      id: "b".repeat(24),
+      takenAt: "2026-01-01",
+      capturedAt: "2026-01-01T12:00:00-08:00",
+    },
+    {
+      ...base,
+      id: "c".repeat(24),
+      takenAt: "2026-01-01",
+      capturedAt: "2026-01-01 13:00:00",
+    },
+    { ...base, id: "d".repeat(24), takenAt: "2025-12-31" },
+  ];
+  assert.deepEqual(
+    photos.sort(newestFirst).map((p) => p.id[0]),
+    ["b", "c", "d", "a"],
+  );
+});

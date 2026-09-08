@@ -65,6 +65,10 @@ route no longer exposes them. No destructive bucket garbage collection runs impl
 
 ## Browsing and scope
 
+All photo grids default to capture time, newest first, with undated photos last.
+People and Places collections use their newest visible photograph as the cover and
+follow that same order. Ratings select visibility and filters, not ordering.
+
 The member gallery supports paging, exact star filters, text search over published
 people/place/date labels, People and Places collections, and a keyboard-accessible
 photo viewer. Collections use whole-photo covers, not face crops. An unlabeled place

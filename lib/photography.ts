@@ -8,6 +8,7 @@ export const photoSchema = z.object({
   height: z.number().int().min(1).max(1280),
   preview: z.string().regex(/^previews\/[a-f0-9]{64}\.webp$/),
   takenAt: z.string().max(10),
+  capturedAt: z.string().max(40).optional(),
   place: z.string().max(500),
   people: z.array(z.object({ id, name: z.string().min(1).max(200) })).max(200),
 });
@@ -24,7 +25,7 @@ export const catalogSchema = z
   });
 export type Catalog = z.infer<typeof catalogSchema>;
 export type Photo = z.infer<typeof photoSchema>;
-export type PhotoView = Omit<Photo, "preview">;
+export type PhotoView = Omit<Photo, "preview" | "capturedAt">;
 export type Collection = { id: string; name: string; count: number; cover: PhotoView };
 export type Gallery = {
   signedIn: boolean;
@@ -38,15 +39,35 @@ export type Gallery = {
 export const canViewPhoto = (photo: Photo, signedIn: boolean) =>
   photo.rating >= (signedIn ? 1 : 4) && photo.rating <= 5;
 export function photoView(photo: Photo, signedIn: boolean): PhotoView {
-  const { preview: _privatePath, ...view } = photo;
+  const { preview: _privatePath, capturedAt: _captureTime, ...view } = photo;
   return signedIn ? view : { ...view, people: [], place: "", takenAt: "" };
 }
+// Unknown capture dates follow dated photos; IDs stabilize ties across pages.
+export function newestFirst(a: Photo, b: Photo) {
+  const timestamp = (photo: Photo) => {
+    const value = photo.capturedAt || photo.takenAt;
+    if (!value) return Number.NEGATIVE_INFINITY;
+    // Atlas stores wall-clock capture times without zones. Compare those in UTC
+    // so local publication and Vercel produce the same ordering.
+    const normalized = value.replace(" ", "T");
+    const date =
+      normalized.length > 10 && !/(Z|[+-]\d{2}:?\d{2})$/i.test(normalized)
+        ? `${normalized}Z`
+        : normalized;
+    const time = Date.parse(date);
+    return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
+  };
+  return timestamp(b) - timestamp(a) || a.id.localeCompare(b.id);
+}
+
 export function gallery(
   catalog: Catalog,
   signedIn: boolean,
   query: URLSearchParams,
 ): Gallery {
-  const visible = catalog.photos.filter((p) => canViewPhoto(p, signedIn));
+  const visible = catalog.photos
+    .filter((p) => canViewPhoto(p, signedIn))
+    .sort(newestFirst);
   const view = (p: Photo) => photoView(p, signedIn);
   const collect = (kind: "people" | "places") => {
     const groups = new Map<string, Collection>();
@@ -63,9 +84,8 @@ export function gallery(
         else groups.set(label.id, { ...label, count: 1, cover: view(photo) });
       }
     }
-    return [...groups.values()].sort(
-      (a, b) => b.count - a.count || a.name.localeCompare(b.name),
-    );
+    // First appearance is the collection’s newest visible photograph.
+    return [...groups.values()];
   };
   const offset = Math.max(0, Number(query.get("offset")) || 0);
   if (!Number.isSafeInteger(offset) || offset > 100000) throw new Error("Invalid offset");

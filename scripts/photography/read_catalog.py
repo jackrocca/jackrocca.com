@@ -60,7 +60,8 @@ def read_catalog(root):
         place = ', '.join(dict.fromkeys(str(row[k]).strip() for k in ('place_name','place_admin','place_country') if row[k]))
         photos.append({
             'sourceId': row['id'], 'preview': str(preview), 'rating': row['star_rating'],
-            'takenAt': (row['capture_at'] or '')[:10], 'place': place,
+            'takenAt': (row['capture_at'] or '')[:10],
+            'capturedAt': row['capture_at'] or '', 'place': place,
             'people': [{'id': k, 'name': v} for k,v in sorted(people.get(family, {}).items())],
         })
     conn.close()
