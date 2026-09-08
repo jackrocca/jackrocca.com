@@ -500,7 +500,9 @@
     align-items: center;
     gap: 5px;
     border-radius: 6px;
-    padding: 9px 5px;
+    padding: 8px 5px;
+    height: 56px;
+    line-height: 1.1;
     font-family: var(--font-display);
     font-size: 21px;
     color: #747474;
