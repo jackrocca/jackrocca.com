@@ -41,7 +41,10 @@ export const SimpleSelect = ({
       disabled={disabled}
       isOpen={isOpen}
       listId={listId}
-      onClick={() => setIsOpen(!isOpen)}
+      // The popover owns pointer toggling; a second click handler closes it immediately.
+      onClick={
+        isMobile && mobileView === "bottom-drawer" ? () => setIsOpen(!isOpen) : undefined
+      }
       placeholder={placeholder}
       selectedOption={selectedOption}
       triggerClassName={triggerClassName}

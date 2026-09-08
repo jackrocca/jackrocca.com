@@ -25,7 +25,7 @@ export const SimpleSelectTrigger = ({
   disabled?: boolean | undefined;
   isOpen: boolean;
   listId: string;
-  onClick: () => void;
+  onClick?: (() => void) | undefined;
   placeholder: string;
   selectedOption?: SelectOption | undefined;
   triggerClassName?: string | undefined;
