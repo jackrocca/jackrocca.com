@@ -36,8 +36,9 @@ export type Gallery = {
   people: Collection[];
   places: Collection[];
 };
+export const PUBLIC_MIN_RATING = 3;
 export const canViewPhoto = (photo: Photo, signedIn: boolean) =>
-  photo.rating >= (signedIn ? 1 : 4) && photo.rating <= 5;
+  photo.rating >= (signedIn ? 1 : PUBLIC_MIN_RATING) && photo.rating <= 5;
 export function photoView(photo: Photo, signedIn: boolean): PhotoView {
   const { preview: _privatePath, capturedAt: _captureTime, ...view } = photo;
   return signedIn ? view : { ...view, people: [], place: "", takenAt: "" };

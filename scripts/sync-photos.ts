@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { get, put, BlobPreconditionFailedError } from "@vercel/blob";
-import { catalogSchema, newestFirst, type Photo } from "../lib/photography";
+import { catalogSchema, newestFirst, canViewPhoto, type Photo } from "../lib/photography";
 async function main() {
   const args = process.argv.slice(2);
   const arg = (name: string, fallback: string) => {
@@ -80,7 +80,7 @@ async function main() {
   console.log(
     JSON.stringify({
       photos: photos.length,
-      publicPhotos: photos.filter((p) => p.rating >= 4).length,
+      publicPhotos: photos.filter((p) => canViewPhoto(p, false)).length,
       previewMB: Math.round(bytes / 1024 / 1024),
       people: new Set(photos.flatMap((p) => p.people.map((v) => v.id))).size,
       places: new Set(photos.map((p) => p.place).filter(Boolean)).size,

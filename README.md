@@ -97,7 +97,7 @@ This deploy uses the existing personal Vercel project. It does not attach or alt
 
 ## Photography publication
 
-The homepage is a masonry gallery sourced from Photo Archivist. Visitors see 4–5-star
+The homepage is a masonry gallery sourced from Photo Archivist. Visitors see 3–5-star
 previews; signed-in Google accounts see all 1–5-star previews and People/Places.
 Run `npm run photos:sync` to prepare the local export; publication is explicit.
 See [photography integration](docs/photography.md) for sync, visibility, and storage.

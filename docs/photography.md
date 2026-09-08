@@ -6,7 +6,7 @@ catalog to reconcile, no cloud face processing, and no public link to the Mac.
 
 ## Visibility
 
-- Visitors: active 4–5-star previews only. No people, dates, or location metadata.
+- Visitors: active 3–5-star previews only. No people, dates, or location metadata.
 - Any valid Google account: active 1–5-star previews and published people/place labels.
 - Unrated, deleted, and trashed assets: never exported.
 - Only confirmed/manual people associations with normal privacy and no hidden flag
@@ -74,8 +74,8 @@ people/place/date labels, People and Places collections, and a keyboard-accessib
 photo viewer. Collections use whole-photo covers, not face crops. An unlabeled place
 stays unlabeled; the exporter does not call a geocoding or annotation service.
 
-As of the first export, 670 ranked photo families are available, with two public
-4–5-star photos and 50 named people. No place labels exist in the source catalog yet.
+The September 8, 2026 refresh contains 762 ranked photo families, including 43 public
+3–5-star photos and 68 named people available to members. No place labels exist in the source catalog yet.
 The Places view will populate when labels are added in Atlas and republished.
 
 Full-resolution downloads are intentionally a later feature. No original upload,

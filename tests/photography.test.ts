@@ -65,9 +65,9 @@ test("gallery and preview endpoints enforce the same current rating and Google s
     const pub = await anonymous.json();
     assert.deepEqual(
       pub.photos.map((p: any) => p.rating),
-      [4, 5],
+      [3, 4, 5],
     );
-    assert.equal(pub.total, 2);
+    assert.equal(pub.total, 3);
     assert.deepEqual(pub.people, []);
     assert.deepEqual(pub.places, []);
     assert.ok(
@@ -87,6 +87,8 @@ test("gallery and preview endpoints enforce the same current rating and Google s
     assert.equal(member.people[0].count, 5);
     assert.equal(member.places[0].name, "Test place");
     const low = `/image/${"1".repeat(24)}`;
+    assert.equal((await request(`/image/${"3".repeat(24)}`)).status, 200);
+    assert.equal((await request(`/image/${"2".repeat(24)}`)).status, 404);
     assert.equal((await request(low)).status, 404);
     assert.equal((await request(low, "forged-session")).status, 404);
     assert.equal((await request(low, token)).status, 200);
@@ -188,7 +190,7 @@ test("all grids use capture chronology before rating, filtering and pagination",
   assert.deepEqual(
     pub.photos.map((p) => p.id),
     photos
-      .filter((p) => p.rating >= 4)
+      .filter((p) => p.rating >= 3)
       .reverse()
       .map((p) => p.id),
   );
