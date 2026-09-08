@@ -136,14 +136,17 @@ export function PhotoGallery() {
               { value: "places", label: "Places", icon: MapPin },
             ]}
           />
-          <div className="flex w-full items-center gap-2 sm:w-auto">
+          <div
+            className={`grid w-full items-center gap-2 sm:w-[360px] ${mode === "photos" ? "grid-cols-[minmax(0,1fr)_140px]" : "grid-cols-1"}`}
+          >
             <Input
               aria-label="Search photographs"
               placeholder="Search"
               leftIcon={Search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="min-h-10 sm:w-52"
+              className="min-h-10 min-w-0 w-full"
+              classNames={{ input: "min-w-0" }}
             />
             {mode === "photos" && (
               <SimpleSelect
