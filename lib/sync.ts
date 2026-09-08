@@ -4,8 +4,25 @@ import { currentWeek, deadline, freezeTime, publishWeek } from "./rules";
 export async function syncWeeks(numbers?: number[], force = false) {
   const { state } = await readState();
   const current = currentWeek(state.weeks);
+  const unresolved = state.weeks
+    .filter(
+      (w) =>
+        w.number < current - 1 &&
+        w.games.some(
+          (g) =>
+            Date.parse(g.kickoff) < Date.now() &&
+            !["final", "canceled"].includes(g.state),
+        ),
+    )
+    .slice(0, 3)
+    .map((w) => w.number);
   const selected = numbers ?? [
-    ...new Set([Math.max(1, current - 1), current, Math.min(18, current + 1)]),
+    ...new Set([
+      Math.max(1, current - 1),
+      current,
+      Math.min(18, current + 1),
+      ...unresolved,
+    ]),
   ];
   const results = await Promise.all(
     selected.map(async (number) => {

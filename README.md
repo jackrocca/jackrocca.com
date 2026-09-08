@@ -62,7 +62,7 @@ npm run build
 npm audit --omit=dev
 ```
 
-`npm run sync:schedule` refreshes the checked-in real 2026 schedule and requires 272 unique games before replacing it. Runtime cron updates current, previous, and next weeks; the in-app refresh also updates the selected week. Commissioner corrections survive feed refreshes.
+`npm run sync:schedule` refreshes the checked-in real 2026 schedule and requires 272 unique games before replacing it. Runtime cron updates current, previous, and next weeks, plus older weeks with unresolved games; the in-app refresh also updates the selected week. Commissioner corrections survive feed refreshes.
 
 For an isolated API integration run, create a unique `LEAGUE_STORAGE_PREFIX=pick4/test-...` in `.env.local` and run the local dev server, then `npx tsx scripts/check-api.ts`. It requires an empty namespace and creates test accounts and picks. Never point it at production. The test verifies real private Blob storage, concurrent writes, invitation reuse, auth boundaries, CSRF, hidden picks, and session revocation.
 
