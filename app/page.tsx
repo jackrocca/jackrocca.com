@@ -1,4 +1,4 @@
-import { Home } from "@/components/personal-pages";
+import { HomeGrid } from "@/components/home-grid";
 export default function Page() {
-  return <Home />;
+  return <HomeGrid />;
 }

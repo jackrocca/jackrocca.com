@@ -9,6 +9,7 @@ import { PageHeader } from "@/ui/components/PageHeader";
 import { CustomButton } from "@/ui/components/CustomButton";
 export function SiteHeader() {
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const [name, setName] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
@@ -49,7 +50,9 @@ export function SiteHeader() {
         key={pathname}
         height={100}
         classNames={{
-          root: "mx-auto max-w-[1024px] px-2 sm:px-6",
+          root: isHome
+            ? "mx-auto max-w-[1440px] px-0 sm:px-4"
+            : "mx-auto max-w-[1024px] px-2 sm:px-6",
           container: "mx-auto max-w-none",
           leftSide: "flex-1",
           rightSide: "flex-none gap-5",
@@ -72,16 +75,16 @@ export function SiteHeader() {
         }
         renderRightSide={({ bottomDrawer }) => (
           <>
-            {nav()}
+            {!isHome && nav()}
             <CustomButton
               href="/account"
               variant="ghost"
               icon={UserRound}
               aria-label={name ? `${name}'s account` : "Sign in"}
-              tooltip={name ? "Your account" : "Sign in"}
+              tooltip={isHome ? undefined : name ? "Your account" : "Sign in"}
               className="size-10 p-0"
             />
-            <div className="md:hidden">{bottomDrawer(nav(true))}</div>
+            <div className={isHome ? "" : "md:hidden"}>{bottomDrawer(nav(true))}</div>
           </>
         )}
       />
@@ -89,6 +92,8 @@ export function SiteHeader() {
   );
 }
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname === "/") return null;
   return (
     <footer className="mx-auto flex w-full max-w-[1024px] flex-wrap items-center justify-between gap-4 border-t px-6 py-8 text-xs text-muted-foreground sm:px-10">
       <span>© {new Date().getFullYear()} Jack Rocca</span>
