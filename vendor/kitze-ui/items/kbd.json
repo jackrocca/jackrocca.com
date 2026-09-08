@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd",
+  "title": "Keyboard Shortcut",
+  "description": "The shared visual keycap component for a sequence of keyboard keys. Use it to display shortcut hints with consistent sizing, borders and typography instead of plain strings. It is a display component and does not bind keyboard handlers.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/kbd/Kbd.tsx",
+      "content": "import * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface KbdClassNames {\n  root?: string | undefined;\n  key?: string | undefined;\n  separator?: string | undefined;\n}\nexport interface KbdProps {\n  keys: string[];\n  classNames?: KbdClassNames | undefined;\n}\nexport const Kbd: ReactFC<KbdProps> = ({ keys, classNames }) => (\n  <div className={cn(\"flex items-center gap-1\", classNames?.root)}>\n    {keys.map((key: string, index: number) => (\n      <React.Fragment key={key}>\n        <kbd\n          className={cn(\n            \"bg-muted text-muted-foreground pointer-events-none inline-flex h-5 items-center rounded border px-1.5 font-mono text-[10px] font-medium select-none\",\n            classNames?.key\n          )}\n        >\n          {key}\n        </kbd>\n        {index !== keys.length - 1 && (\n          <span\n            className={cn(\n              \"text-muted-foreground text-xs\",\n              classNames?.separator\n            )}\n          >\n            +\n          </span>\n        )}\n      </React.Fragment>\n    ))}\n  </div>\n);\n",
+      "type": "registry:component",
+      "target": "components/Kbd.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

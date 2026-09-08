@@ -29,8 +29,7 @@ function localPath() {
   if (process.env.VERCEL || process.env.NODE_ENV === "production")
     throw new Error("Private league storage is not configured.");
   return (
-    process.env.LOCAL_STORE_PATH ??
-    path.join(process.cwd(), "work", "league.local.json")
+    process.env.LOCAL_STORE_PATH ?? path.join(process.cwd(), "work", "league.local.json")
   );
 }
 export async function readState(): Promise<{ state: State; etag?: string }> {
@@ -55,8 +54,7 @@ export async function readState(): Promise<{ state: State; etag?: string }> {
       ) as State,
     };
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === "ENOENT")
-      return { state: initialState() };
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return { state: initialState() };
     throw e;
   }
 }
@@ -105,20 +103,11 @@ export async function mutate<T>(fn: (state: State) => T): Promise<T> {
   queue = result.catch(() => {});
   return result;
 }
-export function audit(
-  state: State,
-  actor: string,
-  action: string,
-  detail: string,
-) {
+export function audit(state: State, actor: string, action: string, detail: string) {
   state.audit.push({ at: new Date().toISOString(), actor, action, detail });
   state.audit = state.audit.slice(-2000);
 }
-export async function rateLimit(
-  key: string,
-  limit = 12,
-  windowMs = 15 * 60 * 1000,
-) {
+export async function rateLimit(key: string, limit = 12, windowMs = 15 * 60 * 1000) {
   const allowed = await mutate((state) => {
     const now = Date.now();
     for (const [k, v] of Object.entries(state.rates))
@@ -130,8 +119,5 @@ export async function rateLimit(
     return item.count <= limit;
   });
   if (!allowed)
-    throw new AppError(
-      "Too many attempts. Please try again in a few minutes.",
-      429,
-    );
+    throw new AppError("Too many attempts. Please try again in a few minutes.", 429);
 }

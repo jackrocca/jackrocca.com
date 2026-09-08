@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kitze-ui-context",
+  "title": "Kitze UI Context",
+  "description": "The application provider for shared Kitze UI configuration, including the isMobile value used by responsive components. Supply the breakpoint decision once so dialogs, pickers and menus make the same desktop/mobile choice. It is setup infrastructure rather than a visible widget.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/kitze-ui-context/KitzeUIContext.tsx",
+      "content": "\"use client\";\n\nimport { createContext, useContext, useMemo } from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\n\ninterface KitzeUIContextType {\n  isMobile: boolean;\n}\nconst KitzeUIContext = createContext<KitzeUIContextType | undefined>(undefined);\nexport interface KitzeUIProviderProps {\n  isMobile: boolean;\n  children: React.ReactNode;\n}\nexport const KitzeUIProvider: ReactFC<KitzeUIProviderProps> = ({\n  children,\n  isMobile,\n}) => {\n  const value = useMemo(() => ({ isMobile }), [isMobile]);\n  return (\n    <KitzeUIContext.Provider value={value}>{children}</KitzeUIContext.Provider>\n  );\n};\n\nexport const useKitzeUI = () => {\n  const context = useContext(KitzeUIContext);\n  if (context === undefined) {\n    console.warn(\n      \"useKitzeUI should be used within a KitzeUIProvider, otherwise it will assume that mobile is false\"\n    );\n    return {\n      isMobile: false,\n    };\n  }\n  return context;\n};\n",
+      "type": "registry:component",
+      "target": "components/KitzeUIContext.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

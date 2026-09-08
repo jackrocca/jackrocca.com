@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "scrolling-header",
+  "title": "Scrolling Header",
+  "description": "A header treatment that responds to page scrolling. Use it when a landing-page header needs the same scroll-dependent presentation across routes instead of adding independent scroll listeners and header styles to each page.",
+  "dependencies": [
+    "motion"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/scrolling-header/ScrollingHeader.tsx",
+      "content": "\"use client\";\n\nimport { motion, AnimatePresence, useScroll } from \"motion/react\";\nimport type { ReactNode } from \"react\";\nimport { useState, useEffect } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nexport interface ScrollingHeaderProps {\n  /** Logo element (image or icon) */\n  logo: ReactNode;\n  /** Product/app title */\n  title: string;\n  /** Scroll threshold in pixels before header appears */\n  scrollThreshold?: number;\n  /** Right side content (typically a buy button) */\n  children?: ReactNode;\n  /** Additional className for the container */\n  className?: string;\n  /** Additional className for the inner wrapper */\n  innerClassName?: string;\n  /** Hide title on mobile */\n  hideTitleOnMobile?: boolean;\n}\n\nexport const ScrollingHeader = ({\n  logo,\n  title,\n  scrollThreshold = 500,\n  children,\n  className,\n  innerClassName,\n  hideTitleOnMobile = true,\n}: ScrollingHeaderProps) => {\n  const { scrollY } = useScroll();\n  const [isVisible, setIsVisible] = useState(false);\n\n  useEffect(\n    () =>\n      scrollY.onChange((latest) => {\n        setIsVisible(latest > scrollThreshold);\n      }),\n    [scrollY, scrollThreshold]\n  );\n\n  return (\n    <AnimatePresence>\n      {isVisible && (\n        <motion.div\n          initial={{ opacity: 0, y: -100 }}\n          animate={{ opacity: 1, y: 0 }}\n          exit={{ opacity: 0, y: -100 }}\n          transition={{ duration: 0.3 }}\n          className={cn(\n            \"pointer-events-none fixed top-0 right-0 left-0 z-50 flex justify-center p-4\",\n            className\n          )}\n        >\n          <div\n            className={cn(\n              \"pointer-events-auto flex w-full max-w-lg items-center justify-between gap-4 rounded-full border border-white/10 bg-black/50 px-4 py-2 shadow-2xl backdrop-blur-xl md:max-w-2xl\",\n              innerClassName\n            )}\n          >\n            <div className=\"flex items-center gap-3\">\n              {logo}\n              <span\n                className={cn(\n                  \"font-semibold text-white\",\n                  hideTitleOnMobile && \"hidden sm:block\"\n                )}\n              >\n                {title}\n              </span>\n            </div>\n\n            {children && (\n              <div className=\"flex items-center gap-3\">{children}</div>\n            )}\n          </div>\n        </motion.div>\n      )}\n    </AnimatePresence>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/ScrollingHeader.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

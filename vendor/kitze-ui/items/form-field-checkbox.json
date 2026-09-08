@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "form-field-checkbox",
+  "title": "Form Field Checkbox",
+  "description": "A react-hook-form adapter for the shared checkbox component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+  "dependencies": [
+    "react-hook-form"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/checkbox.json",
+    "label",
+    "https://ui.kitze.io/r/form-field-wrapper.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/form-field-checkbox/FormFieldCheckbox.tsx",
+      "content": "import React from \"react\";\nimport type { FieldValues, FieldPath } from \"react-hook-form\";\n\nimport { Checkbox } from \"@/components/ui/checkbox\";\nimport { Label } from \"@/components/ui/label\";\nimport { cn } from \"@/lib/utils\";\nimport type { FormFieldWrapperProps } from \"@/registry/new-york/form-field-wrapper/FormFieldWrapper\";\nimport { FormFieldWrapper } from \"@/registry/new-york/form-field-wrapper/FormFieldWrapper\";\n\nexport interface FormFieldCheckboxProps<\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n> extends Omit<\n  FormFieldWrapperProps<TFieldValues, TName>,\n  \"children\" | \"label\"\n> {\n  label: React.ReactNode;\n  checkboxClassName?: string;\n}\nexport const FormFieldCheckbox = <\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n>({\n  label,\n  checkboxClassName,\n  ...wrapperProps\n}: FormFieldCheckboxProps<TFieldValues, TName>) => (\n  <FormFieldWrapper<TFieldValues, TName> {...wrapperProps} label={undefined}>\n    {(field) => (\n      <div className=\"flex items-center space-x-2\">\n        <Checkbox\n          id={field.name}\n          checked={field.value}\n          onCheckedChange={(value) => field.onChange(value)}\n          onBlur={() => field.onBlur()}\n          name={field.name}\n          ref={field.ref}\n          required={wrapperProps.required}\n          aria-describedby={\n            wrapperProps.description ? `${field.name}-description` : undefined\n          }\n          className={cn(checkboxClassName)}\n        />\n        <Label\n          htmlFor={field.name}\n          className=\"text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70\"\n        >\n          {label}\n          {wrapperProps.required && (\n            <span className=\"text-destructive ml-1\">*</span>\n          )}\n        </Label>\n      </div>\n    )}\n  </FormFieldWrapper>\n);\n",
+      "type": "registry:component",
+      "target": "components/FormFieldCheckbox.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

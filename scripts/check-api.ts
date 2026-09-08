@@ -40,8 +40,7 @@ async function main() {
     const ctx = {
       params: Promise.resolve({ path: route.split("?")[0].split("/") }),
     };
-    const response =
-      data === undefined ? await GET(req, ctx) : await POST(req, ctx);
+    const response = data === undefined ? await GET(req, ctx) : await POST(req, ctx);
     assert.equal(response.status, expected, `${route} status`);
     checks++;
     return response;
@@ -49,10 +48,7 @@ async function main() {
   try {
     const guestAccount = await (await request("account")).json();
     assert.equal(guestAccount.user, null);
-    assert.deepEqual(Object.keys(guestAccount).sort(), [
-      "authentication",
-      "user",
-    ]);
+    assert.deepEqual(Object.keys(guestAccount).sort(), ["authentication", "user"]);
     const initial = await (await request("state")).json();
     assert.equal(initial.user, null);
     assert.equal(initial.authentication.provider, "google");
@@ -117,16 +113,12 @@ async function main() {
     });
     const cookies = await Promise.all(
       users.map(
-        async (u) =>
-          (await loginResponse(u)).headers.get("set-cookie")!.split(";")[0],
+        async (u) => (await loginResponse(u)).headers.get("set-cookie")!.split(";")[0],
       ),
     );
     const [admin, player, second] = cookies;
     const accountResponse = await request("account", undefined, 200, player);
-    assert.equal(
-      accountResponse.headers.get("cache-control"),
-      "private, no-store",
-    );
+    assert.equal(accountResponse.headers.get("cache-control"), "private, no-store");
     const account = await accountResponse.json();
     assert.deepEqual(account.user, {
       id: users[1].id,
@@ -136,13 +128,7 @@ async function main() {
     });
     assert.deepEqual(Object.keys(account).sort(), ["authentication", "user"]);
     assert.ok(!JSON.stringify(account).includes("googleSub"));
-    await request(
-      "profile",
-      { name: "Bad origin" },
-      403,
-      player,
-      "https://evil.example",
-    );
+    await request("profile", { name: "Bad origin" }, 403, player, "https://evil.example");
     await request("profile", { name: "x" }, 400, player);
     await request(
       "profile",
@@ -150,9 +136,7 @@ async function main() {
       200,
       player,
     );
-    const profile = await (
-      await request("state", undefined, 200, player)
-    ).json();
+    const profile = await (await request("state", undefined, 200, player)).json();
     assert.equal(profile.user.name, "New nickname");
     assert.equal(profile.user.role, "player");
     assert.equal(profile.user.email, "player@gmail.com");
@@ -185,24 +169,18 @@ async function main() {
       request("picks", input, 200, second),
     ]);
     await request("picks", input, 409, player);
-    const saved = await (
-      await request("state?week=1", undefined, 200, player)
-    ).json();
+    const saved = await (await request("state?week=1", undefined, 200, player)).json();
     assert.equal(saved.entries.length, 2);
     assert.ok(
-      saved.entries.find((e: { userId: string }) => e.userId === users[1].id)
-        .picks,
+      saved.entries.find((e: { userId: string }) => e.userId === users[1].id).picks,
     );
     assert.equal(
-      saved.entries.find((e: { userId: string }) => e.userId === users[2].id)
-        .picks,
+      saved.entries.find((e: { userId: string }) => e.userId === users[2].id).picks,
       null,
     );
     assert.ok(!JSON.stringify(saved).includes("fixture-"));
     assert.ok(!JSON.stringify(saved).includes("owner@gmail.com"));
-    const exported = await (
-      await request("export", undefined, 200, admin)
-    ).json();
+    const exported = await (await request("export", undefined, 200, admin)).json();
     assert.equal(exported.entries.length, 2);
     assert.ok(!JSON.stringify(exported).includes("googleSub"));
     const logout = await request("logout", {}, 200, player);

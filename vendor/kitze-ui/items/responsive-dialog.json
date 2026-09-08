@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "responsive-dialog",
+  "title": "Responsive Dialog",
+  "description": "The standard dialog wrapper with bottom-drawer behavior enabled on mobile through KitzeUIProvider. It delegates content and actions to SimpleDialog so callers share one API across desktop and touch layouts. Use mobileView=\"keep\" when a centered dialog is deliberately needed on both.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/simple-dialog.json",
+    "https://ui.kitze.io/r/bottom-drawer.json",
+    "https://ui.kitze.io/r/custom-button.json",
+    "https://ui.kitze.io/r/kitze-ui-context.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/responsive-dialog/ResponsiveDialog.tsx",
+      "content": "\"use client\";\n\nimport type { SimpleDialogProps } from \"@/registry/new-york/simple-dialog/SimpleDialog\";\nimport { SimpleDialog } from \"@/registry/new-york/simple-dialog/SimpleDialog\";\n\nexport type DialogMobileViewType = \"keep\" | \"bottom-drawer\";\nexport type ResponsiveDialogProps = SimpleDialogProps;\nexport const ResponsiveDialog = ({\n  mobileView = \"bottom-drawer\",\n  ...props\n}: ResponsiveDialogProps) => (\n  <SimpleDialog {...props} mobileView={mobileView} />\n);\n",
+      "type": "registry:component",
+      "target": "components/ResponsiveDialog.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

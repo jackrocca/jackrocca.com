@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "custom-badge",
+  "title": "Custom Badge",
+  "description": "A styled badge with shared size, color and appearance variants. Use it for statuses, tags and counts when the stock badge variants are too limited, so the same semantic color and spacing choices can be reused across screens.",
+  "dependencies": [
+    "tailwind-variants"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/custom-badge/CustomBadge.tsx",
+      "content": "import * as React from \"react\";\nimport { tv } from \"tailwind-variants\";\n\nimport { processColor } from \"@/lib/process-color\";\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\n\n// Example default light color\nconst DEFAULT_LIGHT_COLOR = \"bg-zinc-900\";\n// Example default dark color\nconst DEFAULT_DARK_COLOR = \"bg-zinc-100\";\nconst badge = tv({\n  base: \"flex items-center justify-center gap-1.5 rounded-md font-semibold transition-colors\",\n  defaultVariants: {\n    size: \"sm\",\n    variant: \"default\",\n  },\n  variants: {\n    size: {\n      lg: \"px-3 py-1 text-sm\",\n      md: \"px-2.5 py-1 text-xs\",\n      sm: \"px-2 py-0.5 text-xs\",\n      xl: \"px-3.5 py-1.5 text-sm\",\n      xs: \"px-1.5 py-[2px] text-[9px]\",\n    },\n    variant: {\n      default:\n        \"bg-(--badge-color)/20 text-(--badge-color) dark:bg-(--badge-dark-color)/20 dark:text-(--badge-dark-color)\",\n      ghost:\n        \"text-(--badge-color) hover:bg-(--badge-color)/10 dark:text-(--badge-dark-color) dark:hover:bg-(--badge-dark-color)/10\",\n      outline:\n        \"border-1 border-(--badge-color)/30 bg-(--badge-color)/10 text-(--badge-color) dark:border-(--badge-dark-color)/30 dark:bg-(--badge-dark-color)/10 dark:text-(--badge-dark-color)\",\n    },\n  },\n});\nexport type BadgeSize = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface BadgeClassNames {\n  root?: string;\n  icon?: string;\n}\nconst iconSizeMap: Record<BadgeSize, number> = {\n  lg: 14,\n  md: 12,\n  sm: 12,\n  xl: 14,\n  xs: 10,\n};\nexport interface CustomBadgeProps extends React.HTMLAttributes<HTMLDivElement> {\n  classNames?: BadgeClassNames;\n  color: string;\n  darkColor?: string;\n  variant?: \"default\" | \"outline\" | \"ghost\";\n  size?: BadgeSize;\n  icon?: React.ElementType;\n  iconSize?: number;\n  leftIcon?: React.ElementType;\n  rightIcon?: React.ElementType;\n  leftSide?: React.ReactNode;\n  rightSide?: React.ReactNode;\n}\nexport const CustomBadge: ReactFC<CustomBadgeProps> = ({\n  className,\n  variant,\n  size = \"sm\",\n  color,\n  darkColor,\n  classNames,\n  icon: Icon,\n  iconSize,\n  leftIcon: LeftIcon,\n  rightIcon: RightIcon,\n  leftSide,\n  rightSide,\n  children,\n  ...props\n}) => {\n  let finalColorValue: string;\n  let finalDarkColorValue: string;\n  if (color) {\n    // User provided a color\n    finalColorValue = color;\n    finalDarkColorValue = darkColor ?? color;\n  } else {\n    // User provided no color, use defaults\n    finalColorValue = DEFAULT_LIGHT_COLOR;\n    finalDarkColorValue = darkColor ?? DEFAULT_DARK_COLOR;\n  }\n  const finalColor = processColor(finalColorValue);\n  const finalDarkColor = processColor(finalDarkColorValue);\n  const defaultIconSize = iconSizeMap[size];\n  const finalIconSize = iconSize ?? defaultIconSize;\n  const style: React.CSSProperties & {\n    \"--badge-color\": string;\n    \"--badge-dark-color\": string;\n  } = {\n    \"--badge-color\": `var(--color-${finalColor})`,\n    \"--badge-dark-color\": `var(--color-${finalDarkColor})`,\n  };\n  const renderIcon = (\n    IconComponent: React.ElementType | undefined,\n    iconClassName?: string\n  ) =>\n    IconComponent && (\n      <IconComponent\n        size={finalIconSize}\n        className={cn(classNames?.icon, \"shrink-0\", iconClassName)}\n      />\n    );\n  return (\n    <div\n      style={style}\n      className={cn(\n        badge({\n          size,\n          variant,\n        }),\n        className,\n        classNames?.root\n      )}\n      {...props}\n    >\n      {leftSide || renderIcon(LeftIcon)}\n      {Icon ? renderIcon(Icon) : children}\n      {rightSide || renderIcon(RightIcon)}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/CustomBadge.tsx"
+    },
+    {
+      "path": "lib/process-color.ts",
+      "content": "export const processColor = (c: string | undefined): string | undefined => {\n  if (!c) {\n    return undefined;\n  }\n  return c.startsWith(\"bg-\") ? c.slice(3) : c;\n};\n",
+      "type": "registry:lib",
+      "target": "lib/process-color.ts"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

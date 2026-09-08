@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LogOut, ShieldCheck } from "lucide-react";
-import { Input } from "@/components/Input";
-import { CustomButton } from "@/components/CustomButton";
-import { SocialLoginButton } from "@/components/SocialLoginButton";
-import { CustomBadge } from "@/components/CustomBadge";
-import { Spinner } from "@/components/Spinner";
+import { Input } from "@/ui/components/Input";
+import { CustomButton } from "@/ui/components/CustomButton";
+import { SocialLoginButton } from "@/ui/components/SocialLoginButton";
+import { CustomBadge } from "@/ui/components/CustomBadge";
+import { Spinner } from "@/ui/components/Spinner";
 import { Editorial } from "@/components/personal-pages";
 type Account = {
   user: { id: string; name: string; email: string; role: string } | null;
@@ -58,7 +58,7 @@ export function SiteAccount() {
       title="Your account"
       intro="One Google account for this website and Jack’s Pick 4 league."
     >
-      <div className="max-w-xl rounded-xl border bg-card p-6 sm:p-9">
+      <div className="max-w-xl border-t pt-8">
         {error && (
           <p role="alert" className="mb-5 text-sm text-destructive">
             {error}
@@ -92,11 +92,7 @@ export function SiteAccount() {
                   {data.user.email}
                 </p>
               </div>
-              <CustomBadge
-                color="bg-emerald-700"
-                variant="outline"
-                className="shrink-0"
-              >
+              <CustomBadge color="bg-zinc-700" variant="outline" className="shrink-0">
                 Google
               </CustomBadge>
             </div>
@@ -133,11 +129,7 @@ export function SiteAccount() {
                   ? "You’re the league commissioner."
                   : "You’re a member of Jack’s league."}
               </p>
-              <CustomButton
-                href="/pick4"
-                variant="outline"
-                rightIcon={ArrowRight}
-              >
+              <CustomButton href="/pick4" variant="outline" rightIcon={ArrowRight}>
                 Open Pick 4
               </CustomButton>
             </div>
@@ -154,8 +146,8 @@ export function SiteAccount() {
           <>
             <h2 className="mb-3 text-2xl font-medium">Welcome in.</h2>
             <p className="mb-7 text-sm leading-7 text-muted-foreground">
-              Sign in with Google to create your account. You’ll automatically
-              join Jack’s Pick 4 league.
+              Sign in with Google to create your account. You’ll automatically join Jack’s
+              Pick 4 league.
             </p>
             <SocialLoginButton
               provider="google"

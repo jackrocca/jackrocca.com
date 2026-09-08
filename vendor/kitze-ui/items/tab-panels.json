@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tab-panels",
+  "title": "Tab Panels",
+  "description": "A tabs array API that combines SegmentedControl with animated content panels, controlled or internal selection, and optional mobile select behavior. Use it to avoid manually coordinating selector values and matching panel content. Use SegmentedControl alone when only a value selector is needed.",
+  "dependencies": [
+    "motion",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/segmented-control.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/tab-panels/TabPanels.tsx",
+      "content": "\"use client\";\n\nimport type { LucideIcon } from \"lucide-react\";\nimport { motion, AnimatePresence } from \"motion/react\";\nimport * as React from \"react\";\nimport { useState } from \"react\";\n\nimport type {\n  SegmentedControlOption,\n  SegmentedControlMobileViewType,\n} from \"@/registry/new-york/segmented-control/SegmentedControl\";\nimport { SegmentedControl } from \"@/registry/new-york/segmented-control/SegmentedControl\";\n\nexport interface TabPanelProps {\n  value: string;\n  label: string;\n  icon: LucideIcon;\n  content: React.ReactNode;\n}\nexport interface TabPanelsProps {\n  tabs: TabPanelProps[];\n  defaultTab?: string;\n  title?: string;\n  // For controlled usage\n  activeTab?: string;\n  onTabChange?: (tab: string) => void;\n  // Mobile view props for SegmentedControl\n  mobileView?: SegmentedControlMobileViewType;\n  drawerTitle?: string;\n  placeholder?: string;\n}\nexport const TabPanels = ({\n  tabs,\n  defaultTab,\n  title,\n  activeTab: controlledActiveTab,\n  onTabChange,\n  mobileView,\n  drawerTitle,\n  placeholder,\n}: TabPanelsProps) => {\n  const [firstTab] = tabs;\n  const initialTab =\n    defaultTab && tabs.some((tab) => tab.value === defaultTab)\n      ? defaultTab\n      : (firstTab?.value ?? \"\");\n  const [internalActiveTab, setInternalActiveTab] =\n    useState<string>(initialTab);\n  const isControlled = controlledActiveTab !== undefined;\n  const activeTab = isControlled ? controlledActiveTab : internalActiveTab;\n  if (!firstTab) {\n    return null;\n  }\n  const tabOptions: SegmentedControlOption[] = tabs.map((tab) => ({\n    label: tab.label,\n    leftIcon: tab.icon,\n    value: tab.value,\n  }));\n  const handleTabChange = (value: string) => {\n    if (!isControlled) {\n      setInternalActiveTab(value);\n    }\n    if (onTabChange) {\n      onTabChange(value);\n    }\n  };\n  const activeTabContent =\n    tabs.find((tab) => tab.value === activeTab)?.content || firstTab.content;\n  return (\n    <div className=\"vertical gap-6\">\n      {title && <div className=\"text-2xl font-semibold\">{title}</div>}\n\n      <SegmentedControl\n        options={tabOptions}\n        value={activeTab}\n        onChange={handleTabChange}\n        size=\"md\"\n        className=\"w-full\"\n        mobileView={mobileView}\n        drawerTitle={drawerTitle}\n        placeholder={placeholder}\n      />\n\n      <AnimatePresence mode=\"wait\">\n        <motion.div\n          key={activeTab}\n          initial={{\n            opacity: 0,\n            x: 20,\n          }}\n          animate={{\n            opacity: 1,\n            x: 0,\n          }}\n          exit={{\n            opacity: 0,\n            x: -20,\n          }}\n          transition={{\n            duration: 0.25,\n            ease: \"easeInOut\",\n          }}\n        >\n          {activeTabContent}\n        </motion.div>\n      </AnimatePresence>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/TabPanels.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

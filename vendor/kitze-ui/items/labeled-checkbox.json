@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "labeled-checkbox",
+  "title": "Labeled Checkbox",
+  "description": "A checkbox paired with its label through a small prop API. Use it for standard boolean fields to avoid repeating label association and row spacing; use the checkbox primitive for a custom field layout.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/checkbox.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/labeled-checkbox/LabeledCheckbox.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\n\nimport { Checkbox } from \"@/components/ui/checkbox\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface LabeledCheckboxProps {\n  id?: string;\n  label: React.ReactNode;\n  classNames?: { root?: string; checkbox?: string; label?: string };\n  checked?: boolean;\n  onCheckedChange?: (checked: boolean) => void;\n  disabled?: boolean;\n  invert?: boolean;\n  name?: string;\n  value?: string;\n  required?: boolean;\n}\n\nexport const LabeledCheckbox: React.FC<LabeledCheckboxProps> = ({\n  id,\n  label,\n  classNames,\n  checked,\n  onCheckedChange,\n  disabled,\n  invert = false,\n  ...checkboxProps\n}) => {\n  const generatedId = React.useId();\n  const checkboxId = id || `labeled-checkbox-${generatedId}`;\n  return (\n    <label\n      htmlFor={checkboxId}\n      className={cn(\n        \"flex items-center gap-2\",\n        !disabled && \"cursor-pointer\",\n        classNames?.root\n      )}\n    >\n      <Checkbox\n        id={checkboxId}\n        checked={checked}\n        onCheckedChange={onCheckedChange}\n        disabled={disabled}\n        className={cn(invert && \"order-last\", classNames?.checkbox)}\n        {...checkboxProps}\n      />\n      <span\n        className={cn(\n          \"text-sm leading-none font-medium\",\n          disabled && \"cursor-not-allowed opacity-70\",\n          classNames?.label\n        )}\n      >\n        {label}\n      </span>\n    </label>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/LabeledCheckbox.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

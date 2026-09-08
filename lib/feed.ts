@@ -88,9 +88,7 @@ export function parseFeed(raw: unknown, week: number): Game[] {
         color: `#${t.team.color ?? "334155"}`,
         logo: t.team.logo ?? "",
       });
-      const o = c.odds?.find((o) =>
-        /draft\s*kings/i.test(o.provider?.name ?? ""),
-      );
+      const o = c.odds?.find((o) => /draft\s*kings/i.test(o.provider?.name ?? ""));
       const rawLine = o?.pointSpread?.home?.close?.line;
       const homeSpread = rawLine !== undefined ? Number(rawLine) : o?.spread;
       const s = e.status.type;
@@ -104,9 +102,7 @@ export function parseFeed(raw: unknown, week: number): Game[] {
               ? "live"
               : "scheduled";
       const score = (value: string | undefined) =>
-        value !== undefined && Number.isFinite(Number(value))
-          ? Number(value)
-          : null;
+        value !== undefined && Number.isFinite(Number(value)) ? Number(value) : null;
       return {
         id: e.id,
         week,
@@ -121,11 +117,8 @@ export function parseFeed(raw: unknown, week: number): Game[] {
         homeScore: state === "scheduled" ? null : score(h.score),
         awayScore: state === "scheduled" ? null : score(a.score),
         homeSpread:
-          homeSpread !== undefined && Number.isFinite(homeSpread)
-            ? homeSpread
-            : null,
-        total:
-          o?.overUnder && Number.isFinite(o.overUnder) ? o.overUnder : null,
+          homeSpread !== undefined && Number.isFinite(homeSpread) ? homeSpread : null,
+        total: o?.overUnder && Number.isFinite(o.overUnder) ? o.overUnder : null,
         provider: o?.provider?.name ?? null,
       };
     })
@@ -136,7 +129,6 @@ export async function fetchWeek(week: number) {
     `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=${week}&limit=1000`,
     { cache: "no-store", signal: AbortSignal.timeout(12000) },
   );
-  if (!response.ok)
-    throw new Error(`Schedule provider returned ${response.status}.`);
+  if (!response.ok) throw new Error(`Schedule provider returned ${response.status}.`);
   return parseFeed(await response.json(), week);
 }

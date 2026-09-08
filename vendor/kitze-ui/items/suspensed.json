@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "suspensed",
+  "title": "Suspensed",
+  "description": "A small Suspense wrapper with a supplied fallback and a force prop for deliberately showing that fallback. Use it when loading-boundary composition is repeated or you need to demonstrate a loading state. It does not fetch data or choose a spinner automatically.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/suspensed/Suspensed.tsx",
+      "content": "import type { ReactNode } from \"react\";\nimport { Suspense } from \"react\";\n\ninterface SuspensedProps {\n  children: ReactNode;\n  fallback?: ReactNode;\n  force?: boolean;\n}\n\nexport const Suspensed = ({\n  children,\n  fallback = null,\n  force = false,\n}: SuspensedProps) => {\n  if (force) {\n    return fallback;\n  }\n  return <Suspense fallback={fallback}>{children}</Suspense>;\n};\n",
+      "type": "registry:component",
+      "target": "components/Suspensed.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

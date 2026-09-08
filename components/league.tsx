@@ -22,20 +22,20 @@ import {
   Download,
   UserRound,
 } from "lucide-react";
-import { CustomButton } from "@/components/CustomButton";
-import { Input } from "@/components/Input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { SocialLoginButton } from "@/components/SocialLoginButton";
-import { ResponsiveDialog } from "@/components/ResponsiveDialog";
-import { SegmentedControl } from "@/components/SegmentedControl";
-import { CustomBadge } from "@/components/CustomBadge";
-import { Spinner } from "@/components/Spinner";
+import { CustomButton } from "@/ui/components/CustomButton";
+import { Input } from "@/ui/components/Input";
+import { Checkbox } from "@/ui/primitives/checkbox";
+import { SocialLoginButton } from "@/ui/components/SocialLoginButton";
+import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { CustomBadge } from "@/ui/components/CustomBadge";
+import { Spinner } from "@/ui/components/Spinner";
 import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@/components/ui/accordion";
+} from "@/ui/primitives/accordion";
 import { LeagueSelect, useConfirmation } from "@/components/league-controls";
 import type { AppView } from "@/lib/view";
 import { PICK_TYPES, PickInput, PickType, Game } from "@/lib/types";
@@ -103,9 +103,7 @@ export default function League() {
     [accountOpen, setAccountOpen] = useState(false);
   const load = useCallback(async (number: number | null) => {
     try {
-      const result = (await api(
-        `state${number ? `?week=${number}` : ""}`,
-      )) as AppView;
+      const result = (await api(`state${number ? `?week=${number}` : ""}`)) as AppView;
       setData(result);
       setWeek(result.week.number);
       setError("");
@@ -118,11 +116,9 @@ export default function League() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const messages: Record<string, string> = {
-      canceled:
-        "Google sign-in was canceled. You can try again whenever you’re ready.",
+      canceled: "Google sign-in was canceled. You can try again whenever you’re ready.",
       failed: "Google sign-in could not be completed. Please try again.",
-      unavailable:
-        "Google sign-in is being connected. Please check back shortly.",
+      unavailable: "Google sign-in is being connected. Please check back shortly.",
     };
     const authError = params.get("authError");
     if (authError || params.has("invite") || params.has("setup"))
@@ -185,8 +181,7 @@ export default function League() {
     }
   }
   async function changeWeek(number: number) {
-    if (dirty && !(await ask("Discard your unsaved picks and change weeks?")))
-      return;
+    if (dirty && !(await ask("Discard your unsaved picks and change weeks?"))) return;
     setDirty(false);
     setFilter("all");
     await load(number);
@@ -201,7 +196,7 @@ export default function League() {
   }
   if (!data)
     return (
-      <main className="league-app loading" aria-busy="true">
+      <main id="main-content" className="league-app loading" aria-busy="true">
         <Spinner size="lg" />
         <div className="brand-mark">4</div>
         <h1>Pick 4</h1>
@@ -252,11 +247,7 @@ export default function League() {
             <small>THE LEAGUE</small>
           </span>
         </a>
-        <CustomBadge
-          color="bg-emerald-700"
-          variant="outline"
-          className="season-pill"
-        >
+        <CustomBadge color="bg-zinc-700" variant="outline" className="season-pill">
           2026 SEASON
         </CustomBadge>
         {user ? (
@@ -277,10 +268,7 @@ export default function League() {
               aria-label="Sign out"
               onClick={() =>
                 act(async () => {
-                  if (
-                    dirty &&
-                    !(await ask("Sign out and discard unsaved picks?"))
-                  )
+                  if (dirty && !(await ask("Sign out and discard unsaved picks?")))
                     return;
                   await api("logout", {});
                   window.dispatchEvent(new Event("account-changed"));
@@ -317,7 +305,7 @@ export default function League() {
         </div>
       )}
       {!user ? (
-        <main className="welcome">
+        <main id="main-content" className="welcome">
           <section className="welcome-copy">
             <div className="eyebrow">
               <span />
@@ -359,8 +347,8 @@ export default function League() {
             <span className="eyebrow">JACK’S PICK 4 LEAGUE</span>
             <h2>Get in the game.</h2>
             <p>
-              Sign in with Google to join the league, make your picks, and
-              follow the season.
+              Sign in with Google to join the league, make your picks, and follow the
+              season.
             </p>
             <SocialLoginButton
               provider="google"
@@ -379,8 +367,8 @@ export default function League() {
             <div className="login-foot">
               <ShieldCheck size={17} />
               <span>
-                Your account automatically joins Jack’s league. Choose your
-                league display name after signing in.
+                Your account automatically joins Jack’s league. Choose your league display
+                name after signing in.
               </span>
             </div>
             <a className="text-button" href="/privacy">
@@ -417,7 +405,7 @@ export default function League() {
               ]}
             />
           </nav>
-          <main className="app-shell">
+          <main id="main-content" className="app-shell">
             {tab === "board" && (
               <a className="mobile-card-jump" href="#your-card">
                 <span>
@@ -502,9 +490,7 @@ export default function League() {
                     >
                       <small>WEEK</small>
                       {n}
-                      {n === data.currentWeek && (
-                        <span className="current-dot" />
-                      )}
+                      {n === data.currentWeek && <span className="current-dot" />}
                     </CustomButton>
                   ))}
                 </div>
@@ -560,8 +546,8 @@ export default function League() {
                 </div>
                 {(w.error || stale) && (
                   <p className="feed-note" role="status">
-                    {w.error ?? "The board needs a fresh score update."} Last
-                    successful sync: {updated} PT.
+                    {w.error ?? "The board needs a fresh score update."} Last successful
+                    sync: {updated} PT.
                   </p>
                 )}
                 <div className="board-layout">
@@ -574,12 +560,10 @@ export default function League() {
                         className="board-filter"
                         value={filter}
                         onChange={(value) => setFilter(value as typeof filter)}
-                        options={(["all", ...PICK_TYPES] as const).map(
-                          (value) => ({
-                            value,
-                            label: value === "all" ? "All" : labels[value],
-                          }),
-                        )}
+                        options={(["all", ...PICK_TYPES] as const).map((value) => ({
+                          value,
+                          label: value === "all" ? "All" : labels[value],
+                        }))}
                       />
                     </div>
                     <div className="game-grid">
@@ -594,9 +578,7 @@ export default function League() {
                           tick >= Date.parse(g.kickoff) ||
                           g.state !== "scheduled" ||
                           !g.timeConfirmed;
-                        const selected = PICK_TYPES.find(
-                          (t) => draft.picks[t] === g.id,
-                        );
+                        const selected = PICK_TYPES.find((t) => draft.picks[t] === g.id);
                         const favorite = homeFavorite ? g.home : g.away,
                           underdog = homeFavorite ? g.away : g.home;
                         return (
@@ -631,17 +613,14 @@ export default function League() {
                               <div>
                                 <TeamMark game={g} side="away" />
                                 <span className="team-city">
-                                  {g.away.name
-                                    .slice(0, -g.away.short.length)
-                                    .trim()}
+                                  {g.away.name.slice(0, -g.away.short.length).trim()}
                                 </span>
                                 <strong>{g.away.short}</strong>
                               </div>
                               <span
                                 className={`versus ${g.state === "live" ? "live-score" : ""}`}
                               >
-                                {g.homeScore !== null &&
-                                g.awayScore !== null ? (
+                                {g.homeScore !== null && g.awayScore !== null ? (
                                   <>
                                     <b>{g.awayScore}</b>
                                     <span>–</span>
@@ -654,9 +633,7 @@ export default function League() {
                               <div>
                                 <TeamMark game={g} side="home" />
                                 <span className="team-city">
-                                  {g.home.name
-                                    .slice(0, -g.home.short.length)
-                                    .trim()}
+                                  {g.home.name.slice(0, -g.home.short.length).trim()}
                                 </span>
                                 <strong>{g.home.short}</strong>
                               </div>
@@ -664,9 +641,7 @@ export default function League() {
                             <div className="game-options">
                               {PICK_TYPES.map((t) => {
                                 const selectedThis = draft.picks[t] === g.id,
-                                  conflict = Boolean(
-                                    selected && selected !== t,
-                                  );
+                                  conflict = Boolean(selected && selected !== t);
                                 const unavailable =
                                   t === "over" || t === "under"
                                     ? total === null
@@ -694,10 +669,7 @@ export default function League() {
                                             : labels[t]
                                     }
                                     disabled={
-                                      !canPick ||
-                                      closed ||
-                                      conflict ||
-                                      unavailable
+                                      !canPick || closed || conflict || unavailable
                                     }
                                     onClick={() => choose(t, g.id)}
                                   >
@@ -717,9 +689,7 @@ export default function League() {
                                 </span>
                               ) : (
                                 <span>
-                                  {w.publishedAt
-                                    ? "Frozen line"
-                                    : "Preview line"}
+                                  {w.publishedAt ? "Frozen line" : "Preview line"}
                                 </span>
                               )}
                             </div>
@@ -765,25 +735,18 @@ export default function League() {
                         }
                         const Icon = slotIcons[t];
                         return (
-                          <div
-                            className={`slip-slot ${g ? "filled" : ""}`}
-                            key={t}
-                          >
+                          <div className={`slip-slot ${g ? "filled" : ""}`} key={t}>
                             <span className="slot-icon">
                               <Icon size={18} />
                             </span>
                             <div>
                               <small>{labels[t]}</small>
                               <strong>{text}</strong>
-                              {own &&
-                                own.score.outcomes[t] !== "pending" &&
-                                !dirty && (
-                                  <span
-                                    className={`outcome ${own.score.outcomes[t]}`}
-                                  >
-                                    {own.score.outcomes[t]}
-                                  </span>
-                                )}
+                              {own && own.score.outcomes[t] !== "pending" && !dirty && (
+                                <span className={`outcome ${own.score.outcomes[t]}`}>
+                                  {own.score.outcomes[t]}
+                                </span>
+                              )}
                             </div>
                             {g && !locked && (
                               <CustomButton
@@ -865,9 +828,7 @@ export default function League() {
                           </span>
                           <Checkbox
                             checked={draft.perfectPrediction}
-                            disabled={
-                              !canPick || late || used("perfectPrediction")
-                            }
+                            disabled={!canPick || late || used("perfectPrediction")}
                             onCheckedChange={(checked) => {
                               setDirty(true);
                               setDraft((d) => ({
@@ -882,10 +843,7 @@ export default function League() {
                         variant="unstyled"
                         className="primary save-button"
                         disabled={
-                          busy ||
-                          count !== 4 ||
-                          !canPick ||
-                          (!dirty && Boolean(own))
+                          busy || count !== 4 || !canPick || (!dirty && Boolean(own))
                         }
                         onClick={save}
                       >
@@ -900,11 +858,7 @@ export default function League() {
                                 : late
                                   ? "Submit late picks (−1)"
                                   : "Submit picks"}
-                        {locked ? (
-                          <LockKeyhole size={17} />
-                        ) : (
-                          <ArrowRight size={17} />
-                        )}
+                        {locked ? <LockKeyhole size={17} /> : <ArrowRight size={17} />}
                       </CustomButton>
                       <p className="slip-foot">
                         {locked
@@ -966,10 +920,7 @@ export default function League() {
                     </thead>
                     <tbody>
                       {data.standings.map((s, i) => (
-                        <tr
-                          key={s.id}
-                          className={s.id === user.id ? "you" : ""}
-                        >
+                        <tr key={s.id} className={s.id === user.id ? "you" : ""}>
                           <td>
                             {s.points === 0
                               ? "—"
@@ -983,9 +934,7 @@ export default function League() {
                           <td>
                             <span className="avatar">{s.name[0]}</span>
                             <b>{s.name}</b>
-                            {s.id === user.id && (
-                              <small className="you-label">YOU</small>
-                            )}
+                            {s.id === user.id && <small className="you-label">YOU</small>}
                           </td>
                           <td className="points">{s.points}</td>
                           <td>
@@ -1003,8 +952,8 @@ export default function League() {
                   </table>
                 </div>
                 <p className="source-note">
-                  Ties break by perfect weeks, then winning picks. Matching
-                  records share a rank. Pending picks score only when final.
+                  Ties break by perfect weeks, then winning picks. Matching records share
+                  a rank. Pending picks score only when final.
                 </p>
                 <h3 className="subheading">Week {week} cards</h3>
                 <div className="entry-grid">
@@ -1013,10 +962,7 @@ export default function League() {
                       <div className="entry-card" key={e.id}>
                         <div className="section-heading">
                           <strong>
-                            {
-                              data.standings.find((s) => s.id === e.userId)
-                                ?.name
-                            }
+                            {data.standings.find((s) => s.id === e.userId)?.name}
                           </strong>
                           <b>{e.score.points} pts</b>
                         </div>
@@ -1027,17 +973,14 @@ export default function League() {
                                 <small>{labels[t]}</small>
                                 {e.picks![t].label}
                               </span>
-                              <span
-                                className={`outcome ${e.score.outcomes[t]}`}
-                              >
+                              <span className={`outcome ${e.score.outcomes[t]}`}>
                                 {e.score.outcomes[t]}
                               </span>
                             </div>
                           ))
                         ) : (
                           <p>
-                            <LockKeyhole size={16} /> Picks reveal at the weekly
-                            deadline.
+                            <LockKeyhole size={16} /> Picks reveal at the weekly deadline.
                           </p>
                         )}
                       </div>
@@ -1057,8 +1000,8 @@ export default function League() {
                 <div className="section-heading">
                   <h2>Your weekly cards</h2>
                   <span>
-                    {data.history.length}{" "}
-                    {data.history.length === 1 ? "WEEK" : "WEEKS"} PLAYED
+                    {data.history.length} {data.history.length === 1 ? "WEEK" : "WEEKS"}{" "}
+                    PLAYED
                   </span>
                 </div>
                 {data.history.length ? (
@@ -1068,11 +1011,7 @@ export default function League() {
                       .map((e) => e.id)}
                   >
                     {data.history.map((e) => (
-                      <AccordionItem
-                        className="history-card"
-                        key={e.id}
-                        value={e.id}
-                      >
+                      <AccordionItem className="history-card" key={e.id} value={e.id}>
                         <AccordionTrigger>
                           <strong>Week {e.week}</strong>
                           <span>
@@ -1090,9 +1029,7 @@ export default function League() {
                                   <small>{labels[t]}</small>
                                   {e.picks[t].label}
                                 </span>
-                                <span
-                                  className={`outcome ${e.score.outcomes[t]}`}
-                                >
+                                <span className={`outcome ${e.score.outcomes[t]}`}>
                                   {e.score.outcomes[t]}
                                 </span>
                               </div>
@@ -1102,9 +1039,7 @@ export default function League() {
                             Saved {date(e.updatedAt, true)} PT{" "}
                             {e.late ? "· Late entry (−1 point)" : ""}
                             {e.superSpread ? " · Super Spread" : ""}
-                            {e.totalHelper
-                              ? ` · Total Helper: ${e.totalHelper}`
-                              : ""}
+                            {e.totalHelper ? ` · Total Helper: ${e.totalHelper}` : ""}
                             {e.perfectPrediction ? " · Perfect Prediction" : ""}
                           </p>
                         </AccordionContent>
@@ -1115,10 +1050,7 @@ export default function League() {
                   <div className="empty-state">
                     <History size={36} />
                     <h3>Your story starts with four picks.</h3>
-                    <p>
-                      Once you submit a card, your picks and results will be
-                      here.
-                    </p>
+                    <p>Once you submit a card, your picks and results will be here.</p>
                     <CustomButton
                       variant="unstyled"
                       className="primary"
@@ -1140,17 +1072,15 @@ export default function League() {
                     <UserRound size={20} />
                   </div>
                   <p>
-                    Send friends the league link. Everyone who signs in with
-                    Google joins this league automatically.
+                    Send friends the league link. Everyone who signs in with Google joins
+                    this league automatically.
                   </p>
                   <CustomButton
                     variant="unstyled"
                     className="primary"
                     onClick={() =>
                       act(async () => {
-                        await navigator.clipboard.writeText(
-                          `${location.origin}/pick4`,
-                        );
+                        await navigator.clipboard.writeText(`${location.origin}/pick4`);
                         setNotice("League link copied.");
                       })
                     }
@@ -1163,9 +1093,7 @@ export default function League() {
                   <div className="operation-status">
                     <span className="live-dot" />
                     <strong>
-                      {w.publishedAt
-                        ? "Lines are frozen"
-                        : "Lines are in preview"}
+                      {w.publishedAt ? "Lines are frozen" : "Lines are in preview"}
                     </strong>
                   </div>
                   <p>
@@ -1176,9 +1104,7 @@ export default function League() {
                   <CustomButton
                     variant="unstyled"
                     className="primary"
-                    disabled={
-                      busy || Boolean(w.publishedAt) || tick >= w.deadline
-                    }
+                    disabled={busy || Boolean(w.publishedAt) || tick >= w.deadline}
                     onClick={() =>
                       act(async () => {
                         if (
@@ -1189,9 +1115,7 @@ export default function League() {
                           return;
                         await api("admin/publish", { week });
                         await load(week);
-                        setNotice(
-                          `Week ${week} lines published. Picks are open.`,
-                        );
+                        setNotice(`Week ${week} lines published. Picks are open.`);
                       })
                     }
                   >
@@ -1218,8 +1142,8 @@ export default function League() {
                     Export league data
                   </a>
                   <p className="source-note">
-                    Data includes all picks, frozen lines, results, and the
-                    audit log. Google credentials are never included.
+                    Data includes all picks, frozen lines, results, and the audit log.
+                    Google credentials are never included.
                   </p>
                 </section>
                 <section className="panel">
@@ -1229,8 +1153,7 @@ export default function League() {
                       <span>
                         <b>{m.name}</b>
                         <small>
-                          {m.email} ·{" "}
-                          {m.role === "admin" ? "Commissioner" : "Player"}
+                          {m.email} · {m.role === "admin" ? "Commissioner" : "Player"}
                         </small>
                       </span>
                     </div>
@@ -1239,9 +1162,9 @@ export default function League() {
                 <section className="panel">
                   <h2>Set a missing line</h2>
                   <p>
-                    Use a verified pregame line when the feed is unavailable.
-                    Home spread is negative when the home team is favored.
-                    Published lines cannot be changed.
+                    Use a verified pregame line when the feed is unavailable. Home spread
+                    is negative when the home team is favored. Published lines cannot be
+                    changed.
                   </p>
                   <form
                     onSubmit={(e) => {
@@ -1256,9 +1179,7 @@ export default function League() {
                               ? null
                               : Number(form.get("homeSpread")),
                           total:
-                            form.get("total") === ""
-                              ? null
-                              : Number(form.get("total")),
+                            form.get("total") === "" ? null : Number(form.get("total")),
                           reason: form.get("reason"),
                         });
                         await load(week);
@@ -1321,9 +1242,7 @@ export default function League() {
                     <CustomButton
                       variant="unstyled"
                       className="secondary"
-                      disabled={
-                        busy || Boolean(w.publishedAt) || tick >= w.deadline
-                      }
+                      disabled={busy || Boolean(w.publishedAt) || tick >= w.deadline}
                     >
                       Save pregame line
                     </CustomButton>
@@ -1332,8 +1251,8 @@ export default function League() {
                 <section className="panel">
                   <h2>Correct a result</h2>
                   <p>
-                    Use only for a confirmed scoring error. Corrections are
-                    recorded and standings recalculate automatically.
+                    Use only for a confirmed scoring error. Corrections are recorded and
+                    standings recalculate automatically.
                   </p>
                   <form
                     onSubmit={(e) => {
@@ -1478,11 +1397,7 @@ export default function League() {
                   required
                 />
               </label>
-              <CustomButton
-                variant="unstyled"
-                className="primary"
-                disabled={busy}
-              >
+              <CustomButton variant="unstyled" className="primary" disabled={busy}>
                 Save display name
               </CustomButton>
             </form>
@@ -1503,9 +1418,8 @@ function Rules() {
           Four ways to call it.
         </h2>
         <p>
-          Each week, choose exactly one favorite against the spread, one
-          underdog against the spread, one over, and one under. Every pick must
-          be from a different game.
+          Each week, choose exactly one favorite against the spread, one underdog against
+          the spread, one over, and one under. Every pick must be from a different game.
         </p>
         <div className="scoring-strip">
           <span>
@@ -1522,78 +1436,77 @@ function Rules() {
       <section className="panel">
         <h2>The clock matters.</h2>
         <p>
-          DraftKings lines freeze on Wednesday at 9 AM Pacific, or earlier if
-          the commissioner publishes them. Everyone uses those same lines.
+          DraftKings lines freeze on Wednesday at 9 AM Pacific, or earlier if the
+          commissioner publishes them. Everyone uses those same lines.
         </p>
         <p>
           The weekly deadline is the first scheduled kickoff. In Week 1, that is
-          Wednesday, September 9 at 5:20 PM Pacific. You can edit your submitted
-          card until that deadline.
+          Wednesday, September 9 at 5:20 PM Pacific. You can edit your submitted card
+          until that deadline.
         </p>
         <p>
-          Missed it? You may submit one late card using four games that have not
-          started. Late cards lose one point (minimum zero), cannot use
-          powerups, and lock immediately.
+          Missed it? You may submit one late card using four games that have not started.
+          Late cards lose one point (minimum zero), cannot use powerups, and lock
+          immediately.
         </p>
         <p>
-          Games with unconfirmed kickoff times or unavailable lines cannot be
-          selected. Opponents’ cards reveal at the weekly deadline.
+          Games with unconfirmed kickoff times or unavailable lines cannot be selected.
+          Opponents’ cards reveal at the weekly deadline.
         </p>
       </section>
       <section className="panel">
         <Zap className="rule-icon" />
         <h2>Super Spread</h2>
         <p>
-          Once per season, take a favorite of −5 or greater and double the
-          spread. A −6 favorite must cover −12.
+          Once per season, take a favorite of −5 or greater and double the spread. A −6
+          favorite must cover −12.
         </p>
         <p>
-          Beat the doubled line for 2.5 points. Push it for 1 point. Miss it for
-          0. The ordinary perfect-week bonus does not apply when Super Spread is
-          active.
+          Beat the doubled line for 2.5 points. Push it for 1 point. Miss it for 0. The
+          ordinary perfect-week bonus does not apply when Super Spread is active.
         </p>
       </section>
       <section className="panel">
         <Target className="rule-icon" />
         <h2>Total Helper</h2>
         <p>
-          Once per season, give your over or under a five-point advantage. Over
-          45 becomes over 40; under 45 becomes under 50.
+          Once per season, give your over or under a five-point advantage. Over 45 becomes
+          over 40; under 45 becomes under 50.
         </p>
         <p>
-          Choose one total to help. It scores normally and can still contribute
-          to a perfect week.
+          Choose one total to help. It scores normally and can still contribute to a
+          perfect week.
         </p>
       </section>
       <section className="panel">
         <Sparkles className="rule-icon" />
         <h2>Perfect Prediction</h2>
         <p>
-          Once per season, call your shot. If all four picks win, your card
-          scores 8 points instead of the usual 5.
+          Once per season, call your shot. If all four picks win, your card scores 8
+          points instead of the usual 5.
         </p>
         <p>
-          Otherwise, normal scoring applies. You can combine powerups. If
-          combined with Super Spread, the favorite must beat the doubled spread;
-          a perfect card totals 8 points.
+          Otherwise, normal scoring applies. You can combine powerups. If combined with
+          Super Spread, the favorite must beat the doubled spread; a perfect card totals 8
+          points.
         </p>
       </section>
       <section className="panel">
         <Trophy className="rule-icon" />
         <h2>The standings</h2>
         <p>
-          Season points come first, followed by perfect weeks and winning picks.
-          Matching records share a rank.
+          Season points come first, followed by perfect weeks and winning picks. Matching
+          records share a rank.
         </p>
         <p>
-          Only final scores settle picks. Pushes earn half a point and do not
-          count as wins. A canceled game is void and earns half a point; it
-          cannot complete a perfect week. Postponed games remain pending.
+          Only final scores settle picks. Pushes earn half a point and do not count as
+          wins. A canceled game is void and earns half a point; it cannot complete a
+          perfect week. Postponed games remain pending.
         </p>
         <p>
           Results refresh automatically. Commissioner corrections are logged and
-          recalculate the standings. Powerups can be changed before the weekly
-          deadline; each is available once during the season.
+          recalculate the standings. Powerups can be changed before the weekly deadline;
+          each is available once during the season.
         </p>
       </section>
     </div>

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "fill-height-spinner",
+  "title": "Fill Height Spinner",
+  "description": "A loading layout that fills the available parent height around the shared Spinner. Use it inside panels and bounded content areas so loading stays centered in the region being replaced rather than covering the whole page.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/spinner.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/fill-height-spinner/FillHeightSpinner.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport type { SpinnerProps } from \"@/registry/new-york/spinner/Spinner\";\nimport { Spinner } from \"@/registry/new-york/spinner/Spinner\";\n\nexport interface FillHeightSpinnerProps extends SpinnerProps {\n  /**\n   * Optional className for the wrapper div\n   */\n  wrapperClassName?: string;\n}\n\nexport const FillHeightSpinner: ReactFC<FillHeightSpinnerProps> = ({\n  size = \"xl\",\n  wrapperClassName,\n  ...props\n}) => (\n  <div\n    className={cn(\n      \"flex w-full flex-1 items-center justify-center\",\n      wrapperClassName\n    )}\n  >\n    <Spinner size={size} {...props} />\n  </div>\n);\n",
+      "type": "registry:component",
+      "target": "components/FillHeightSpinner.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

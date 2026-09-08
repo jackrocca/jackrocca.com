@@ -23,8 +23,7 @@ export function view(
             wins: entries.reduce((s, e) => s + e.score.wins, 0),
             perfect: entries.filter((e) => e.score.perfect).length,
             played: entries.length,
-            weekPoints:
-              entries.find((e) => e.week === weekNumber)?.score.points ?? 0,
+            weekPoints: entries.find((e) => e.week === weekNumber)?.score.points ?? 0,
             submitted: entries.some((e) => e.week === weekNumber),
           };
         })
@@ -73,9 +72,7 @@ export function view(
           })
       : [],
     history: user
-      ? scores
-          .filter((e) => e.userId === user.id)
-          .sort((a, b) => b.week - a.week)
+      ? scores.filter((e) => e.userId === user.id).sort((a, b) => b.week - a.week)
       : [],
     admin:
       user?.role === "admin"

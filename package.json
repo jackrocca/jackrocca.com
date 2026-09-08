@@ -1,14 +1,22 @@
 {
-  "name": "fantasy-football-pickem",
+  "name": "jack-rocca-web",
   "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "sync:schedule": "tsx scripts/sync-schedule.ts"
+    "sync:schedule": "tsx scripts/sync-schedule.ts",
+    "test:api": "tsx scripts/check-api.ts",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "ui:snapshot": "node scripts/snapshot-kitze.mjs",
+    "ui:verify": "node scripts/verify-ui.mjs",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check": "npm run format:check && npm run ui:verify && npm run check:boundaries && npm run typecheck && npm test && npm run test:api && npm run build",
+    "ui:prepare": "node scripts/prepare-ui.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

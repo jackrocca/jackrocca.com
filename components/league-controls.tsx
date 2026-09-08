@@ -8,8 +8,8 @@ import {
   type ReactElement,
   type SelectHTMLAttributes,
 } from "react";
-import { SimpleSelect } from "@/components/SimpleSelect";
-import { ConfirmAlert } from "@/components/ConfirmAlert";
+import { SimpleSelect } from "@/ui/components/SimpleSelect";
+import { ConfirmAlert } from "@/ui/components/ConfirmAlert";
 
 // Adapt form values to Kitze's select while keeping the league's existing FormData contract.
 export function LeagueSelect({
@@ -47,16 +47,10 @@ export function LeagueSelect({
     value === undefined ? local || (options[0]?.value ?? "") : String(value);
   const label =
     props["aria-label"] ??
-    (name === "gameId"
-      ? "Matchup"
-      : name === "state"
-        ? "Result"
-        : "Choose an option");
+    (name === "gameId" ? "Matchup" : name === "state" ? "Result" : "Choose an option");
   return (
     <span className="league-select">
-      {name && (
-        <input type="hidden" name={name} value={selected} disabled={disabled} />
-      )}
+      {name && <input type="hidden" name={name} value={selected} disabled={disabled} />}
       <SimpleSelect
         id={props.id ?? id}
         aria-label={label}

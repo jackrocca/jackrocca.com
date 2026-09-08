@@ -18,10 +18,7 @@ async function main() {
   if (games.length !== 272 || new Set(games.map((g) => g.id)).size !== 272)
     throw new Error("Expected 272 unique regular-season games.");
   await mkdir("data", { recursive: true });
-  await writeFile(
-    "data/schedule-2026.json",
-    JSON.stringify(weeks, null, 2) + "\n",
-  );
+  await writeFile("data/schedule-2026.json", JSON.stringify(weeks, null, 2) + "\n");
 }
 main().catch((e) => {
   console.error(e);

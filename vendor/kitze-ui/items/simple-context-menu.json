@@ -1,0 +1,44 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "simple-context-menu",
+  "title": "Simple Context Menu",
+  "description": "A right-click menu wrapper with optional long-press bottom-drawer behavior on mobile. Supply the trigger content and shared CommonMenuItem components from simple-dropdown-menu so actions behave the same in context menus, dropdowns and drawers. It saves repeating trigger, portal and mobile gesture wiring; use context-menu directly when you need a custom primitive structure.",
+  "dependencies": [
+    "use-long-press",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/context-menu.json",
+    "https://ui.kitze.io/r/dropdown-menu.json",
+    "https://ui.kitze.io/r/tooltip.json",
+    "https://ui.kitze.io/r/bottom-drawer.json",
+    "https://ui.kitze.io/r/menu-context.json",
+    "https://ui.kitze.io/r/kitze-ui-context.json"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/useControlledOpen.ts",
+      "content": "import { useState } from \"react\";\n\ninterface UseControlledOpenProps {\n  open?: boolean | undefined;\n  onOpenChange?: ((open: boolean) => void) | undefined;\n}\n\ninterface UseControlledOpenResult {\n  isOpen: boolean;\n  setIsOpen: (open: boolean) => void;\n  close: () => void;\n}\n\nexport const useControlledOpen = ({\n  open,\n  onOpenChange,\n}: UseControlledOpenProps): UseControlledOpenResult => {\n  const [internalOpen, setInternalOpen] = useState(false);\n\n  // Determine if the component is controlled or uncontrolled\n  const isControlled = open !== undefined;\n  const isOpen = isControlled ? open : internalOpen;\n\n  const setIsOpen = (newOpen: boolean) => {\n    if (!isControlled) {\n      setInternalOpen(newOpen);\n    }\n    if (onOpenChange) {\n      onOpenChange(newOpen);\n    }\n  };\n\n  const close = () => setIsOpen(false);\n\n  return { close, isOpen, setIsOpen };\n};\n",
+      "type": "registry:hook",
+      "target": "hooks/useControlledOpen.ts"
+    },
+    {
+      "path": "registry/hooks/useLinkableComponent.ts",
+      "content": "\"use client\";\n\nimport Link from \"next/link\";\nimport * as React from \"react\";\n\nexport interface LinkableProps {\n  href?: string | undefined;\n  external?: boolean | undefined;\n  target?: string | undefined;\n  rel?: string | undefined;\n  as?: React.ElementType | undefined;\n}\nexport const useLinkableComponent = <T extends LinkableProps>({\n  href,\n  external,\n  as = \"div\",\n  ...rest\n}: T) => {\n  const isExternal =\n    external ??\n    (href?.startsWith(\"http\") ||\n      href?.startsWith(\"mailto:\") ||\n      href?.startsWith(\"tel:\"));\n  if (href) {\n    if (isExternal) {\n      return {\n        Component: \"a\" as const,\n        href,\n        linkProps: {\n          rel: \"noopener noreferrer\",\n          target: \"_blank\",\n          ...rest,\n        },\n      };\n    }\n    return {\n      Component: Link,\n      href,\n      linkProps: {\n        ...rest,\n      },\n    };\n  }\n  return {\n    Component: as,\n    href,\n    linkProps: {\n      ...rest,\n    },\n  };\n};\n",
+      "type": "registry:hook",
+      "target": "hooks/useLinkableComponent.ts"
+    },
+    {
+      "path": "registry/new-york/simple-context-menu/SimpleContextMenu.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\nimport { useLongPress } from \"use-long-press\";\n\nimport {\n  ContextMenu,\n  ContextMenuContent,\n  ContextMenuTrigger,\n} from \"@/components/ui/context-menu\";\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport { useControlledOpen } from \"@/registry/hooks/useControlledOpen\";\nimport { BottomDrawerMenu } from \"@/registry/new-york/bottom-drawer/BottomDrawerMenu\";\nimport { useKitzeUI } from \"@/registry/new-york/kitze-ui-context/KitzeUIContext\";\nimport { MenuProvider } from \"@/registry/new-york/menu-context/MenuContext\";\n\n// Define MobileViewType for ContextMenu\nexport type ContextMenuMobileViewType = \"keep\" | \"bottom-drawer\";\nexport interface SimpleContextMenuClassNames {\n  content?: string | undefined;\n  drawerContent?: string | undefined;\n}\nexport interface SimpleContextMenuProps {\n  // The element that triggers the menu\n  children: React.ReactNode;\n  // The menu content\n  content: React.ReactNode;\n  classNames?: SimpleContextMenuClassNames | undefined;\n  closeOnClick?: boolean | undefined;\n  open?: boolean | undefined;\n  onOpenChange?: ((open: boolean) => void) | undefined;\n  // Mobile specific props\n  mobileView?: ContextMenuMobileViewType | undefined;\n  drawerTitle?: string | undefined;\n}\nexport const SimpleContextMenu: ReactFC<SimpleContextMenuProps> = ({\n  children,\n  content,\n  classNames,\n  closeOnClick = true,\n  open,\n  onOpenChange,\n  mobileView = \"keep\",\n  drawerTitle,\n}) => {\n  const { isMobile } = useKitzeUI();\n  const { isOpen, setIsOpen, close } = useControlledOpen({\n    onOpenChange,\n    open,\n  });\n\n  // Function to close the menu when clicking on menu items\n  const closeMenu = () => {\n    if (closeOnClick) {\n      // Close controlled state\n      close();\n    }\n  };\n\n  // Long press binding for mobile drawer trigger\n  const bind = useLongPress(\n    () => {\n      // Only open drawer if mobileView is set and we're on mobile\n      if (isMobile && mobileView === \"bottom-drawer\") {\n        setIsOpen(true);\n      }\n    },\n    {\n      cancelOnMovement: false,\n      // Prevent default context menu on mobile long press\n      captureEvent: true,\n      // Only detect long press on mobile when drawer is the intended view\n      filterEvents: () => isMobile && mobileView === \"bottom-drawer\",\n      threshold: 500,\n    }\n  );\n\n  // --- Mobile Rendering (Bottom Drawer via Long Press) ---\n  if (isMobile && mobileView === \"bottom-drawer\") {\n    return (\n      <>\n        {/* Bind long press to the children wrapper */}\n        <div className=\"select-none\" {...bind()}>\n          {children}\n        </div>\n        {/* Drawer renders separately and is controlled by isOpen state */}\n        <BottomDrawerMenu\n          open={isOpen}\n          onOpenChange={setIsOpen}\n          title={drawerTitle}\n          closeOnClick={closeOnClick}\n          content={content}\n          classNames={{ content: classNames?.drawerContent }}\n        >\n          {/* Trigger is handled by the long press bind, no visual trigger needed here */}\n          {null}\n        </BottomDrawerMenu>\n      </>\n    );\n  }\n\n  // --- Default Context Menu Rendering (Desktop or mobileView='keep') ---\n  return (\n    <MenuProvider menuType=\"context\" closeMenu={closeMenu} open={isOpen}>\n      <ContextMenu open={isOpen} onOpenChange={setIsOpen}>\n        <ContextMenuTrigger\n          render={\n            <div className=\"select-none\" {...bind()}>\n              {children}\n            </div>\n          }\n        />\n        <ContextMenuContent className={cn(classNames?.content, \"select-none\")}>\n          {content}\n        </ContextMenuContent>\n      </ContextMenu>\n    </MenuProvider>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/SimpleContextMenu.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

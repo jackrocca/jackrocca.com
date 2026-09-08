@@ -20,9 +20,7 @@ export class AppError extends Error {
 export const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
 export function deadline(week: Week) {
   return Math.min(
-    ...week.games
-      .filter((g) => g.state !== "canceled")
-      .map((g) => Date.parse(g.kickoff)),
+    ...week.games.filter((g) => g.state !== "canceled").map((g) => Date.parse(g.kickoff)),
   );
 }
 export function freezeTime(week: Week) {
@@ -34,11 +32,8 @@ export function freezeTime(week: Week) {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(start);
-  const part = (key: string) =>
-    Number(parts.find((p) => p.type === key)?.value);
-  const day = new Date(
-    Date.UTC(part("year"), part("month") - 1, part("day"), 12),
-  );
+  const part = (key: string) => Number(parts.find((p) => p.type === key)?.value);
+  const day = new Date(Date.UTC(part("year"), part("month") - 1, part("day"), 12));
   day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 4) % 7));
   const offsetName = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
@@ -55,16 +50,13 @@ export function currentWeek(weeks: Week[], now = Date.now()) {
     weeks.find(
       (w) =>
         now <
-        Math.max(...w.games.map((g) => Date.parse(g.kickoff))) +
-          30 * 60 * 60 * 1000,
+        Math.max(...w.games.map((g) => Date.parse(g.kickoff))) + 30 * 60 * 60 * 1000,
     )?.number ?? 18
   );
 }
 export function gameOpen(game: Game, now = Date.now()) {
   return (
-    game.timeConfirmed &&
-    game.state === "scheduled" &&
-    Date.parse(game.kickoff) > now
+    game.timeConfirmed && game.state === "scheduled" && Date.parse(game.kickoff) > now
   );
 }
 export function selection(week: Week, type: PickType, id: string) {
@@ -105,8 +97,7 @@ export function saveEntry(
     (e) => e.userId === userId && e.week === input.week && e.season === SEASON,
   );
   const late = now >= deadline(week);
-  if (old && late)
-    throw new AppError("Your submitted picks are locked for the week.");
+  if (old && late) throw new AppError("Your submitted picks are locked for the week.");
   if ((old?.revision ?? 0) !== input.revision)
     throw new AppError(
       "Your picks changed in another tab. Refresh before saving again.",
@@ -121,19 +112,12 @@ export function saveEntry(
         "A selected game has started or is unavailable. Choose another game.",
       );
   }
-  if (
-    late &&
-    (input.superSpread || input.totalHelper || input.perfectPrediction)
-  )
+  if (late && (input.superSpread || input.totalHelper || input.perfectPrediction))
     throw new AppError("Late entries cannot use powerups.");
   const other = state.entries.filter(
     (e) => e.userId === userId && e.season === SEASON && e.week !== input.week,
   );
-  for (const power of [
-    "superSpread",
-    "totalHelper",
-    "perfectPrediction",
-  ] as const)
+  for (const power of ["superSpread", "totalHelper", "perfectPrediction"] as const)
     if (input[power] && other.some((e) => e[power]))
       throw new AppError("That powerup has already been used this season.");
   const picks = Object.fromEntries(
@@ -192,20 +176,13 @@ export function scoreEntry(entry: Entry, games: Game[]): Score {
           ? pick.line * 2
           : pick.line;
       margin =
-        (isHome
-          ? game.homeScore - game.awayScore
-          : game.awayScore - game.homeScore) + line;
+        (isHome ? game.homeScore - game.awayScore : game.awayScore - game.homeScore) +
+        line;
     } else {
       const adjusted =
         pick.line +
-        (entry.totalHelper === type && !entry.late
-          ? type === "over"
-            ? -5
-            : 5
-          : 0);
-      margin =
-        (game.homeScore + game.awayScore - adjusted) *
-        (type === "over" ? 1 : -1);
+        (entry.totalHelper === type && !entry.late ? (type === "over" ? -5 : 5) : 0);
+      margin = (game.homeScore + game.awayScore - adjusted) * (type === "over" ? 1 : -1);
     }
     outcomes[type] = margin > 0 ? "win" : margin === 0 ? "push" : "loss";
     const superPick = type === "favorite" && entry.superSpread && !entry.late;
@@ -224,8 +201,7 @@ export function scoreEntry(entry: Entry, games: Game[]): Score {
   return { points, wins, perfect, complete, outcomes };
 }
 export function publishWeek(week: Week, now = Date.now()) {
-  if (week.publishedAt)
-    throw new AppError("This week’s lines are already frozen.", 409);
+  if (week.publishedAt) throw new AppError("This week’s lines are already frozen.", 409);
   if (now >= deadline(week))
     throw new AppError("Cannot publish new lines after the opening kickoff.");
   const eligible = week.games.filter(

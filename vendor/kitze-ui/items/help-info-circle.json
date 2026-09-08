@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "help-info-circle",
+  "title": "Help Info Circle",
+  "description": "A compact help icon connected to the shared tooltip/drawer explanation pattern. Use it beside a field or menu action when a label needs an optional explanation, so every screen does not invent its own help trigger and touch behavior.",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/simple-tooltip.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/help-info-circle/HelpInfoCircle.tsx",
+      "content": "import { HelpCircle } from \"lucide-react\";\nimport React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport type { TooltipMobileViewType } from \"@/registry/new-york/simple-tooltip/SimpleTooltip\";\nimport { SimpleTooltip } from \"@/registry/new-york/simple-tooltip/SimpleTooltip\";\n\nexport interface HelpInfoCircleProps {\n  content: React.ReactNode;\n  className?: string;\n  iconClassName?: string;\n  tooltipClassName?: string;\n  drawerTitle?: string;\n  mobileView?: TooltipMobileViewType;\n}\n\nexport const HelpInfoCircle: ReactFC<HelpInfoCircleProps> = ({\n  content,\n  className,\n  iconClassName,\n  tooltipClassName,\n  drawerTitle = \"Help Information\",\n  mobileView = \"bottom-drawer\",\n}) => (\n  <SimpleTooltip\n    content={content}\n    tooltipClassName={tooltipClassName}\n    drawerTitle={drawerTitle}\n    className={className}\n    mobileView={mobileView}\n  >\n    <span className={cn(\"inline-flex cursor-pointer\")}>\n      <HelpCircle\n        className={cn(\n          \"text-muted-foreground hover:text-foreground h-4 w-4 transition-colors\",\n          iconClassName\n        )}\n      />\n    </span>\n  </SimpleTooltip>\n);\n",
+      "type": "registry:component",
+      "target": "components/HelpInfoCircle.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

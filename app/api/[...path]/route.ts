@@ -1,20 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { readState, mutate, audit, rateLimit } from "@/lib/store";
-import {
-  session,
-  requireUser,
-  requireAdmin,
-  sameOrigin,
-  safeSecret,
-} from "@/lib/auth";
-import {
-  AppError,
-  currentWeek,
-  publishWeek,
-  saveEntry,
-  deadline,
-} from "@/lib/rules";
+import { session, requireUser, requireAdmin, sameOrigin, safeSecret } from "@/lib/auth";
+import { AppError, currentWeek, publishWeek, saveEntry, deadline } from "@/lib/rules";
 import { syncWeeks } from "@/lib/sync";
 import { view } from "@/lib/view";
 import { startGoogle, finishGoogle, googleConfigured } from "@/lib/google-auth";
@@ -79,9 +67,7 @@ export async function GET(
       if (
         !safeSecret(
           req.headers.get("authorization") ?? "",
-          process.env.CRON_SECRET
-            ? `Bearer ${process.env.CRON_SECRET}`
-            : undefined,
+          process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : undefined,
         )
       )
         throw new AppError("Unauthorized.", 401);
@@ -108,9 +94,8 @@ export async function GET(
         configured: googleConfigured(),
         authentication: "google",
         currentWeek: currentWeek(state.weeks),
-        updatedAt: state.weeks.find(
-          (w) => w.number === currentWeek(state.weeks),
-        )?.fetchedAt,
+        updatedAt: state.weeks.find((w) => w.number === currentWeek(state.weeks))
+          ?.fetchedAt,
       });
     if (route === "state") {
       const week = weekSchema.parse(
@@ -141,8 +126,7 @@ export async function GET(
         {
           headers: {
             "Content-Type": "application/json",
-            "Content-Disposition":
-              'attachment; filename="pick4-2026-export.json"',
+            "Content-Disposition": 'attachment; filename="pick4-2026-export.json"',
             "Cache-Control": "no-store",
           },
         },
@@ -163,14 +147,9 @@ export async function POST(
     const { state } = await readState();
     const user = await session(req, state);
     if (
-      [
-        "login",
-        "join",
-        "setup",
-        "password",
-        "admin/invite",
-        "admin/revoke",
-      ].includes(route)
+      ["login", "join", "setup", "password", "admin/invite", "admin/revoke"].includes(
+        route,
+      )
     )
       throw new AppError("Use Google sign-in to join the league.", 410);
     if (route === "logout") {

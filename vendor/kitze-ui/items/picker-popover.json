@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "picker-popover",
+  "title": "Picker Popover",
+  "description": "The shared popover-on-desktop and bottom-drawer-on-mobile container for picker controls. Use it when building another picker that should follow the same responsive opening and closing behavior, instead of duplicating overlay and trigger wiring.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/simple-popover.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/picker-popover/PickerPopover.tsx",
+      "content": "\"use client\";\n\nimport type { ReactNode } from \"react\";\nimport { useState } from \"react\";\n\nimport { SimplePopover } from \"@/registry/new-york/simple-popover/index\";\n\nexport interface PickerPopoverProps {\n  label: string;\n  trigger?: ReactNode;\n  disabled?: boolean | undefined;\n  children: (close: () => void) => ReactNode;\n}\nexport const PickerPopover = ({\n  label,\n  trigger,\n  disabled,\n  children,\n}: PickerPopoverProps) => {\n  const [open, setOpen] = useState(false);\n  const handleOpenChange = (next: boolean) => setOpen(next && !disabled);\n  return (\n    <SimplePopover\n      trigger={trigger}\n      open={open && !disabled}\n      onOpenChange={handleOpenChange}\n      align=\"start\"\n      mobileView=\"bottom-drawer\"\n      drawerTitle={label}\n      classNames={{\n        content:\n          \"max-h-[var(--available-height)] w-[352px] max-w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto overscroll-contain rounded-2xl p-0 shadow-none\",\n      }}\n      drawerProps={{\n        classNames: {\n          childrenWrapper:\n            \"px-3 [--picker-surface:white] dark:[--picker-surface:var(--color-zinc-900)]\",\n          content: \"w-[calc(100%-2rem)] max-w-[400px] rounded-t-2xl\",\n        },\n      }}\n      content={\n        <div\n          aria-label={label}\n          className=\"[&_.EmojiPickerReact_*]:font-[inherit] [&_button]:cursor-pointer\"\n        >\n          {children(() => setOpen(false))}\n        </div>\n      }\n    />\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/PickerPopover.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "picked-icon",
+  "title": "Picked Icon",
+  "description": "Render a saved IconValue independently of the picker, applying its foreground, background and frame. Only the named icon is loaded; trusted preloaded iconData supports immediate or offline rendering. Use it on normal pages so displaying one saved icon does not import picker UI or a search catalog.",
+  "dependencies": [
+    "@iconify/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/picked-icon/PickedIcon.tsx",
+      "content": "\"use client\";\n\nimport type { IconifyIcon } from \"@iconify/react\";\nimport type { CSSProperties } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport type { IconValue } from \"@/registry/new-york/picked-icon/icon-types\";\nimport { IconGlyph } from \"@/registry/new-york/picked-icon/IconGlyph\";\n\nexport interface PickedIconProps {\n  value: IconValue;\n  size?: number;\n  label?: string | undefined;\n  className?: string;\n  /** Supply preloaded SVG data for SSR or offline rendering. No API request is made. */\n  iconData?: IconifyIcon;\n}\nconst frames = { circle: \"50%\", rounded: \"22%\", square: \"0\", squircle: \"50%\" };\nexport const PickedIcon = ({\n  value,\n  size = 36,\n  label,\n  className,\n  iconData,\n}: PickedIconProps) => {\n  const style: CSSProperties = {\n    backgroundColor: value.background,\n    borderRadius: frames[value.frame ?? \"rounded\"],\n    color: value.color ?? \"currentColor\",\n    height: size,\n    width: size,\n  };\n  return (\n    <span\n      role={label ? \"img\" : undefined}\n      aria-label={label}\n      aria-hidden={label ? undefined : true}\n      className={cn(\n        \"inline-flex shrink-0 items-center justify-center align-middle\",\n        value.frame === \"squircle\" && \"[corner-shape:squircle]\",\n        className\n      )}\n      style={style}\n    >\n      <span className=\"flex size-[60%] items-center justify-center\">\n        <IconGlyph name={value.name} data={iconData} />\n      </span>\n    </span>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/PickedIcon.tsx"
+    },
+    {
+      "path": "registry/new-york/picked-icon/IconGlyph.tsx",
+      "content": "\"use client\";\n\nimport { Icon, loadIcon } from \"@iconify/react\";\nimport type { IconifyIcon } from \"@iconify/react\";\nimport { useEffect, useState } from \"react\";\n\nexport const IconGlyph = ({\n  name,\n  data,\n}: {\n  name: string;\n  data?: IconifyIcon | undefined;\n}) => {\n  const [loaded, setLoaded] = useState<{\n    name: string;\n    data: IconifyIcon | null;\n  }>();\n  useEffect(() => {\n    if (data) {\n      return;\n    }\n    let active = true;\n    const load = async () => {\n      try {\n        const icon = await loadIcon(name);\n        if (active) {\n          setLoaded({ data: icon, name });\n        }\n      } catch {\n        if (active) {\n          setLoaded({ data: null, name });\n        }\n      }\n    };\n    void load();\n    return () => {\n      active = false;\n    };\n  }, [name, data]);\n  const icon = data ?? (loaded?.name === name ? loaded.data : undefined);\n  if (icon === null) {\n    return (\n      <span title=\"Icon unavailable\" aria-hidden=\"true\">\n        ?\n      </span>\n    );\n  }\n  if (!icon) {\n    return (\n      <span\n        className=\"size-3 rounded-full bg-current opacity-20\"\n        aria-hidden=\"true\"\n      />\n    );\n  }\n  return <Icon ssr icon={icon} width=\"100%\" height=\"100%\" aria-hidden=\"true\" />;\n};\n",
+      "type": "registry:component",
+      "target": "components/IconGlyph.tsx"
+    },
+    {
+      "path": "registry/new-york/picked-icon/icon-types.ts",
+      "content": "export type IconFrame = \"circle\" | \"square\" | \"rounded\" | \"squircle\";\nexport interface IconValue {\n  name: string;\n  color?: string;\n  background?: string;\n  frame?: IconFrame;\n}\nexport type IconColorMode =\n  | \"none\"\n  | \"foreground\"\n  | \"background\"\n  | \"both\"\n  | \"paired\";\nexport interface IconColorPreset {\n  label: string;\n  color: string;\n  background: string;\n}\nexport const iconColorPresets: IconColorPreset[] = [\n  { background: \"#e2e8f0\", color: \"#475569\", label: \"Slate\" },\n  { background: \"#fee2e2\", color: \"#dc2626\", label: \"Red\" },\n  { background: \"#ffedd5\", color: \"#ea580c\", label: \"Orange\" },\n  { background: \"#fef3c7\", color: \"#b45309\", label: \"Amber\" },\n  { background: \"#dcfce7\", color: \"#15803d\", label: \"Green\" },\n  { background: \"#ccfbf1\", color: \"#0f766e\", label: \"Teal\" },\n  { background: \"#dbeafe\", color: \"#2563eb\", label: \"Blue\" },\n  { background: \"#ede9fe\", color: \"#7c3aed\", label: \"Violet\" },\n  { background: \"#fce7f3\", color: \"#db2777\", label: \"Pink\" },\n  { background: \"#f1f5f9\", color: \"#334155\", label: \"Steel\" },\n  { background: \"#f5f5f4\", color: \"#57534e\", label: \"Stone\" },\n  { background: \"#ffe4e6\", color: \"#be123c\", label: \"Rose\" },\n  { background: \"#fae8ff\", color: \"#a21caf\", label: \"Fuchsia\" },\n  { background: \"#f3e8ff\", color: \"#9333ea\", label: \"Purple\" },\n  { background: \"#e0e7ff\", color: \"#4338ca\", label: \"Indigo\" },\n  { background: \"#e0f2fe\", color: \"#0369a1\", label: \"Sky\" },\n  { background: \"#cffafe\", color: \"#0e7490\", label: \"Cyan\" },\n  { background: \"#d1fae5\", color: \"#047857\", label: \"Emerald\" },\n  { background: \"#ecfccb\", color: \"#4d7c0f\", label: \"Lime\" },\n  { background: \"#fef9c3\", color: \"#854d0e\", label: \"Yellow\" },\n];\n",
+      "type": "registry:component",
+      "target": "components/icon-types.ts"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

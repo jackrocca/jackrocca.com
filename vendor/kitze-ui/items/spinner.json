@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "spinner",
+  "title": "Spinner",
+  "description": "The shared loading indicator with size and appearance variants. Use it in buttons and pending content so loading visuals remain consistent across the application instead of choosing a different animated icon in every component.",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/spinner/Spinner.tsx",
+      "content": "\"use client\";\n\nimport {\n  LucideLoader,\n  LucideLoaderCircle,\n  LucideLoaderPinwheel,\n} from \"lucide-react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\n\nconst variants = {\n  circle: LucideLoaderCircle,\n  default: LucideLoader,\n  pinwheel: LucideLoaderPinwheel,\n} as const;\n\nconst sizes = {\n  lg: \"w-6 h-6\",\n  md: \"w-5 h-5\",\n  sm: \"w-4 h-4\",\n  xl: \"w-8 h-8\",\n  xs: \"w-3 h-3\",\n} as const;\n\nexport interface SpinnerProps {\n  /**\n   * The variant of the spinner\n   * @default \"default\"\n   */\n  variant?: keyof typeof variants;\n\n  /**\n   * The size of the spinner\n   * @default \"md\"\n   */\n  size?: keyof typeof sizes;\n\n  /**\n   * Optional className for the spinner\n   */\n  className?: string;\n}\n\nexport const Spinner: ReactFC<SpinnerProps> = ({\n  variant = \"default\",\n  size = \"md\",\n  className = \"\",\n}) => {\n  const SpinnerIcon = variants[variant] || variants.default;\n  const foundSize = sizes[size] || sizes.md;\n\n  return (\n    <SpinnerIcon\n      className={cn(\"text-foreground/50 animate-spin\", foundSize, className)}\n    />\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/Spinner.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

@@ -1,6 +1,6 @@
 # Jack Rocca — personal site and Pick 4
 
-Jack Rocca’s single NFL pick’em league with Google sign-in, rebuilt for Vercel using Next.js, React, TypeScript, and private Vercel Blob storage. The original Streamlit application and historical CSV files remain in the repository for reference; the new app starts a fresh 2026 league and does not import those accounts or results.
+Jack Rocca’s personal website: photography, Substack writing, projects, and a single 2026 NFL Pick 4 league. Built with Next.js, React, TypeScript, shared Google sign-in, a local Kitze UI source fork, and private Vercel Blob storage. The original Streamlit application and historical CSVs are archived under `legacy/`; they are not part of the current runtime.
 
 ## Run locally
 
@@ -67,9 +67,7 @@ All writes use uncached reads plus Blob `ifMatch` ETag conditional writes with b
 ## Verify
 
 ```sh
-npm test
-npm run typecheck
-npm run build
+npm run check
 npm audit --omit=dev
 ```
 
@@ -93,6 +91,6 @@ The homepage is Jack Rocca’s personal site, with `/photography`, `/writing`, `
 
 UI source is installed from [Kitze UI](https://ui.kitze.io/guide), a shadcn registry built on Base UI and Tailwind. Buttons, Google login, inputs, checkboxes, selects, segmented navigation, dialogs, mobile drawers, alerts, badges, page headers, and accordions use its components. Football cards, tables, and scoring displays compose those primitives with league-specific styling scoped to `.league-app`.
 
-Registry sources reside in `components/`, `components/ui/`, `hooks/`, and `lib/kitze-types.ts`. **Do not overwrite `lib/types.ts` when updating the registry:** it contains the league’s domain model. Redirect registry type imports to `lib/kitze-types.ts`. Local adaptations preserve structured children for unstyled buttons, expose select labels/disabled choices, keep the current selection when reselected, forward drawer trigger semantics to native buttons, and respect reduced motion. Registry provenance is recorded in `THIRD_PARTY_NOTICES.md`.
+Our UI fork lives in `ui/`, with semantic tokens in `ui/theme.css`. The complete Kitze registry (76 entries, 134 source files) is downloaded under `vendor/kitze-ui/` with an offline checksum verifier. `npm run ui:prepare -- component-name` safely stages additions with UI-specific paths and imports, isolating UI types from the league model. See [UI maintenance](ui/README.md), [contributing](CONTRIBUTING.md), [architecture](docs/architecture.md), and [operations](docs/operations.md). The local `/dev/ui` workshop returns 404 in production.
 
 This deploy uses the existing personal Vercel project. It does not attach or alter `jackrocca.com`; domain setup remains a separate step, including Google authorized origin/callback updates and `APP_URL` if the canonical origin changes.

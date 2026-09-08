@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { SiteHeader, SiteFooter } from "@/components/site-shell";
 import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { cn } from "@/ui/lib/utils";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
@@ -21,15 +21,14 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body>
         <Providers>
+          <a href="#main-content" className="skip-link">
+            Skip to content
+          </a>
           <SiteHeader />
           {children}
           <SiteFooter />

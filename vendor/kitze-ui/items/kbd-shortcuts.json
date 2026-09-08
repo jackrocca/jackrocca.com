@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd-shortcuts",
+  "title": "Keyboard Shortcuts",
+  "description": "Render shortcut keys as individual Kbd keycaps with a configurable separator and shared style overrides. Menus use this component so modifier keys, destructive colors and sizing remain consistent across dropdowns, context menus and drawers. It displays hints; your application must bind the actual shortcuts.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/kbd.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/kbd-shortcuts/MenuShortcut.tsx",
+      "content": "import { cn } from \"@/lib/utils\";\nimport { KbdShortcuts } from \"@/registry/new-york/kbd-shortcuts/KbdShortcuts\";\n\nexport const menuShortcutKeys = (shortcut: string | string[]) => {\n  if (Array.isArray(shortcut)) {\n    return shortcut;\n  }\n  return (\n    shortcut.includes(\"+\")\n      ? shortcut.split(\"+\")\n      : (shortcut.match(/[⌘⌥⇧⌃↵⌫⎋]|[^⌘⌥⇧⌃↵⌫⎋]+/gu) ?? [])\n  )\n    .map((key) => key.trim())\n    .filter(Boolean);\n};\n\nexport const MenuShortcut = ({\n  shortcut,\n  destructive,\n  className,\n}: {\n  shortcut: string | string[];\n  destructive?: boolean | undefined;\n  className?: string | undefined;\n}) => (\n  <KbdShortcuts\n    shortcuts={menuShortcutKeys(shortcut)}\n    separator={null}\n    classNames={{\n      key: \"h-6 min-w-6 justify-center border-current/20 bg-transparent px-1.5 text-sm text-current\",\n      root: cn(\n        \"ml-auto shrink-0 gap-1\",\n        destructive ? \"text-current\" : \"text-muted-foreground\",\n        className\n      ),\n    }}\n  />\n);\n",
+      "type": "registry:component",
+      "target": "components/MenuShortcut.tsx"
+    },
+    {
+      "path": "registry/new-york/kbd-shortcuts/KbdShortcuts.tsx",
+      "content": "import * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport type { KbdClassNames } from \"@/registry/new-york/kbd/Kbd\";\nimport { Kbd } from \"@/registry/new-york/kbd/Kbd\";\n\nexport interface KbdShortcutsProps {\n  shortcuts: string[];\n  separator?: string | null | undefined;\n  classNames?: KbdClassNames | undefined;\n}\nexport const KbdShortcuts: ReactFC<KbdShortcutsProps> = ({\n  shortcuts,\n  separator = \"+\",\n  classNames,\n}) => (\n  <div className={cn(\"flex items-center gap-1.5\", classNames?.root)}>\n    {shortcuts.map((shortcut: string, index: number) => (\n      <React.Fragment key={`${shortcut}-${index}`}>\n        <Kbd\n          keys={[shortcut]}\n          classNames={{\n            key: classNames?.key,\n            root: \"\",\n            separator: classNames?.separator,\n          }}\n        />\n        {separator !== null && index !== shortcuts.length - 1 && (\n          <span\n            className={cn(\n              \"text-muted-foreground text-xs\",\n              classNames?.separator\n            )}\n          >\n            {separator}\n          </span>\n        )}\n      </React.Fragment>\n    ))}\n  </div>\n);\n",
+      "type": "registry:component",
+      "target": "components/KbdShortcuts.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

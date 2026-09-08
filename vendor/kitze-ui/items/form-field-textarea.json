@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "form-field-textarea",
+  "title": "Form Field Textarea",
+  "description": "A react-hook-form adapter for the shared multiline input component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+  "dependencies": [
+    "react-hook-form"
+  ],
+  "registryDependencies": [
+    "textarea",
+    "https://ui.kitze.io/r/form-field-wrapper.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/form-field-textarea/FormFieldTextarea.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\nimport type { FieldValues, FieldPath } from \"react-hook-form\";\n\nimport { Textarea } from \"@/components/ui/textarea\";\nimport type { FormFieldWrapperProps } from \"@/registry/new-york/form-field-wrapper/FormFieldWrapper\";\nimport { FormFieldWrapper } from \"@/registry/new-york/form-field-wrapper/FormFieldWrapper\";\n\nexport interface FormFieldTextareaProps<\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n> extends Omit<FormFieldWrapperProps<TFieldValues, TName>, \"children\"> {\n  placeholder?: string;\n  rows?: number;\n  disabled?: boolean;\n}\nexport const FormFieldTextarea = <\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n>({\n  placeholder,\n  rows,\n  disabled,\n  ...wrapperProps\n}: FormFieldTextareaProps<TFieldValues, TName>) => (\n  <FormFieldWrapper<TFieldValues, TName> {...wrapperProps}>\n    {(field) => (\n      <Textarea\n        placeholder={placeholder}\n        rows={rows}\n        {...field}\n        disabled={disabled}\n      />\n    )}\n  </FormFieldWrapper>\n);\n",
+      "type": "registry:component",
+      "target": "components/FormFieldTextarea.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

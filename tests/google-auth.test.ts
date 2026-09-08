@@ -7,8 +7,7 @@ import { joinLeagueWithGoogle } from "../lib/google-account";
 import { loginResponse, session, secret } from "../lib/auth";
 import { validateGoogleFlow, finishGoogle } from "../lib/google-auth";
 import { view } from "../lib/view";
-process.env.SESSION_SECRET =
-  "test-only-session-secret-with-at-least-32-characters";
+process.env.SESSION_SECRET = "test-only-session-secret-with-at-least-32-characters";
 process.env.APP_URL = "http://localhost:3106";
 const owner = "owner@gmail.com";
 const profile = (sub = "google-player", email = "player@gmail.com") => ({
@@ -21,17 +20,11 @@ const profile = (sub = "google-player", email = "player@gmail.com") => ({
 test("first Google sign-in joins the single league as player; only owner is commissioner", () => {
   const s = initialState();
   assert.equal(
-    joinLeagueWithGoogle(
-      s,
-      { ...profile(), role: "admin", leagueId: "other" },
-      owner,
-    ).role,
+    joinLeagueWithGoogle(s, { ...profile(), role: "admin", leagueId: "other" }, owner)
+      .role,
     "player",
   );
-  assert.equal(
-    joinLeagueWithGoogle(s, profile("owner-id", owner), owner).role,
-    "admin",
-  );
+  assert.equal(joinLeagueWithGoogle(s, profile("owner-id", owner), owner).role, "admin");
   assert.equal(s.users.length, 2);
   assert.equal(s.invites.length, 0);
 });
@@ -70,8 +63,7 @@ test("different Google subjects cannot take over an existing account through ema
   );
   joinLeagueWithGoogle(s, profile("other-sub", "other@gmail.com"), owner);
   assert.throws(
-    () =>
-      joinLeagueWithGoogle(s, profile("other-sub", "player@gmail.com"), owner),
+    () => joinLeagueWithGoogle(s, profile("other-sub", "player@gmail.com"), owner),
     /different account/,
   );
   assert.equal(s.users[0].id, user.id);
@@ -79,11 +71,7 @@ test("different Google subjects cannot take over an existing account through ema
 });
 test("owner email is normalized and role changes invalidate prior sessions", () => {
   const s = initialState();
-  const user = joinLeagueWithGoogle(
-    s,
-    profile("owner-id", "Owner@gmail.com"),
-    owner,
-  );
+  const user = joinLeagueWithGoogle(s, profile("owner-id", "Owner@gmail.com"), owner);
   assert.equal(user.role, "admin");
   joinLeagueWithGoogle(s, profile("owner-id", owner), "new-owner@gmail.com");
   assert.equal(user.role, "player");
@@ -119,11 +107,7 @@ test("Google sessions are HTTP-only and version checked; legacy sessions are rej
     null,
   );
 });
-async function flow(
-  expiration = "10m",
-  issuer = "pick4-oauth",
-  returnTo = "/pick4",
-) {
+async function flow(expiration = "10m", issuer = "pick4-oauth", returnTo = "/pick4") {
   return new SignJWT({
     returnTo,
     state: "random-state",
@@ -210,10 +194,7 @@ test("OAuth return destinations allow site pages and reject external or unrecogn
 
 test("signed OAuth flow preserves the account destination on cancellation", async () => {
   const cookie = await flow("10m", "pick4-oauth", "/account");
-  assert.equal(
-    (await validateGoogleFlow(cookie, "random-state")).returnTo,
-    "/account",
-  );
+  assert.equal((await validateGoogleFlow(cookie, "random-state")).returnTo, "/account");
   const response = await finishGoogle(
     new NextRequest(
       "http://localhost:3106/api/auth/callback/google?error=access_denied&state=random-state",

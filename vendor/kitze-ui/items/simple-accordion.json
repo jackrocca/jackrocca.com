@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "simple-accordion",
+  "title": "Simple Accordion",
+  "description": "An accordion built from an items array rather than repeated item, trigger and content primitives. Use it for FAQs and expandable settings with standard layout and behavior. Choose the accordion primitive when individual items require substantially different composition.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/accordion.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/simple-accordion/SimpleAccordion.tsx",
+      "content": "import * as React from \"react\";\n\nimport {\n  Accordion,\n  AccordionContent,\n  AccordionItem,\n  AccordionTrigger,\n} from \"@/components/ui/accordion\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface AccordionItemProps {\n  title: React.ReactNode;\n  content: React.ReactNode;\n}\nexport interface AccordionClassNames {\n  root?: string;\n  item?: string;\n  button?: string;\n  title?: string;\n  icon?: string;\n  panel?: string;\n  content?: string;\n}\nexport interface AccordionProps {\n  items: AccordionItemProps[];\n  classNames?: AccordionClassNames;\n}\nexport const SimpleAccordion = ({ items, classNames }: AccordionProps) => (\n  <Accordion className={cn(\"w-full\", classNames?.root)}>\n    {items.map((item, index) => (\n      <AccordionItem\n        key={index}\n        value={`item-${index}`}\n        className={cn(\"border-b\", classNames?.item)}\n      >\n        <AccordionTrigger\n          className={cn(\n            \"flex flex-1 cursor-pointer items-center justify-between py-4 font-medium transition-colors [&[data-panel-open]>svg]:rotate-180\",\n            classNames?.button\n          )}\n        >\n          <span className={classNames?.title}>{item.title}</span>\n        </AccordionTrigger>\n        <AccordionContent className={cn(\"text-sm\", classNames?.panel)}>\n          <div className={cn(classNames?.content)}>{item.content}</div>\n        </AccordionContent>\n      </AccordionItem>\n    ))}\n  </Accordion>\n);\n",
+      "type": "registry:component",
+      "target": "components/SimpleAccordion.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

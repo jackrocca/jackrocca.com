@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "conditional-wrap",
+  "title": "Conditional Wrap",
+  "description": "Conditionally apply a wrapper function, with an optional alternative wrapper, while writing the child content once. Use it when a link, provider or layout wrapper is optional and duplicating the full child tree in a ternary would make maintenance harder.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/conditional-wrap/ConditionalWrap.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\n\nexport const ConditionalWrap: ReactFC<{\n  condition?: boolean | undefined;\n  wrap: (c: React.ReactNode) => React.ReactElement;\n  elseWrap?: ((c: React.ReactNode) => React.ReactElement) | undefined;\n}> = ({ condition, children, wrap, elseWrap }) => {\n  if (condition) {\n    return wrap(children);\n  }\n  return elseWrap ? elseWrap(children) : children;\n};\n",
+      "type": "registry:component",
+      "target": "components/ConditionalWrap.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

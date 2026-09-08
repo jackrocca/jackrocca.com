@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "with-search-bar",
+  "title": "With Search Bar",
+  "description": "Wrap a toolbar title or other content with a search trigger that reveals SearchBar in the same reserved space. It coordinates opening, closing and Escape focus restoration. Use it to avoid rebuilding the expandable toolbar-search pattern around every searchable section.",
+  "dependencies": [
+    "motion",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/search-bar.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/with-search-bar/WithSearchBar.tsx",
+      "content": "\"use client\";\nimport { Search } from \"lucide-react\";\nimport React, { useLayoutEffect, useRef, useState } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport { SearchBar } from \"@/registry/new-york/search-bar/SearchBar\";\n\ninterface WithSearchProps {\n  children?: React.ReactNode | undefined;\n  value: string;\n  onChange: (value: string) => void;\n  placeholder?: string | undefined;\n}\nexport const WithSearchBar = ({\n  children,\n  value,\n  onChange,\n  placeholder,\n}: WithSearchProps) => {\n  const [isSearching, setIsSearching] = useState(false);\n  const trigger = useRef<HTMLButtonElement>(null);\n  const restoreFocus = useRef(false);\n  useLayoutEffect(() => {\n    if (!isSearching && restoreFocus.current) {\n      restoreFocus.current = false;\n      trigger.current?.focus();\n    }\n  }, [isSearching]);\n  const close = () => {\n    restoreFocus.current = true;\n    setIsSearching(false);\n  };\n  return (\n    <div className=\"relative grid min-h-10 items-center\">\n      <div\n        inert={isSearching}\n        className={cn(\n          \"col-start-1 row-start-1 flex min-h-10 items-center justify-between gap-2 transition-opacity duration-150 motion-reduce:transition-none\",\n          isSearching && \"pointer-events-none opacity-0\"\n        )}\n      >\n        {children}\n        <button\n          ref={trigger}\n          type=\"button\"\n          onClick={() => setIsSearching(true)}\n          className=\"text-muted-foreground hover:bg-muted hover:text-foreground flex size-10 cursor-pointer items-center justify-center rounded-lg focus-visible:outline-2\"\n          aria-label=\"Open search\"\n        >\n          <Search className=\"size-4\" />\n        </button>\n      </div>\n      {isSearching && (\n        <div className=\"absolute inset-x-0\">\n          <SearchBar\n            value={value}\n            onChange={onChange}\n            placeholder={placeholder}\n            onClose={() => {\n              if (!value) {\n                setIsSearching(false);\n              }\n            }}\n            onForceClose={close}\n            autoFocus\n          />\n        </div>\n      )}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/WithSearchBar.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

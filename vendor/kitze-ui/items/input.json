@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "input",
+  "title": "Input",
+  "description": "An enhanced text input with left/right icons or content slots and an integrated loading state. Use it to avoid repeating adornment spacing, loading indicators and disabled styling around a vanilla input. It remains a normal input for form integration; use the base input for a plain field without these additions.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/spinner.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/input/InputAffix.tsx",
+      "content": "import type { ElementType, ReactNode } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nexport const InputAffix = ({\n  icon: Icon,\n  item,\n  className,\n  iconClassName,\n  itemClassName,\n}: {\n  icon: ElementType | undefined;\n  item: ReactNode;\n  className: string;\n  iconClassName: string;\n  itemClassName: string | undefined;\n}) => {\n  if (!Icon && !item) {\n    return null;\n  }\n  return (\n    <div className={className}>\n      {Icon && (\n        <div\n          className={cn(\n            \"text-foreground/70 flex size-5 items-center justify-center transition-colors duration-200\",\n            iconClassName\n          )}\n        >\n          <Icon />\n        </div>\n      )}\n      {item && (\n        <div className={cn(\"text-foreground\", itemClassName)}>{item}</div>\n      )}\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/InputAffix.tsx"
+    },
+    {
+      "path": "registry/new-york/input/Input.tsx",
+      "content": "\"use client\";\n\nimport type { ElementType, InputHTMLAttributes, ReactNode } from \"react\";\nimport React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\nimport { InputAffix } from \"@/registry/new-york/input/InputAffix\";\nimport { Spinner } from \"@/registry/new-york/spinner/Spinner\";\n\nexport interface InputClassNames {\n  container?: string;\n  input?: string;\n  leftIcon?: string;\n  rightIcon?: string;\n  leftItem?: string;\n  rightItem?: string;\n}\nexport interface InputProps extends InputHTMLAttributes<HTMLInputElement> {\n  leftIcon?: ElementType;\n  rightIcon?: ElementType;\n  leftItem?: ReactNode;\n  rightItem?: ReactNode;\n  iconClassName?: string;\n  classNames?: InputClassNames;\n  /**\n   * Whether the input is in a loading state\n   * @default false\n   */\n  isLoading?: boolean;\n  /**\n   * The size of the loading spinner\n   * @default \"sm\"\n   */\n  spinnerSize?: \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\n}\nconst EMPTY_CLASS_NAMES: InputClassNames = {};\n\nexport const Input = ({\n  className,\n  type,\n  leftIcon,\n  rightIcon,\n  leftItem,\n  rightItem,\n  classNames = EMPTY_CLASS_NAMES,\n  isLoading = false,\n  spinnerSize = \"sm\",\n  disabled,\n  iconClassName,\n  ref,\n  ...props\n}: InputProps & {\n  ref?: React.Ref<HTMLInputElement>;\n}) => {\n  // If loading, override left icon with spinner\n  const effectiveLeftIcon = isLoading ? undefined : leftIcon;\n  const effectiveLeftItem = isLoading ? (\n    <Spinner size={spinnerSize} />\n  ) : (\n    leftItem\n  );\n\n  // Handle both explicit disabled prop and loading state\n  const isDisabled = disabled || isLoading;\n  const hasLeft = isLoading || effectiveLeftIcon || effectiveLeftItem;\n  const hasRight = rightIcon || rightItem;\n  const hasAffix = Boolean(hasLeft || hasRight);\n  const inputElement = (\n    <input\n      type={type}\n      className={cn(\n        \"flex h-9 w-full rounded-md bg-transparent px-3 py-1 text-base\",\n        \"transition-[border-color,box-shadow] duration-200 ease-in-out\",\n        \"file:text-foreground file:border-0 file:bg-transparent file:text-sm file:font-medium\",\n        \"placeholder:text-muted-foreground\",\n        \"focus:outline-none\",\n        \"disabled:cursor-not-allowed disabled:opacity-50\",\n        \"md:text-sm\",\n        hasLeft && \"pl-1\",\n        hasRight && \"pr-1\",\n        !hasAffix &&\n          \"border-input focus-visible:border-primary focus-visible:ring-primary border focus-visible:ring-1 focus-visible:outline-none\",\n        !hasAffix && className,\n        classNames.input\n      )}\n      ref={ref}\n      disabled={isDisabled}\n      {...props}\n    />\n  );\n  if (!hasAffix) {\n    return inputElement;\n  }\n  return (\n    <div\n      className={cn(\n        \"border-input bg-background relative flex items-center rounded-md border\",\n        \"transition-[border-color,box-shadow] duration-200 ease-in-out\",\n        \"focus-within:border-primary focus-within:ring-primary focus-within:ring-1\",\n        isDisabled && \"cursor-not-allowed opacity-50\",\n        classNames.container,\n        className\n      )}\n    >\n      <InputAffix\n        icon={effectiveLeftIcon}\n        item={effectiveLeftItem}\n        className=\"flex items-center pl-3\"\n        iconClassName={cn(classNames.leftIcon, iconClassName)}\n        itemClassName={classNames.leftItem}\n      />\n      {inputElement}\n      <InputAffix\n        icon={rightIcon}\n        item={rightItem}\n        className=\"flex items-center pr-3\"\n        iconClassName={cn(classNames.rightIcon, iconClassName)}\n        itemClassName={classNames.rightItem}\n      />\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/Input.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

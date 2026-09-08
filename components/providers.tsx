@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { KitzeUIProvider } from "@/components/KitzeUIContext";
-import { AlertProvider } from "@/components/AlertContext";
-import { DialogManager } from "@/components/DialogManager";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { KitzeUIProvider } from "@/ui/components/KitzeUIContext";
+import { AlertProvider } from "@/ui/components/AlertContext";
+import { DialogManager } from "@/ui/components/DialogManager";
+import { TooltipProvider } from "@/ui/primitives/tooltip";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {

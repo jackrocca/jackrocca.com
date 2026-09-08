@@ -1,0 +1,16 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "base",
+  "title": "Kitze UI Base",
+  "description": "The base registry setup for installing Kitze UI source through shadcn. It supplies the common project conventions used by component entries. Start with the usage guide and install individual components as needed rather than copying an entire UI library.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [],
+  "type": "registry:base",
+  "config": {
+    "style": "base-nova",
+    "rsc": true,
+    "tsx": true,
+    "iconLibrary": "lucide"
+  }
+}

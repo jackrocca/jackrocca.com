@@ -27,11 +27,7 @@ export async function syncWeeks(numbers?: number[], force = false) {
   const results = await Promise.all(
     selected.map(async (number) => {
       const week = state.weeks.find((w) => w.number === number)!;
-      if (
-        !force &&
-        week.fetchedAt &&
-        Date.now() - Date.parse(week.fetchedAt) < 60_000
-      )
+      if (!force && week.fetchedAt && Date.now() - Date.parse(week.fetchedAt) < 60_000)
         return { number, skipped: true };
       try {
         const games = await fetchWeek(number),
@@ -58,11 +54,7 @@ export async function syncWeeks(numbers?: number[], force = false) {
           });
           w.fetchedAt = at;
           w.error = null;
-          if (
-            !w.publishedAt &&
-            Date.now() >= freezeTime(w) &&
-            Date.now() < deadline(w)
-          ) {
+          if (!w.publishedAt && Date.now() >= freezeTime(w) && Date.now() < deadline(w)) {
             try {
               publishWeek(w);
               audit(

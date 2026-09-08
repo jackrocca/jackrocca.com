@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "switch",
+  "title": "Switch",
+  "description": "Kitze UI’s styled Base UI primitives for on/off toggles. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/switch.tsx",
+      "content": "\"use client\";\n\nimport { Switch as SwitchPrimitive } from \"@base-ui/react/switch\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst Switch = ({ className, ...props }: SwitchPrimitive.Root.Props) => (\n  <SwitchPrimitive.Root\n    data-slot=\"switch\"\n    className={cn(\n      \"peer group bg-muted-foreground/25 data-checked:bg-primary focus-visible:ring-ring relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border-0 p-[3px] transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-disabled:cursor-not-allowed data-disabled:opacity-40 motion-reduce:transition-none\",\n      className\n    )}\n    {...props}\n  >\n    <SwitchPrimitive.Thumb\n      data-slot=\"switch-thumb\"\n      className=\"data-checked:bg-primary-foreground pointer-events-none block size-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)] data-checked:translate-x-4 data-unchecked:translate-x-0 motion-reduce:transition-none\"\n    />\n  </SwitchPrimitive.Root>\n);\nexport { Switch };\n",
+      "type": "registry:ui",
+      "target": "components/ui/switch.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}

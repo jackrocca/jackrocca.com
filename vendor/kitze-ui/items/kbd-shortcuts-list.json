@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "kbd-shortcuts-list",
+  "title": "Keyboard Shortcuts List",
+  "description": "A reusable layout for displaying multiple shortcut descriptions with the shared keycap components. Use it for keyboard-help panels or command documentation instead of recreating the alignment between action labels and their keys. It does not register shortcuts.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/kbd-shortcuts.json",
+    "https://ui.kitze.io/r/kbd.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/kbd-shortcuts-list/KbdShortcutsList.tsx",
+      "content": "import * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport { KbdShortcuts } from \"@/registry/new-york/kbd-shortcuts/KbdShortcuts\";\nimport type { KbdClassNames } from \"@/registry/new-york/kbd/Kbd\";\n\nexport interface ShortcutItem {\n  label: string;\n  shortcuts: string[];\n  separator?: string | null | undefined;\n}\nexport interface KbdShortcutsListClassNames extends KbdClassNames {\n  list?: string;\n  item?: string;\n  label?: string;\n}\nexport interface KbdShortcutsListProps {\n  shortcuts: ShortcutItem[];\n  classNames?: KbdShortcutsListClassNames | undefined;\n}\nexport const KbdShortcutsList: ReactFC<KbdShortcutsListProps> = ({\n  shortcuts,\n  classNames,\n}) => (\n  <div className={cn(\"space-y-3\", classNames?.list)}>\n    {shortcuts.map((item, index) => (\n      <div\n        key={`${item.label}-${index}`}\n        className={cn(\n          \"hover:bg-muted/60 dark:hover:bg-muted/25 flex items-center justify-between rounded-md px-3 py-1.5 transition-colors\",\n          classNames?.item\n        )}\n      >\n        <span className={cn(\"text-sm\", classNames?.label)}>{item.label}</span>\n        <KbdShortcuts\n          shortcuts={item.shortcuts}\n          separator={item.separator}\n          classNames={{\n            key: classNames?.key,\n            root: classNames?.root,\n            separator: classNames?.separator,\n          }}\n        />\n      </div>\n    ))}\n  </div>\n);\n",
+      "type": "registry:component",
+      "target": "components/KbdShortcutsList.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

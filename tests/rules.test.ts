@@ -63,16 +63,12 @@ test("all 272 games have unique ids, 18 weeks, and 32 teams with 17 games each",
   assert.equal(new Set(g.map((x) => x.id)).size, 272);
   const teams = new Map<string, number>();
   for (const game of g)
-    for (const t of [game.home, game.away])
-      teams.set(t.id, (teams.get(t.id) ?? 0) + 1);
+    for (const t of [game.home, game.away]) teams.set(t.id, (teams.get(t.id) ?? 0) + 1);
   assert.equal(teams.size, 32);
   assert.ok([...teams.values()].every((n) => n === 17));
 });
 test("opening kickoff is Wednesday September 9 at 5:20 PM Pacific", () => {
-  assert.equal(
-    deadline(initialState().weeks[0]),
-    Date.parse("2026-09-10T00:20:00Z"),
-  );
+  assert.equal(deadline(initialState().weeks[0]), Date.parse("2026-09-10T00:20:00Z"));
 });
 test("freeze is Wednesday 9 AM Pacific; winter DST handled", () => {
   const s = initialState();
@@ -93,10 +89,7 @@ test("publishing snapshots real lines and prevents changes", () => {
 });
 test("unpublished weeks reject picks", () => {
   const { input } = fixture();
-  assert.throws(
-    () => saveEntry(initialState(), "one", input, now),
-    /published/,
-  );
+  assert.throws(() => saveEntry(initialState(), "one", input, now), /published/);
 });
 test("four distinct games required", () => {
   const { s, input } = fixture();
@@ -133,10 +126,7 @@ test("late entry may only choose unstarted games, locks immediately", () => {
   ) as PickInput["picks"];
   const e = saveEntry(s, "one", input, time);
   assert.equal(e.late, true);
-  assert.throws(
-    () => saveEntry(s, "one", { ...input, revision: 1 }, time + 1),
-    /locked/,
-  );
+  assert.throws(() => saveEntry(s, "one", { ...input, revision: 1 }, time + 1), /locked/);
 });
 test("late entries cannot use any powerup", () => {
   const { s, w, input } = fixture();
@@ -241,10 +231,7 @@ test("canceled games are void half-points; postponed remain pending", () => {
 });
 test("feed rejects incorrect season and malformed responses", () => {
   assert.throws(() =>
-    parseFeed(
-      { season: { year: 2025, type: 2 }, week: { number: 1 }, events: [] },
-      1,
-    ),
+    parseFeed({ season: { year: 2025, type: 2 }, week: { number: 1 }, events: [] }, 1),
   );
   assert.throws(() => parseFeed({}, 1));
 });

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "emoji-picker",
+  "title": "Emoji Picker",
+  "description": "A ready-to-use emoji selector built on emoji-picker-react, loaded when opened. It handles picker presentation, search and categories while returning a Unicode string, and uses a popover or mobile bottom sheet. Use it instead of wiring an emoji library and separate desktop/mobile overlays yourself.",
+  "dependencies": [
+    "react-error-boundary",
+    "emoji-picker-react"
+  ],
+  "registryDependencies": [
+    "button",
+    "https://ui.kitze.io/r/picker-popover.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/emoji-picker/EmojiPicker.tsx",
+      "content": "\"use client\";\n\nimport type { ReactNode } from \"react\";\n\nimport { Button } from \"@/components/ui/button\";\nimport { EmojiPickerContent } from \"@/registry/new-york/emoji-picker/EmojiPickerContent\";\nimport { PickerPopover } from \"@/registry/new-york/picker-popover/PickerPopover\";\n\nexport interface EmojiPickerProps {\n  value?: string;\n  onChange: (emoji: string) => void;\n  trigger?: ReactNode;\n  disabled?: boolean;\n  label?: string;\n  theme?: \"light\" | \"dark\" | \"auto\";\n}\nexport const EmojiPicker = ({\n  value,\n  onChange,\n  trigger,\n  disabled,\n  label = \"Choose emoji\",\n  theme,\n}: EmojiPickerProps) => (\n  <PickerPopover\n    label={label}\n    disabled={disabled}\n    trigger={\n      trigger ?? (\n        <Button\n          variant=\"outline\"\n          disabled={disabled}\n          aria-label={label}\n          className=\"size-10 cursor-pointer p-0 text-xl shadow-none\"\n        >\n          {value || \"😀\"}\n        </Button>\n      )\n    }\n  >\n    {(close) => (\n      <EmojiPickerContent\n        theme={theme}\n        onSelect={(emoji) => {\n          onChange(emoji);\n          close();\n        }}\n      />\n    )}\n  </PickerPopover>\n);\n",
+      "type": "registry:component",
+      "target": "components/EmojiPicker.tsx"
+    },
+    {
+      "path": "registry/new-york/emoji-picker/EmojiPickerContent.tsx",
+      "content": "\"use client\";\n\nimport { lazy, Suspense } from \"react\";\nimport { ErrorBoundary } from \"react-error-boundary\";\n\nconst EmojiLibrary = lazy(() => import(\"./EmojiLibrary\"));\n\nexport interface EmojiPickerContentProps {\n  onSelect: (emoji: string) => void;\n  theme?: \"light\" | \"dark\" | \"auto\" | undefined;\n}\nexport const EmojiPickerContent = ({\n  onSelect,\n  theme = \"auto\",\n}: EmojiPickerContentProps) => (\n  <ErrorBoundary\n    fallback={\n      <p role=\"alert\" className=\"block h-[440px] p-4 text-sm\">\n        Emoji picker could not load. Reload the page to retry.\n      </p>\n    }\n  >\n    <Suspense\n      fallback={\n        <output className=\"block h-[440px] p-4 text-sm\">Loading emoji…</output>\n      }\n    >\n      <EmojiLibrary theme={theme} onSelect={onSelect} />\n    </Suspense>\n  </ErrorBoundary>\n);\n",
+      "type": "registry:component",
+      "target": "components/EmojiPickerContent.tsx"
+    },
+    {
+      "path": "registry/new-york/emoji-picker/EmojiLibrary.tsx",
+      "content": "\"use client\";\n\nimport Picker, { EmojiStyle, Theme } from \"emoji-picker-react\";\n\nconst metrics = {\n  \"--epr-header-padding\": \"12px\",\n  \"--epr-horizontal-padding\": \"12px\",\n  \"--epr-search-input-height\": \"36px\",\n  border: 0,\n  borderRadius: 0,\n};\nconst appColors = {\n  \"--epr-bg-color\": \"var(--picker-surface, var(--color-popover))\",\n  \"--epr-category-icon-active-color\": \"var(--color-foreground)\",\n  \"--epr-category-label-bg-color\":\n    \"var(--picker-surface, var(--color-popover))\",\n  \"--epr-category-label-text-color\": \"var(--color-muted-foreground)\",\n  \"--epr-focus-bg-color\": \"var(--color-muted)\",\n  \"--epr-highlight-color\": \"var(--color-ring)\",\n  \"--epr-hover-bg-color\": \"var(--color-muted)\",\n  \"--epr-search-border-color\": \"transparent\",\n  \"--epr-search-input-bg-color\":\n    \"color-mix(in srgb, var(--color-muted) 60%, transparent)\",\n  \"--epr-search-input-bg-color-active\":\n    \"color-mix(in srgb, var(--color-muted) 60%, transparent)\",\n  \"--epr-text-color\": \"var(--color-muted-foreground)\",\n};\nconst themes = { auto: Theme.AUTO, dark: Theme.DARK, light: Theme.LIGHT };\nconst EmojiLibrary = ({\n  theme,\n  onSelect,\n}: {\n  theme: \"auto\" | \"light\" | \"dark\";\n  onSelect: (emoji: string) => void;\n}) => (\n  <Picker\n    width=\"100%\"\n    height={440}\n    style={theme === \"auto\" ? { ...metrics, ...appColors } : metrics}\n    theme={themes[theme]}\n    emojiStyle={EmojiStyle.NATIVE}\n    lazyLoadEmojis\n    previewConfig={{ showPreview: false }}\n    onEmojiClick={(emoji) => onSelect(emoji.emoji)}\n  />\n);\nexport default EmojiLibrary;\n",
+      "type": "registry:component",
+      "target": "components/EmojiLibrary.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}
