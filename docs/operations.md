@@ -4,7 +4,7 @@ The active Vercel project is `fantasy-football-pickem`, project ID `prj_iqeRjrOb
 
 ## Ownership and deployment audit — September 8, 2026
 
-- GitHub identity: `jackrocca`. This website is the public repository `jackrocca/fantasy-football-pickem`; Atlas is the private repository `jackrocca/photo-archivist`.
+- GitHub identity: `jackrocca`. This website is the public repository `jackrocca/jackrocca.com`, renamed from `fantasy-football-pickem` with its history and pull requests preserved; Atlas is the private repository `jackrocca/photo-archivist`.
 - Vercel identity: `jackrocca`, account `jrocca98@gmail.com`. The personal team above is on Pro. Use the isolated CLI configuration at `/Users/jack/Documents/Codex/2026-09-08/can-x20/work/vercel-jrocca` with `--scope jacks-projects-3515a39f`; the default CLI login may belong to AM Rocca.
 - The Vercel project currently has no GitHub integration (`gitLink: null`). Production is deployed explicitly from `codex/vercel-2026`; pull request #3 remains open. The rebuilt app is not yet on `main`.
 - To establish automatic deployments, first review and merge the rebuilt app, then connect this existing Vercel project to this repository with `main` as production. Verify the resulting deployment and canonical alias. Do not connect the old `main` first, or create a duplicate project to work around the missing link.

@@ -1,5 +1,9 @@
 # Jack Rocca — personal site and Pick 4
 
+Repository: [jackrocca/jackrocca.com](https://github.com/jackrocca/jackrocca.com).
+Start with [NEXT_STEPS.md](NEXT_STEPS.md) for the Vercel/Cloudflare roadmap and
+coordinated Atlas publication work.
+
 Jack Rocca’s personal website: photography, Substack writing, projects, and a single 2026 NFL Pick 4 league. Built with Next.js, React, TypeScript, shared Google sign-in, a local Kitze UI source fork, and private Vercel Blob storage. The original Streamlit application and historical CSVs are archived under `legacy/`; they are not part of the current runtime.
 
 ## Run locally

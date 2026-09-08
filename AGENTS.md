@@ -10,6 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Repository conventions
 
+- Read `NEXT_STEPS.md` for the Vercel/Cloudflare roadmap and the shared Atlas publication contract before starting integration work.
 - Supported runtime: Node 22 / Next.js app at the repository root. `legacy/` is an archive, not the app.
 - Read `docs/architecture.md` before moving module boundaries. The UI fork in `ui/` must not import app/domain code.
 - Modify `ui/`, never the accepted snapshot in `vendor/kitze-ui/`. See `ui/README.md` before updating or adding registry components.
