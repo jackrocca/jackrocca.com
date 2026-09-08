@@ -119,8 +119,13 @@ test("Google sessions are HTTP-only and version checked; legacy sessions are rej
     null,
   );
 });
-async function flow(expiration = "10m", issuer = "pick4-oauth") {
+async function flow(
+  expiration = "10m",
+  issuer = "pick4-oauth",
+  returnTo = "/pick4",
+) {
   return new SignJWT({
+    returnTo,
     state: "random-state",
     nonce: "random-nonce",
     codeVerifier: "random-verifier",
@@ -136,6 +141,7 @@ test("OAuth binds state, nonce and PKCE verifier and rejects tampering or expiry
   assert.deepEqual(await validateGoogleFlow(valid, "random-state"), {
     nonce: "random-nonce",
     codeVerifier: "random-verifier",
+    returnTo: "/pick4",
   });
   await assert.rejects(validateGoogleFlow(valid, "attacker-state"));
   await assert.rejects(
@@ -154,7 +160,7 @@ test("unsolicited callback cannot log in and clears temporary flow cookie", asyn
   );
   assert.equal(
     result.headers.get("location"),
-    "http://localhost:3106/?authError=failed",
+    "http://localhost:3106/pick4?authError=failed",
   );
   assert.equal(result.cookies.has("pick4-session"), false);
   assert.match(result.headers.get("set-cookie")!, /Max-Age=0/);
@@ -169,7 +175,7 @@ test("canceled Google flow returns a safe error instead of creating an account",
   );
   assert.equal(
     result.headers.get("location"),
-    "http://localhost:3106/?authError=canceled",
+    "http://localhost:3106/pick4?authError=canceled",
   );
   assert.equal(result.cookies.has("pick4-session"), false);
 });
@@ -185,4 +191,46 @@ test("members see only their own email and no Google identifiers; commissioner s
   const guest = view(s, null, 1, true);
   assert.equal(guest.standings.length, 0);
   assert.equal(guest.user, null);
+});
+
+import { authReturnPath } from "../lib/auth-navigation";
+test("OAuth return destinations allow site pages and reject external or unrecognized URLs", () => {
+  for (const value of ["/", "/account", "/pick4"])
+    assert.equal(authReturnPath(value), value);
+  for (const value of [
+    "https://evil.example",
+    "//evil.example",
+    "/\\evil.example",
+    "/api/export",
+    "javascript:alert(1)",
+    null,
+  ])
+    assert.equal(authReturnPath(value), "/pick4");
+});
+
+test("signed OAuth flow preserves the account destination on cancellation", async () => {
+  const cookie = await flow("10m", "pick4-oauth", "/account");
+  assert.equal(
+    (await validateGoogleFlow(cookie, "random-state")).returnTo,
+    "/account",
+  );
+  const response = await finishGoogle(
+    new NextRequest(
+      "http://localhost:3106/api/auth/callback/google?error=access_denied&state=random-state",
+      { headers: { cookie: `pick4-google-flow=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    response.headers.get("location"),
+    "http://localhost:3106/account?authError=canceled",
+  );
+  assert.equal(
+    (
+      await validateGoogleFlow(
+        await flow("10m", "pick4-oauth", "https://evil.example"),
+        "random-state",
+      )
+    ).returnTo,
+    "/pick4",
+  );
 });

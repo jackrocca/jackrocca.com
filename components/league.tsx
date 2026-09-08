@@ -22,6 +22,21 @@ import {
   Download,
   UserRound,
 } from "lucide-react";
+import { CustomButton } from "@/components/CustomButton";
+import { Input } from "@/components/Input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SocialLoginButton } from "@/components/SocialLoginButton";
+import { ResponsiveDialog } from "@/components/ResponsiveDialog";
+import { SegmentedControl } from "@/components/SegmentedControl";
+import { CustomBadge } from "@/components/CustomBadge";
+import { Spinner } from "@/components/Spinner";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+import { LeagueSelect, useConfirmation } from "@/components/league-controls";
 import type { AppView } from "@/lib/view";
 import { PICK_TYPES, PickInput, PickType, Game } from "@/lib/types";
 import { signed } from "@/lib/rules";
@@ -74,6 +89,7 @@ function TeamMark({ game, side }: { game: Game; side: "home" | "away" }) {
   );
 }
 export default function League() {
+  const { ask, dialog: confirmationDialog } = useConfirmation();
   const [data, setData] = useState<AppView | null>(null),
     [week, setWeek] = useState<number | null>(null),
     [tab, setTab] = useState("board"),
@@ -169,7 +185,7 @@ export default function League() {
     }
   }
   async function changeWeek(number: number) {
-    if (dirty && !confirm("Discard your unsaved picks and change weeks?"))
+    if (dirty && !(await ask("Discard your unsaved picks and change weeks?")))
       return;
     setDirty(false);
     setFilter("all");
@@ -185,11 +201,16 @@ export default function League() {
   }
   if (!data)
     return (
-      <main className="loading">
+      <main className="league-app loading" aria-busy="true">
+        <Spinner size="lg" />
         <div className="brand-mark">4</div>
         <h1>Pick 4</h1>
         <p>{error || "Getting the league ready…"}</p>
-        {error && <button onClick={() => load(null)}>Try again</button>}
+        {error && (
+          <CustomButton variant="unstyled" onClick={() => load(null)}>
+            Try again
+          </CustomButton>
+        )}
       </main>
     );
   const w = data.week,
@@ -221,45 +242,55 @@ export default function League() {
   );
   const leagueLeader = data.standings[0];
   return (
-    <>
+    <div className="league-app">
+      {confirmationDialog}
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Pick 4 home">
+        <a className="brand" href="/pick4" aria-label="Pick 4 home">
           <span className="brand-mark">4</span>
           <span>
             PICK <b>4</b>
             <small>THE LEAGUE</small>
           </span>
         </a>
-        <div className="season-pill">
-          <span />
+        <CustomBadge
+          color="bg-emerald-700"
+          variant="outline"
+          className="season-pill"
+        >
           2026 SEASON
-        </div>
+        </CustomBadge>
         {user ? (
           <div className="user-menu">
-            <button
+            <CustomButton
+              variant="unstyled"
               className="avatar-button"
               onClick={() => setAccountOpen(!accountOpen)}
               aria-label="Account settings"
             >
               <span className="avatar">{user.name.slice(0, 1)}</span>
               <span>{user.name}</span>
-            </button>
-            <button
+            </CustomButton>
+            <CustomButton
+              variant="unstyled"
               className="icon-button"
               title="Sign out"
               aria-label="Sign out"
               onClick={() =>
                 act(async () => {
-                  if (dirty && !confirm("Sign out and discard unsaved picks?"))
+                  if (
+                    dirty &&
+                    !(await ask("Sign out and discard unsaved picks?"))
+                  )
                     return;
                   await api("logout", {});
+                  window.dispatchEvent(new Event("account-changed"));
                   setDirty(false);
                   await load(week);
                 })
               }
             >
               <LogOut size={18} />
-            </button>
+            </CustomButton>
           </div>
         ) : (
           <span className="private-label">
@@ -273,7 +304,8 @@ export default function League() {
           role={error ? "alert" : "status"}
         >
           {error || notice}
-          <button
+          <CustomButton
+            variant="unstyled"
             aria-label="Dismiss notification"
             onClick={() => {
               setError("");
@@ -281,7 +313,7 @@ export default function League() {
             }}
           >
             <X size={16} />
-          </button>
+          </CustomButton>
         </div>
       )}
       {!user ? (
@@ -330,15 +362,20 @@ export default function League() {
               Sign in with Google to join the league, make your picks, and
               follow the season.
             </p>
-            {data.authentication.ready ? (
-              <a className="google-signin" href="/api/auth/google">
-                <GoogleMark /> Continue with Google
-              </a>
-            ) : (
-              <button className="google-signin" disabled>
-                <GoogleMark /> Google sign-in is being connected
-              </button>
-            )}
+            <SocialLoginButton
+              provider="google"
+              className="w-full my-6"
+              size="lg"
+              disabled={!data.authentication.ready}
+              label={
+                data.authentication.ready
+                  ? "Continue with Google"
+                  : "Google sign-in is being connected"
+              }
+              onClick={() => {
+                location.href = "/api/auth/google?returnTo=/pick4";
+              }}
+            />
             <div className="login-foot">
               <ShieldCheck size={17} />
               <span>
@@ -356,25 +393,29 @@ export default function League() {
         </main>
       ) : (
         <>
-          <nav className="main-nav" aria-label="Main navigation">
-            {[
-              { key: "board", name: "Game board", Icon: Grid2X2 },
-              { key: "standings", name: "Standings", Icon: Trophy },
-              { key: "history", name: "My season", Icon: History },
-              { key: "rules", name: "How to play", Icon: Flag },
-              ...(user.role === "admin"
-                ? [{ key: "admin", name: "Commissioner", Icon: ShieldCheck }]
-                : []),
-            ].map(({ key, name, Icon }) => (
-              <button
-                key={key}
-                className={tab === key ? "active" : ""}
-                onClick={() => setTab(key)}
-              >
-                <Icon size={17} />
-                {name}
-              </button>
-            ))}
+          <nav className="main-nav" aria-label="League navigation">
+            <SegmentedControl
+              value={tab}
+              onChange={setTab}
+              className="league-tabs"
+              mobileView="bottom-drawer"
+              drawerTitle="League pages"
+              options={[
+                { value: "board", label: "Game board", icon: Grid2X2 },
+                { value: "standings", label: "Standings", icon: Trophy },
+                { value: "history", label: "My season", icon: History },
+                { value: "rules", label: "How to play", icon: Flag },
+                ...(user.role === "admin"
+                  ? [
+                      {
+                        value: "admin",
+                        label: "Commissioner",
+                        icon: ShieldCheck,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </nav>
           <main className="app-shell">
             {tab === "board" && (
@@ -442,16 +483,18 @@ export default function League() {
             </section>
             {["board", "standings", "admin"].includes(tab) && (
               <div className="week-selector">
-                <button
+                <CustomButton
+                  variant="unstyled"
                   aria-label="Previous week"
                   disabled={week === 1}
                   onClick={() => changeWeek(week! - 1)}
                 >
                   <ChevronLeft size={18} />
-                </button>
+                </CustomButton>
                 <div className="week-scroll">
                   {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => (
-                    <button
+                    <CustomButton
+                      variant="unstyled"
                       key={n}
                       aria-pressed={week === n}
                       className={week === n ? "selected" : ""}
@@ -462,16 +505,17 @@ export default function League() {
                       {n === data.currentWeek && (
                         <span className="current-dot" />
                       )}
-                    </button>
+                    </CustomButton>
                   ))}
                 </div>
-                <button
+                <CustomButton
+                  variant="unstyled"
                   aria-label="Next week"
                   disabled={week === 18}
                   onClick={() => changeWeek(week! + 1)}
                 >
                   <ChevronRight size={18} />
-                </button>
+                </CustomButton>
               </div>
             )}
             {tab === "board" && (
@@ -498,7 +542,8 @@ export default function League() {
                             : `Lines freeze ${date(w.freezeAt, true)} PT`}
                     </span>
                   </div>
-                  <button
+                  <CustomButton
+                    variant="unstyled"
                     className="text-button"
                     disabled={busy}
                     onClick={() =>
@@ -511,7 +556,7 @@ export default function League() {
                   >
                     <RefreshCw size={14} />
                     Refresh
-                  </button>
+                  </CustomButton>
                 </div>
                 {(w.error || stale) && (
                   <p className="feed-note" role="status">
@@ -525,17 +570,17 @@ export default function League() {
                       <h2>
                         Week {week} matchups <span>{w.games.length}</span>
                       </h2>
-                      <div className="board-filter">
-                        {(["all", ...PICK_TYPES] as const).map((t) => (
-                          <button
-                            key={t}
-                            className={filter === t ? "active" : ""}
-                            onClick={() => setFilter(t)}
-                          >
-                            {t === "all" ? "All" : labels[t]}
-                          </button>
-                        ))}
-                      </div>
+                      <SegmentedControl
+                        className="board-filter"
+                        value={filter}
+                        onChange={(value) => setFilter(value as typeof filter)}
+                        options={(["all", ...PICK_TYPES] as const).map(
+                          (value) => ({
+                            value,
+                            label: value === "all" ? "All" : labels[value],
+                          }),
+                        )}
+                      />
                     </div>
                     <div className="game-grid">
                       {games.map((g, i) => {
@@ -633,7 +678,8 @@ export default function League() {
                                       ? `${underdog.abbreviation} ${signed(Math.abs(spread ?? 0))}`
                                       : `${t === "over" ? "O" : "U"} ${total ?? "—"}`;
                                 return (
-                                  <button
+                                  <CustomButton
+                                    variant="unstyled"
                                     key={t}
                                     className={selectedThis ? "chosen" : ""}
                                     aria-pressed={selectedThis}
@@ -658,7 +704,7 @@ export default function League() {
                                     <small>{labels[t]}</small>
                                     <strong>{unavailable ? "—" : line}</strong>
                                     {selectedThis && <Check size={12} />}
-                                  </button>
+                                  </CustomButton>
                                 );
                               })}
                             </div>
@@ -740,13 +786,14 @@ export default function League() {
                                 )}
                             </div>
                             {g && !locked && (
-                              <button
+                              <CustomButton
+                                variant="unstyled"
                                 className="icon-button"
                                 aria-label={`Remove ${labels[t]} pick`}
                                 onClick={() => choose(t, "")}
                               >
                                 <X size={14} />
-                              </button>
+                              </CustomButton>
                             )}
                           </div>
                         );
@@ -766,15 +813,14 @@ export default function League() {
                                 : "Double the spread · 2.5 pts"}
                             </small>
                           </span>
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={draft.superSpread}
                             disabled={!canPick || late || used("superSpread")}
-                            onChange={(e) => {
+                            onCheckedChange={(checked) => {
                               setDirty(true);
                               setDraft((d) => ({
                                 ...d,
-                                superSpread: e.target.checked,
+                                superSpread: checked,
                               }));
                             }}
                           />
@@ -789,7 +835,7 @@ export default function League() {
                                 : "5 points in your favor"}
                             </small>
                           </span>
-                          <select
+                          <LeagueSelect
                             aria-label="Total Helper target"
                             value={draft.totalHelper ?? ""}
                             disabled={!canPick || late || used("totalHelper")}
@@ -805,7 +851,7 @@ export default function League() {
                             <option value="">Off</option>
                             <option value="over">Over</option>
                             <option value="under">Under</option>
-                          </select>
+                          </LeagueSelect>
                         </label>
                         <label className="power-row">
                           <span>
@@ -817,23 +863,23 @@ export default function League() {
                                 : "Call a perfect week · 8 pts"}
                             </small>
                           </span>
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={draft.perfectPrediction}
                             disabled={
                               !canPick || late || used("perfectPrediction")
                             }
-                            onChange={(e) => {
+                            onCheckedChange={(checked) => {
                               setDirty(true);
                               setDraft((d) => ({
                                 ...d,
-                                perfectPrediction: e.target.checked,
+                                perfectPrediction: checked,
                               }));
                             }}
                           />
                         </label>
                       </div>
-                      <button
+                      <CustomButton
+                        variant="unstyled"
                         className="primary save-button"
                         disabled={
                           busy ||
@@ -859,7 +905,7 @@ export default function League() {
                         ) : (
                           <ArrowRight size={17} />
                         )}
-                      </button>
+                      </CustomButton>
                       <p className="slip-foot">
                         {locked
                           ? "Your card is final for this week."
@@ -883,13 +929,14 @@ export default function League() {
                             ? "See how the whole league stacks up."
                             : "The leaderboard is waiting for its first points."}
                         </p>
-                        <button
+                        <CustomButton
+                          variant="unstyled"
                           className="text-button"
                           onClick={() => setTab("standings")}
                         >
                           View standings
                           <ArrowUpRight size={14} />
-                        </button>
+                        </CustomButton>
                       </div>
                     </div>
                   </aside>
@@ -1009,48 +1056,61 @@ export default function League() {
               <section className="panel">
                 <div className="section-heading">
                   <h2>Your weekly cards</h2>
-                  <span>{data.history.length} WEEKS PLAYED</span>
+                  <span>
+                    {data.history.length}{" "}
+                    {data.history.length === 1 ? "WEEK" : "WEEKS"} PLAYED
+                  </span>
                 </div>
                 {data.history.length ? (
-                  data.history.map((e) => (
-                    <details
-                      className="history-card"
-                      key={e.id}
-                      open={e.week === data.currentWeek}
-                    >
-                      <summary>
-                        <strong>Week {e.week}</strong>
-                        <span>
-                          {e.score.perfect
-                            ? "Perfect week"
-                            : `${e.score.wins} wins · ${e.score.complete ? "Final" : "In progress"}`}
-                        </span>
-                        <b>{e.score.points} pts</b>
-                      </summary>
-                      <div className="history-picks">
-                        {PICK_TYPES.map((t) => (
-                          <div className="entry-pick" key={t}>
-                            <span>
-                              <small>{labels[t]}</small>
-                              {e.picks[t].label}
-                            </span>
-                            <span className={`outcome ${e.score.outcomes[t]}`}>
-                              {e.score.outcomes[t]}
-                            </span>
+                  <Accordion
+                    defaultValue={data.history
+                      .filter((e) => e.week === data.currentWeek)
+                      .map((e) => e.id)}
+                  >
+                    {data.history.map((e) => (
+                      <AccordionItem
+                        className="history-card"
+                        key={e.id}
+                        value={e.id}
+                      >
+                        <AccordionTrigger>
+                          <strong>Week {e.week}</strong>
+                          <span>
+                            {e.score.perfect
+                              ? "Perfect week"
+                              : `${e.score.wins} wins · ${e.score.complete ? "Final" : "In progress"}`}
+                          </span>
+                          <b>{e.score.points} pts</b>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="history-picks">
+                            {PICK_TYPES.map((t) => (
+                              <div className="entry-pick" key={t}>
+                                <span>
+                                  <small>{labels[t]}</small>
+                                  {e.picks[t].label}
+                                </span>
+                                <span
+                                  className={`outcome ${e.score.outcomes[t]}`}
+                                >
+                                  {e.score.outcomes[t]}
+                                </span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                      <p className="source-note">
-                        Saved {date(e.updatedAt, true)} PT{" "}
-                        {e.late ? "· Late entry (−1 point)" : ""}
-                        {e.superSpread ? " · Super Spread" : ""}
-                        {e.totalHelper
-                          ? ` · Total Helper: ${e.totalHelper}`
-                          : ""}
-                        {e.perfectPrediction ? " · Perfect Prediction" : ""}
-                      </p>
-                    </details>
-                  ))
+                          <p className="source-note">
+                            Saved {date(e.updatedAt, true)} PT{" "}
+                            {e.late ? "· Late entry (−1 point)" : ""}
+                            {e.superSpread ? " · Super Spread" : ""}
+                            {e.totalHelper
+                              ? ` · Total Helper: ${e.totalHelper}`
+                              : ""}
+                            {e.perfectPrediction ? " · Perfect Prediction" : ""}
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 ) : (
                   <div className="empty-state">
                     <History size={36} />
@@ -1059,10 +1119,14 @@ export default function League() {
                       Once you submit a card, your picks and results will be
                       here.
                     </p>
-                    <button className="primary" onClick={() => setTab("board")}>
+                    <CustomButton
+                      variant="unstyled"
+                      className="primary"
+                      onClick={() => setTab("board")}
+                    >
                       Go to the game board
                       <ArrowRight size={17} />
-                    </button>
+                    </CustomButton>
                   </div>
                 )}
               </section>
@@ -1079,17 +1143,20 @@ export default function League() {
                     Send friends the league link. Everyone who signs in with
                     Google joins this league automatically.
                   </p>
-                  <button
+                  <CustomButton
+                    variant="unstyled"
                     className="primary"
                     onClick={() =>
                       act(async () => {
-                        await navigator.clipboard.writeText(location.origin);
+                        await navigator.clipboard.writeText(
+                          `${location.origin}/pick4`,
+                        );
                         setNotice("League link copied.");
                       })
                     }
                   >
                     <Clipboard size={17} /> Copy league link
-                  </button>
+                  </CustomButton>
                 </section>
                 <section className="panel">
                   <h2>Week {week} operations</h2>
@@ -1106,7 +1173,8 @@ export default function League() {
                       ? `Published ${date(w.publishedAt, true)} PT. Everyone plays the same lines.`
                       : `Automatic publication: ${date(w.freezeAt, true)} PT. You can publish the current lines early to open picks now.`}
                   </p>
-                  <button
+                  <CustomButton
+                    variant="unstyled"
                     className="primary"
                     disabled={
                       busy || Boolean(w.publishedAt) || tick >= w.deadline
@@ -1114,9 +1182,9 @@ export default function League() {
                     onClick={() =>
                       act(async () => {
                         if (
-                          !confirm(
+                          !(await ask(
                             `Freeze the current Week ${week} lines and open picks? Published lines cannot be changed.`,
-                          )
+                          ))
                         )
                           return;
                         await api("admin/publish", { week });
@@ -1129,8 +1197,9 @@ export default function League() {
                   >
                     Publish lines now
                     <Flag size={17} />
-                  </button>
-                  <button
+                  </CustomButton>
+                  <CustomButton
+                    variant="unstyled"
                     className="secondary"
                     disabled={busy}
                     onClick={() =>
@@ -1143,7 +1212,7 @@ export default function League() {
                   >
                     <RefreshCw size={16} />
                     Refresh scores & schedule
-                  </button>
+                  </CustomButton>
                   <a className="secondary" href="/api/export">
                     <Download size={16} />
                     Export league data
@@ -1199,7 +1268,7 @@ export default function League() {
                   >
                     <label>
                       Matchup
-                      <select
+                      <LeagueSelect
                         name="gameId"
                         required
                         disabled={Boolean(w.publishedAt)}
@@ -1210,12 +1279,12 @@ export default function League() {
                             {g.away.short} @ {g.home.short}
                           </option>
                         ))}
-                      </select>
+                      </LeagueSelect>
                     </label>
                     <div className="form-columns">
                       <label>
                         Home spread
-                        <input
+                        <Input
                           name="homeSpread"
                           type="number"
                           min={-50}
@@ -1227,7 +1296,7 @@ export default function League() {
                       </label>
                       <label>
                         Total
-                        <input
+                        <Input
                           name="total"
                           type="number"
                           min={1}
@@ -1240,7 +1309,7 @@ export default function League() {
                     </div>
                     <label>
                       Source and reason
-                      <input
+                      <Input
                         name="reason"
                         minLength={8}
                         maxLength={300}
@@ -1249,14 +1318,15 @@ export default function League() {
                         placeholder="Verified source for this line"
                       />
                     </label>
-                    <button
+                    <CustomButton
+                      variant="unstyled"
                       className="secondary"
                       disabled={
                         busy || Boolean(w.publishedAt) || tick >= w.deadline
                       }
                     >
                       Save pregame line
-                    </button>
+                    </CustomButton>
                   </form>
                 </section>
                 <section className="panel">
@@ -1285,7 +1355,7 @@ export default function League() {
                   >
                     <label>
                       Game
-                      <select name="gameId" required>
+                      <LeagueSelect name="gameId" required>
                         <option value="">Select a completed game</option>
                         {w.games
                           .filter((g) => tick >= Date.parse(g.kickoff))
@@ -1294,12 +1364,12 @@ export default function League() {
                               {g.away.short} @ {g.home.short}
                             </option>
                           ))}
-                      </select>
+                      </LeagueSelect>
                     </label>
                     <div className="form-columns">
                       <label>
                         Away score
-                        <input
+                        <Input
                           type="number"
                           name="awayScore"
                           min={0}
@@ -1309,7 +1379,7 @@ export default function League() {
                       </label>
                       <label>
                         Home score
-                        <input
+                        <Input
                           type="number"
                           name="homeScore"
                           min={0}
@@ -1320,14 +1390,14 @@ export default function League() {
                     </div>
                     <label>
                       Result
-                      <select name="state">
+                      <LeagueSelect name="state">
                         <option value="final">Final score</option>
                         <option value="canceled">Canceled / void</option>
-                      </select>
+                      </LeagueSelect>
                     </label>
                     <label>
                       Reason
-                      <input
+                      <Input
                         name="reason"
                         minLength={8}
                         maxLength={300}
@@ -1335,9 +1405,13 @@ export default function League() {
                         placeholder="Why is this correction needed?"
                       />
                     </label>
-                    <button className="secondary" disabled={busy}>
+                    <CustomButton
+                      variant="unstyled"
+                      className="secondary"
+                      disabled={busy}
+                    >
                       Save correction
-                    </button>
+                    </CustomButton>
                   </form>
                 </section>
                 <section className="panel audit-panel">
@@ -1359,33 +1433,26 @@ export default function League() {
                 PICK 4 <b>·</b> THE 2026 LEAGUE
               </span>
               <span>Four picks. Every week.</span>
-              <button className="text-button" onClick={() => setTab("rules")}>
+              <CustomButton
+                variant="unstyled"
+                className="text-button"
+                onClick={() => setTab("rules")}
+              >
                 League rules
                 <ArrowUpRight size={13} />
-              </button>
+              </CustomButton>
             </footer>
           </main>
         </>
       )}
-      {accountOpen && user && (
-        <div className="modal-backdrop" onClick={() => setAccountOpen(false)}>
-          <section
-            className="modal panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="account-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="section-heading">
-              <h2 id="account-title">Your account</h2>
-              <button
-                className="icon-button"
-                aria-label="Close account"
-                onClick={() => setAccountOpen(false)}
-              >
-                <X size={20} />
-              </button>
-            </div>
+      {user && (
+        <ResponsiveDialog
+          open={accountOpen}
+          onOpenChange={setAccountOpen}
+          title="Your account"
+          size="sm"
+        >
+          <div className="account-form">
             <p>Connected with Google · {user.email}</p>
             <form
               onSubmit={(e) => {
@@ -1393,6 +1460,7 @@ export default function League() {
                 const form = new FormData(e.currentTarget);
                 void act(async () => {
                   await api("profile", { name: form.get("name") });
+                  window.dispatchEvent(new Event("account-changed"));
                   await load(week);
                   setAccountOpen(false);
                   setNotice("Display name updated.");
@@ -1401,7 +1469,7 @@ export default function League() {
             >
               <label>
                 League display name
-                <input
+                <Input
                   name="name"
                   defaultValue={user.name}
                   minLength={2}
@@ -1410,14 +1478,18 @@ export default function League() {
                   required
                 />
               </label>
-              <button className="primary" disabled={busy}>
+              <CustomButton
+                variant="unstyled"
+                className="primary"
+                disabled={busy}
+              >
                 Save display name
-              </button>
+              </CustomButton>
             </form>
-          </section>
-        </div>
+          </div>
+        </ResponsiveDialog>
       )}
-    </>
+    </div>
   );
 }
 function Rules() {
@@ -1525,28 +1597,5 @@ function Rules() {
         </p>
       </section>
     </div>
-  );
-}
-
-function GoogleMark() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="#4285F4"
-        d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-1.99 3.02v2.51h3.23c1.89-1.74 2.98-4.3 2.98-7.36Z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.23-2.51c-.9.6-2.05.96-3.39.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M6.41 13.92a6 6 0 0 1 0-3.84V7.49H3.07a10 10 0 0 0 0 9.02l3.34-2.59Z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.96c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.93 5.49l3.34 2.59A6 6 0 0 1 12 5.96Z"
-      />
-    </svg>
   );
 }

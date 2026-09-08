@@ -1,4 +1,4 @@
-import League from "@/components/league";
+import { Home } from "@/components/personal-pages";
 export default function Page() {
-  return <League />;
+  return <Home />;
 }

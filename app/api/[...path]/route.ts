@@ -93,6 +93,13 @@ export async function GET(
     }
     const { state } = await readState();
     const user = await session(req, state);
+    if (route === "account")
+      return json({
+        user: user
+          ? { id: user.id, name: user.name, email: user.email, role: user.role }
+          : null,
+        authentication: { provider: "google", ready: googleConfigured() },
+      });
     if (route === "health")
       return json({
         ok: true,

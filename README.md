@@ -1,4 +1,4 @@
-# Pick 4 — 2026 NFL league
+# Jack Rocca — personal site and Pick 4
 
 Jack Rocca’s single NFL pick’em league with Google sign-in, rebuilt for Vercel using Next.js, React, TypeScript, and private Vercel Blob storage. The original Streamlit application and historical CSV files remain in the repository for reference; the new app starts a fresh 2026 league and does not import those accounts or results.
 
@@ -14,7 +14,7 @@ npm run dev -- --port 3106
 
 Without a Blob token, development stores data in `work/league.local.json`. Production refuses to start its API without private cloud storage. Never use local filesystem persistence on Vercel.
 
-Open `http://localhost:3106`. Every successful Google sign-in creates or resumes one account in this league. There is no league creation, invitation, username, or app-password flow. Only the verified Google email configured as `OWNER_EMAIL` receives commissioner access; the first person to sign in is not automatically the commissioner. Players can update their league display name in **Your account**. Sessions use HTTP-only cookies and expire after 14 days.
+Open `http://localhost:3106` for the personal site or `/pick4` for the league. Every successful Google sign-in creates or resumes one account in this league. There is no league creation, invitation, username, or app-password flow. Only the verified Google email configured as `OWNER_EMAIL` receives commissioner access; the first person to sign in is not automatically the commissioner. Players can update their league display name in **Your account**. Sessions use HTTP-only cookies and expire after 14 days.
 
 ## Google sign-in configuration
 
@@ -86,3 +86,13 @@ For an isolated API integration run, use `npx tsx scripts/check-api.ts`. It call
 
 - [Google OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect)
 - [Google web-server OAuth flow](https://developers.google.com/identity/protocols/oauth2/web-server)
+
+## Personal site and Kitze UI
+
+The homepage is Jack Rocca’s personal site, with `/photography`, `/writing`, `/projects`, and `/account`. Pick 4 lives at `/pick4`. Writing links to the supplied Substack profile; photography intentionally has no placeholder portfolio images. The existing Google session is shared across these pages. OAuth uses the same `/api/auth/callback/google` and an allowlisted, signed return destination. The account endpoint returns only the signed-in member’s own profile.
+
+UI source is installed from [Kitze UI](https://ui.kitze.io/guide), a shadcn registry built on Base UI and Tailwind. Buttons, Google login, inputs, checkboxes, selects, segmented navigation, dialogs, mobile drawers, alerts, badges, page headers, and accordions use its components. Football cards, tables, and scoring displays compose those primitives with league-specific styling scoped to `.league-app`.
+
+Registry sources reside in `components/`, `components/ui/`, `hooks/`, and `lib/kitze-types.ts`. **Do not overwrite `lib/types.ts` when updating the registry:** it contains the league’s domain model. Redirect registry type imports to `lib/kitze-types.ts`. Local adaptations preserve structured children for unstyled buttons, expose select labels/disabled choices, keep the current selection when reselected, forward drawer trigger semantics to native buttons, and respect reduced motion. Registry provenance is recorded in `THIRD_PARTY_NOTICES.md`.
+
+This deploy uses the existing personal Vercel project. It does not attach or alter `jackrocca.com`; domain setup remains a separate step, including Google authorized origin/callback updates and `APP_URL` if the canonical origin changes.

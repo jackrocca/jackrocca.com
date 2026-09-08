@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { newToken, safeSecret, secret, loginResponse, tokenHash } from "./auth";
 import { googleProfileSchema, joinLeagueWithGoogle } from "./google-account";
 import { mutate, audit, rateLimit } from "./store";
+import { authReturnPath } from "./auth-navigation";
 const FLOW_COOKIE = "pick4-google-flow";
 export function googleConfigured() {
   return Boolean(
@@ -29,10 +30,13 @@ function client() {
 }
 export async function startGoogle(req: NextRequest) {
   const origin = appOrigin();
+  const returnTo = authReturnPath(req.nextUrl.searchParams.get("returnTo"));
   if (new URL(req.url).origin !== origin)
-    return NextResponse.redirect(`${origin}/api/auth/google`);
+    return NextResponse.redirect(
+      `${origin}/api/auth/google?returnTo=${encodeURIComponent(returnTo)}`,
+    );
   if (!googleConfigured())
-    return NextResponse.redirect(`${origin}/?authError=unavailable`);
+    return NextResponse.redirect(`${origin}${returnTo}?authError=unavailable`);
   const ip =
     req.headers.get("x-vercel-forwarded-for")?.split(",")[0] ??
     req.headers.get("x-forwarded-for")?.split(",")[0] ??
@@ -43,7 +47,7 @@ export async function startGoogle(req: NextRequest) {
     nonce = newToken();
   const { codeVerifier, codeChallenge } =
     await oauth.generateCodeVerifierAsync();
-  const flow = await new SignJWT({ state, nonce, codeVerifier })
+  const flow = await new SignJWT({ state, nonce, codeVerifier, returnTo })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer("pick4-oauth")
     .setAudience("google-sign-in")
@@ -83,18 +87,28 @@ export async function validateGoogleFlow(flow: string, state: string) {
     !safeSecret(state, payload.state)
   )
     throw new Error("Invalid OAuth state.");
-  return { nonce: payload.nonce, codeVerifier: payload.codeVerifier };
+  return {
+    nonce: payload.nonce,
+    codeVerifier: payload.codeVerifier,
+    returnTo: authReturnPath(payload.returnTo),
+  };
 }
 export async function finishGoogle(req: NextRequest) {
   const origin = appOrigin();
-  let response = NextResponse.redirect(`${origin}/?authError=failed`);
+  let response = NextResponse.redirect(`${origin}/pick4?authError=failed`);
   try {
     const flow = req.cookies.get(FLOW_COOKIE)?.value;
     const state = req.nextUrl.searchParams.get("state");
     if (!flow || !state) throw new Error("Missing OAuth state.");
-    const { nonce, codeVerifier } = await validateGoogleFlow(flow, state);
+    const { nonce, codeVerifier, returnTo } = await validateGoogleFlow(
+      flow,
+      state,
+    );
+    response = NextResponse.redirect(`${origin}${returnTo}?authError=failed`);
     if (req.nextUrl.searchParams.get("error")) {
-      response = NextResponse.redirect(`${origin}/?authError=canceled`);
+      response = NextResponse.redirect(
+        `${origin}${returnTo}?authError=canceled`,
+      );
     } else {
       const code = req.nextUrl.searchParams.get("code");
       if (!code || code.length > 4096) throw new Error("Missing OAuth code.");
@@ -131,7 +145,10 @@ export async function finishGoogle(req: NextRequest) {
           );
         return user;
       });
-      response = await loginResponse(user, NextResponse.redirect(origin));
+      response = await loginResponse(
+        user,
+        NextResponse.redirect(`${origin}${returnTo}`),
+      );
     }
   } catch {
     // OAuth errors can contain tokens or authorization codes. Never log the raw error.

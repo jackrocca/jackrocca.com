@@ -47,6 +47,12 @@ async function main() {
     return response;
   }
   try {
+    const guestAccount = await (await request("account")).json();
+    assert.equal(guestAccount.user, null);
+    assert.deepEqual(Object.keys(guestAccount).sort(), [
+      "authentication",
+      "user",
+    ]);
     const initial = await (await request("state")).json();
     assert.equal(initial.user, null);
     assert.equal(initial.authentication.provider, "google");
@@ -116,6 +122,20 @@ async function main() {
       ),
     );
     const [admin, player, second] = cookies;
+    const accountResponse = await request("account", undefined, 200, player);
+    assert.equal(
+      accountResponse.headers.get("cache-control"),
+      "private, no-store",
+    );
+    const account = await accountResponse.json();
+    assert.deepEqual(account.user, {
+      id: users[1].id,
+      name: "player",
+      email: "player@gmail.com",
+      role: "player",
+    });
+    assert.deepEqual(Object.keys(account).sort(), ["authentication", "user"]);
+    assert.ok(!JSON.stringify(account).includes("googleSub"));
     await request(
       "profile",
       { name: "Bad origin" },
