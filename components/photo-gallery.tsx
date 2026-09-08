@@ -40,10 +40,7 @@ export function PhotoGallery() {
       const request = ++requestId.current;
       setBusy(true);
       setError("");
-      if (!offset) {
-        setData(null);
-        setSelected(null);
-      }
+      if (!offset) setSelected(null);
       const params = new URLSearchParams();
       if (filter) params.set(filter.kind, filter.id);
       if (rating !== "all") params.set("rating", rating);
@@ -78,6 +75,7 @@ export function PhotoGallery() {
   }, [load, reload]);
   useEffect(() => {
     const refresh = () => {
+      setData(null);
       setFilter(null);
       setSearch("");
       setQuery("");
@@ -113,6 +111,7 @@ export function PhotoGallery() {
   return (
     <main
       id="main-content"
+      aria-busy={busy}
       className="mx-auto w-full max-w-[1800px] px-3 pb-12 pt-3 sm:px-6 sm:pt-6"
     >
       <h1 className="sr-only">Jack Rocca photography</h1>
