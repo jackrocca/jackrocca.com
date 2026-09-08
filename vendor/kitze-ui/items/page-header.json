@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "page-header",
+  "title": "Page Header",
+  "description": "An application header with left/middle/right content slots, optional scroll-fixed positioning and a shared drawer-menu trigger. Use it to keep header sizing and mobile navigation composition consistent across screens instead of rebuilding header and drawer wiring together.",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/custom-button.json",
+    "https://ui.kitze.io/r/bottom-drawer.json"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/useScrolledPast.ts",
+      "content": "import { useState, useEffect } from \"react\";\n\nexport const useScrolledPast = (threshold = 0) => {\n  const [isScrolledPast, setIsScrolledPast] = useState(false);\n  useEffect(() => {\n    const handleScroll = () => {\n      setIsScrolledPast(window.scrollY > threshold);\n    };\n    window.addEventListener(\"scroll\", handleScroll);\n    return () => window.removeEventListener(\"scroll\", handleScroll);\n  }, [threshold]);\n  return isScrolledPast;\n};\n",
+      "type": "registry:hook",
+      "target": "hooks/useScrolledPast.ts"
+    },
+    {
+      "path": "registry/new-york/page-header/PageHeader.tsx",
+      "content": "\"use client\";\n\nimport { LucideMenu } from \"lucide-react\";\nimport type { ReactNode } from \"react\";\nimport { useState } from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport { useScrolledPast } from \"@/registry/hooks/useScrolledPast\";\nimport { BottomDrawer } from \"@/registry/new-york/bottom-drawer/BottomDrawer\";\nimport { CustomButton } from \"@/registry/new-york/custom-button/CustomButton\";\n\nexport interface PageHeaderClassNames {\n  root?: string;\n  container?: string;\n  leftSide?: string;\n  middle?: string;\n  rightSide?: string;\n  menuButton?: string;\n  pastScrolled?: string;\n}\n\nexport interface PageHeaderProps {\n  leftSide?: ReactNode;\n  middle?: ReactNode;\n  drawerContent?: ReactNode | undefined;\n  classNames?: PageHeaderClassNames;\n  height?: number;\n  fixedOnScroll?: boolean;\n  renderRightSide?: (props: {\n    menuButton: ReactNode;\n    bottomDrawer: (children: ReactNode) => ReactNode;\n  }) => ReactNode;\n}\n\nexport const PageHeader: ReactFC<PageHeaderProps> = ({\n  leftSide,\n  middle,\n  drawerContent,\n  classNames,\n  renderRightSide,\n  height = 80,\n  fixedOnScroll = false,\n}) => {\n  const isScrolled = useScrolledPast(height);\n  const [isOpen, setIsOpen] = useState(false);\n\n  const menuButton = (\n    <CustomButton\n      variant=\"ghost\"\n      leftIcon={LucideMenu}\n      className={cn(classNames?.menuButton)}\n      aria-label=\"Menu\"\n      iconSize={20}\n    />\n  );\n\n  const bottomDrawer = (children: ReactNode) => (\n    <BottomDrawer open={isOpen} onOpenChange={setIsOpen} trigger={menuButton}>\n      {children}\n    </BottomDrawer>\n  );\n\n  const applyFixed = fixedOnScroll ? isScrolled : false;\n\n  return (\n    <div\n      style={{\n        height,\n      }}\n      className={cn(\n        \"z-30 flex w-full items-center justify-between\",\n        \"backdrop-blur-xl transition-all duration-200\",\n        \"text-foreground/80\",\n        {\n          \"r-0 dark:bg-background/80 fixed top-0 left-0 shadow-sm\": applyFixed,\n        },\n        classNames?.root\n      )}\n    >\n      <div\n        className={cn(\n          \"flex w-full max-w-[1200px] items-center justify-between px-4 py-3\",\n          classNames?.container\n        )}\n      >\n        <div className={cn(\"flex-1\", classNames?.leftSide)}>{leftSide}</div>\n\n        {middle && (\n          <div className={cn(\"flex-1 text-center\", classNames?.middle)}>\n            {middle}\n          </div>\n        )}\n\n        <div className={cn(\"flex flex-1 justify-end\", classNames?.rightSide)}>\n          {renderRightSide?.({ bottomDrawer, menuButton }) ??\n            (drawerContent ? bottomDrawer(drawerContent) : null)}\n        </div>\n      </div>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/PageHeader.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

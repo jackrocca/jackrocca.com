@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "theme-switch-minimal",
+  "title": "Theme Switch Minimal",
+  "description": "A compact light/dark theme control with an application-supplied value and change handler. Use it to share the visual theme-switch interaction without coupling the control to a theme storage library; the next-themes variant provides that integration when needed.",
+  "dependencies": [
+    "motion",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/custom-button.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/theme-switch-minimal/ThemeSwitchMinimal.tsx",
+      "content": "\"use client\";\n\nimport { LucideSun, LucideMoon, LucideComputer } from \"lucide-react\";\nimport { motion, AnimatePresence } from \"motion/react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport type { CustomButtonProps } from \"@/registry/new-york/custom-button/CustomButton\";\nimport { CustomButton } from \"@/registry/new-york/custom-button/CustomButton\";\n\nexport interface ThemeSwitchMinimalClassNames {\n  button?: string | undefined;\n  icon?: string | undefined;\n}\nexport interface ThemeSwitchMinimalProps extends Omit<\n  CustomButtonProps,\n  \"classNames\"\n> {\n  classNames?: ThemeSwitchMinimalClassNames | undefined;\n  buttonProps?: Partial<CustomButtonProps> | undefined;\n  theme: string;\n  setTheme: (theme: string) => void;\n}\nexport const ThemeSwitchMinimal: ReactFC<ThemeSwitchMinimalProps> = ({\n  className,\n  classNames,\n  buttonProps,\n  theme,\n  setTheme,\n  ...rest\n}) => {\n  const isDark = theme === \"dark\";\n  const isSystem = theme === \"system\";\n  const getIcon = () => {\n    if (isDark) {\n      return \"dark\";\n    }\n    if (isSystem) {\n      return \"system\";\n    }\n    return \"light\";\n  };\n  return (\n    <CustomButton\n      className={cn(\"relative h-9 w-9 p-0\", className, classNames?.button)}\n      onClick={() => {\n        if (isDark) {\n          setTheme(\"light\");\n        } else {\n          setTheme(isSystem ? \"dark\" : \"system\");\n        }\n      }}\n      {...buttonProps}\n      {...rest}\n    >\n      <AnimatePresence mode=\"wait\">\n        {(() => {\n          switch (getIcon()) {\n            case \"dark\": {\n              return (\n                <motion.div\n                  key=\"moon\"\n                  initial={{\n                    opacity: 0,\n                    rotate: -30,\n                    y: 10,\n                  }}\n                  animate={{\n                    opacity: 1,\n                    rotate: 0,\n                    y: 0,\n                  }}\n                  exit={{\n                    opacity: 0,\n                    rotate: 30,\n                    y: -10,\n                  }}\n                  transition={{\n                    duration: 0.2,\n                  }}\n                >\n                  <LucideMoon className={cn(\"size-4\", classNames?.icon)} />\n                </motion.div>\n              );\n            }\n            case \"system\": {\n              return (\n                <motion.div\n                  key=\"system\"\n                  initial={{\n                    opacity: 0,\n                    scale: 0.5,\n                  }}\n                  animate={{\n                    opacity: 1,\n                    scale: 1,\n                  }}\n                  exit={{\n                    opacity: 0,\n                    scale: 1.5,\n                  }}\n                  transition={{\n                    duration: 0.2,\n                  }}\n                >\n                  <LucideComputer className={cn(\"size-4\", classNames?.icon)} />\n                </motion.div>\n              );\n            }\n            default: {\n              return (\n                <motion.div\n                  key=\"sun\"\n                  initial={{\n                    opacity: 0,\n                    rotate: -30,\n                    y: -10,\n                  }}\n                  animate={{\n                    opacity: 1,\n                    rotate: 0,\n                    y: 0,\n                  }}\n                  exit={{\n                    opacity: 0,\n                    rotate: 30,\n                    y: 10,\n                  }}\n                  transition={{\n                    duration: 0.2,\n                  }}\n                >\n                  <LucideSun className={cn(\"size-4\", classNames?.icon)} />\n                </motion.div>\n              );\n            }\n          }\n        })()}\n      </AnimatePresence>\n    </CustomButton>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/ThemeSwitchMinimal.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

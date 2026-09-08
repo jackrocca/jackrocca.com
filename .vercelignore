@@ -1,0 +1,10 @@
+work
+.git
+.env*
+legacy
+vendor
+assets
+.github
+tests
+docs
+*.md

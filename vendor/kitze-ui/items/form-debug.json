@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "form-debug",
+  "title": "Form Debug",
+  "description": "A development helper for inspecting form state while integrating react-hook-form fields. Use it when debugging values and validation rather than adding temporary JSON panels throughout a form; it is not a production-facing input.",
+  "dependencies": [
+    "react-hook-form"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/form-debug/FormDebug.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\nimport type { FieldValues, UseFormReturn } from \"react-hook-form\";\n\nimport { cn } from \"@/lib/utils\";\n\ninterface FormDebugProps<T extends FieldValues> {\n  form: UseFormReturn<T>;\n  className?: string | undefined;\n  /**\n   * Show only when NODE_ENV is development or when forced\n   */\n  showInProduction?: boolean | undefined;\n}\nexport const FormDebug = <T extends FieldValues>({\n  form,\n  className,\n  showInProduction = false,\n}: FormDebugProps<T>) => {\n  // Don't render in production unless forced\n  if (process.env.NODE_ENV === \"production\" && !showInProduction) {\n    return null;\n  }\n  const { formState, watch } = form;\n  const values = watch();\n  const { errors, isValid, isDirty, isSubmitting, isSubmitted } = formState;\n  return (\n    <div\n      className={cn(\n        \"bg-muted/40 vertical fixed bottom-4 left-4 w-[350px] rounded-lg border border-dashed p-4 font-mono text-xs\",\n        className\n      )}\n    >\n      <div className=\"mb-2 flex items-center justify-between\">\n        <h3 className=\"font-semibold\">Form Debug</h3>\n        <div className=\"flex items-center gap-2\">\n          <span title=\"Is Valid\" className=\"flex items-center gap-1\">\n            Valid: {isValid ? \"✅\" : \"❌\"}\n          </span>\n          <span title=\"Is Dirty\" className=\"flex items-center gap-1\">\n            Changed: {isDirty ? \"✅\" : \"❌\"}\n          </span>\n          <span title=\"Is Submitting\" className=\"flex items-center gap-1\">\n            Submitting: {isSubmitting ? \"⏳\" : \"⏸️\"}\n          </span>\n          <span title=\"Is Submitted\" className=\"flex items-center gap-1\">\n            Submitted: {isSubmitted ? \"✅\" : \"❌\"}\n          </span>\n        </div>\n      </div>\n\n      <div className=\"vertical grid-cols-2 gap-4\">\n        <div>\n          <h4 className=\"mb-1 font-semibold\">Values</h4>\n          <pre className=\"bg-muted max-h-96 overflow-auto rounded p-2\">\n            {JSON.stringify(values, null, 2)}\n          </pre>\n        </div>\n        <div>\n          <h4 className=\"mb-1 font-semibold\">Errors</h4>\n          <pre className=\"bg-muted max-h-96 overflow-auto rounded p-2\">\n            {Object.keys(errors).length\n              ? JSON.stringify(errors, null, 2)\n              : \"No errors 🎉\"}\n          </pre>\n        </div>\n      </div>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/FormDebug.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

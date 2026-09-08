@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "popover",
+  "title": "Popover",
+  "description": "Kitze UI’s styled Base UI primitives for anchored panels. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/popover.tsx",
+      "content": "\"use client\";\n\nimport { Popover as PopoverPrimitive } from \"@base-ui/react/popover\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst Popover = ({ ...props }: PopoverPrimitive.Root.Props) => (\n  <PopoverPrimitive.Root data-slot=\"popover\" {...props} />\n);\nconst PopoverTrigger = ({ ...props }: PopoverPrimitive.Trigger.Props) => (\n  <PopoverPrimitive.Trigger data-slot=\"popover-trigger\" {...props} />\n);\nconst PopoverContent = ({\n  className,\n  align = \"center\",\n  alignOffset = 0,\n  side = \"bottom\",\n  sideOffset = 4,\n  ...props\n}: PopoverPrimitive.Popup.Props &\n  Pick<\n    PopoverPrimitive.Positioner.Props,\n    \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\"\n  >) => (\n  <PopoverPrimitive.Portal>\n    <PopoverPrimitive.Positioner\n      align={align}\n      alignOffset={alignOffset}\n      side={side}\n      sideOffset={sideOffset}\n      className=\"isolate z-50\"\n    >\n      <PopoverPrimitive.Popup\n        data-slot=\"popover-content\"\n        className={cn(\n          \"bg-popover text-popover-foreground z-50 w-72 origin-(--transform-origin) rounded-xl border p-4 shadow-md transition-[opacity,scale] duration-150 ease-out outline-none data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none\",\n          className\n        )}\n        {...props}\n      />\n    </PopoverPrimitive.Positioner>\n  </PopoverPrimitive.Portal>\n);\nexport { Popover, PopoverTrigger, PopoverContent };\n",
+      "type": "registry:ui",
+      "target": "components/ui/popover.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}

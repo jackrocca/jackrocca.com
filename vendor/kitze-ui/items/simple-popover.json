@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "simple-popover",
+  "title": "Simple Popover",
+  "description": "A trigger-and-content API over the popover primitives. It centralizes open state, positioning and standard content styling for small anchored panels. Use it for ordinary popovers instead of repeating Root, Trigger, Portal, Positioner and Popup composition; use the primitive when the panel needs a custom structure.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/popover.json",
+    "https://ui.kitze.io/r/kitze-ui-context.json",
+    "https://ui.kitze.io/r/bottom-drawer.json"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/useControlledOpen.ts",
+      "content": "import { useState } from \"react\";\n\ninterface UseControlledOpenProps {\n  open?: boolean | undefined;\n  onOpenChange?: ((open: boolean) => void) | undefined;\n}\n\ninterface UseControlledOpenResult {\n  isOpen: boolean;\n  setIsOpen: (open: boolean) => void;\n  close: () => void;\n}\n\nexport const useControlledOpen = ({\n  open,\n  onOpenChange,\n}: UseControlledOpenProps): UseControlledOpenResult => {\n  const [internalOpen, setInternalOpen] = useState(false);\n\n  // Determine if the component is controlled or uncontrolled\n  const isControlled = open !== undefined;\n  const isOpen = isControlled ? open : internalOpen;\n\n  const setIsOpen = (newOpen: boolean) => {\n    if (!isControlled) {\n      setInternalOpen(newOpen);\n    }\n    if (onOpenChange) {\n      onOpenChange(newOpen);\n    }\n  };\n\n  const close = () => setIsOpen(false);\n\n  return { close, isOpen, setIsOpen };\n};\n",
+      "type": "registry:hook",
+      "target": "hooks/useControlledOpen.ts"
+    },
+    {
+      "path": "registry/new-york/simple-popover/index.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\n\nimport {\n  Popover,\n  PopoverContent,\n  PopoverTrigger,\n} from \"@/components/ui/popover\";\nimport type { ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport { useControlledOpen } from \"@/registry/hooks/useControlledOpen\";\nimport type { BottomDrawerProps } from \"@/registry/new-york/bottom-drawer/BottomDrawer\";\nimport { BottomDrawer } from \"@/registry/new-york/bottom-drawer/BottomDrawer\";\nimport { useKitzeUI } from \"@/registry/new-york/kitze-ui-context/KitzeUIContext\";\n\n// Define MobileViewType for Popover\nexport type PopoverMobileViewType = \"keep\" | \"bottom-drawer\";\nexport interface SimplePopoverClassNames {\n  content?: string;\n  // Class for drawer content\n  drawer?: string;\n}\nexport interface SimplePopoverProps {\n  trigger?: React.ReactNode;\n  content: React.ReactNode;\n  classNames?: SimplePopoverClassNames;\n  align?: \"start\" | \"center\" | \"end\";\n  sideOffset?: number;\n  open?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  // Mobile specific props\n  mobileView?: PopoverMobileViewType;\n  drawerTitle?: string;\n  drawerProps?: Partial<\n    Omit<\n      BottomDrawerProps,\n      \"children\" | \"trigger\" | \"title\" | \"open\" | \"onOpenChange\"\n    >\n  >;\n}\nexport const SimplePopover: ReactFC<SimplePopoverProps> = ({\n  trigger,\n  content,\n  classNames,\n  align = \"center\",\n  sideOffset = 4,\n  open,\n  onOpenChange,\n  mobileView = \"keep\",\n  drawerTitle,\n  drawerProps,\n}) => {\n  const { isMobile } = useKitzeUI();\n  const { isOpen, setIsOpen } = useControlledOpen({\n    onOpenChange,\n    open,\n  });\n\n  // --- Mobile Rendering (Bottom Drawer) ---\n  if (isMobile && mobileView === \"bottom-drawer\") {\n    return (\n      <BottomDrawer\n        open={isOpen}\n        onOpenChange={setIsOpen}\n        trigger={trigger}\n        title={drawerTitle}\n        classNames={{\n          // Combine classes\n          content: cn(classNames?.drawer, drawerProps?.classNames?.content),\n          ...drawerProps?.classNames,\n        }}\n        {...drawerProps}\n      >\n        {/* Apply padding or specific styling if needed */}\n        <div className=\"py-2\">{content}</div>\n      </BottomDrawer>\n    );\n  }\n\n  // --- Default Popover Rendering (Desktop or mobileView='keep') ---\n  return (\n    <Popover open={isOpen} onOpenChange={setIsOpen}>\n      {trigger && (\n        <PopoverTrigger\n          render={\n            React.isValidElement(trigger) ? (\n              trigger\n            ) : (\n              <button type=\"button\">{trigger}</button>\n            )\n          }\n        />\n      )}\n      <PopoverContent\n        className={classNames?.content}\n        align={align}\n        sideOffset={sideOffset}\n      >\n        {content}\n      </PopoverContent>\n    </Popover>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/index.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

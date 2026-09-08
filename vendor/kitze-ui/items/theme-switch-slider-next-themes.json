@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "theme-switch-slider-next-themes",
+  "title": "Theme Switch Slider with Next-Themes",
+  "description": "The sliding theme switch connected to next-themes. Use it in apps already using ThemeProvider to avoid repeating theme reads and setTheme wiring around the visual switch. Use the framework-independent theme switch when another system owns the theme.",
+  "dependencies": [
+    "next-themes"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/theme-switch-slider.json"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/useMounted.ts",
+      "content": "\"use client\";\n\nimport { useSyncExternalStore } from \"react\";\n\nconst unsubscribe = () => {\n  // Mount state never changes after hydration, so there is nothing to tear down.\n};\nconst subscribe = () => unsubscribe;\nexport const useMounted = () =>\n  useSyncExternalStore(\n    subscribe,\n    () => true,\n    () => false\n  );\n",
+      "type": "registry:hook",
+      "target": "hooks/useMounted.ts"
+    },
+    {
+      "path": "registry/new-york/theme-switch-slider-next-themes/ThemeSwitchNextThemes.tsx",
+      "content": "\"use client\";\n\nimport { useTheme } from \"next-themes\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport { useMounted } from \"@/registry/hooks/useMounted\";\nimport { ThemeSwitchSlider } from \"@/registry/new-york/theme-switch-slider/ThemeSwitchSlider\";\n\nexport interface ThemeSwitchNextThemesProps {\n  className?: string | undefined;\n}\n\nexport const ThemeSwitchNextThemes: ReactFC<ThemeSwitchNextThemesProps> = ({\n  className,\n}) => {\n  const { theme, resolvedTheme, setTheme } = useTheme();\n  const isDark = resolvedTheme === \"dark\";\n  const toggleTheme = () => setTheme(isDark ? \"light\" : \"dark\");\n  const mounted = useMounted();\n\n  if (!mounted) {\n    return null;\n  }\n\n  return (\n    <ThemeSwitchSlider\n      theme={theme || \"light\"}\n      setTheme={setTheme}\n      isDark={isDark}\n      toggleTheme={toggleTheme}\n      className={className}\n    />\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/ThemeSwitchNextThemes.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

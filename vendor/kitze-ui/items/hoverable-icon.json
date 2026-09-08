@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "hoverable-icon",
+  "title": "Hoverable Icon",
+  "description": "A reusable interactive icon treatment with consistent hover behavior and optional tooltip. Use it for compact secondary actions rather than repeatedly styling naked icons as click targets; give the action an accessible name.",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/conditional-tooltip.json"
+  ],
+  "files": [
+    {
+      "path": "registry/hooks/useLinkableComponent.ts",
+      "content": "\"use client\";\n\nimport Link from \"next/link\";\nimport * as React from \"react\";\n\nexport interface LinkableProps {\n  href?: string | undefined;\n  external?: boolean | undefined;\n  target?: string | undefined;\n  rel?: string | undefined;\n  as?: React.ElementType | undefined;\n}\nexport const useLinkableComponent = <T extends LinkableProps>({\n  href,\n  external,\n  as = \"div\",\n  ...rest\n}: T) => {\n  const isExternal =\n    external ??\n    (href?.startsWith(\"http\") ||\n      href?.startsWith(\"mailto:\") ||\n      href?.startsWith(\"tel:\"));\n  if (href) {\n    if (isExternal) {\n      return {\n        Component: \"a\" as const,\n        href,\n        linkProps: {\n          rel: \"noopener noreferrer\",\n          target: \"_blank\",\n          ...rest,\n        },\n      };\n    }\n    return {\n      Component: Link,\n      href,\n      linkProps: {\n        ...rest,\n      },\n    };\n  }\n  return {\n    Component: as,\n    href,\n    linkProps: {\n      ...rest,\n    },\n  };\n};\n",
+      "type": "registry:hook",
+      "target": "hooks/useLinkableComponent.ts"
+    },
+    {
+      "path": "registry/new-york/hoverable-icon/HoverableIcon.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport type { Size, ReactFC } from \"@/lib/types\";\nimport { cn } from \"@/lib/utils\";\nimport { useLinkableComponent } from \"@/registry/hooks/useLinkableComponent\";\nimport { ConditionalTooltip } from \"@/registry/new-york/conditional-tooltip/ConditionalTooltip\";\n\nexport interface HoverableIconClassNames {\n  root?: string | undefined;\n  icon?: string | undefined;\n  tooltip?: string | undefined;\n}\nexport const iconSizes: Record<Size, number> = {\n  lg: 24,\n  md: 20,\n  sm: 16,\n  xl: 28,\n  xs: 14,\n};\n\n/** Any icon component with a lucide-compatible signature (lucide-react, @icons-pack/react-simple-icons, ...). */\nexport type HoverableIconComponent = React.ElementType;\nexport interface HoverableIconProps {\n  Icon: HoverableIconComponent;\n  href?: string | undefined;\n  external?: boolean | undefined;\n  size?: Size | number | undefined;\n  defaultColor?: string | undefined;\n  tooltip?: string | undefined;\n  classNames?: HoverableIconClassNames | undefined;\n}\nconst isPresetSize = (size: Size | number): size is Size =>\n  typeof size === \"string\";\n\nexport const HoverableIcon: ReactFC<HoverableIconProps> = ({\n  Icon,\n  href,\n  external = true,\n  size = \"md\",\n  defaultColor,\n  tooltip,\n  classNames,\n}) => {\n  const { Component, linkProps } = useLinkableComponent({\n    external,\n    href,\n  });\n\n  // Determine icon size - either from predefined sizes or custom number\n  const iconSize = isPresetSize(size) ? iconSizes[size] : size;\n\n  // Setup base className for the element\n  const elementClassName = cn(\n    defaultColor,\n    \"cursor-pointer opacity-80 transition-opacity hover:opacity-100\",\n    classNames?.root\n  );\n\n  const iconElement = (\n    <Component {...linkProps} className={elementClassName} href={href}>\n      <Icon size={iconSize} className={cn(classNames?.icon)} />\n    </Component>\n  );\n  return (\n    <ConditionalTooltip\n      condition={!!tooltip}\n      content={tooltip}\n      classNames={{\n        tooltip: classNames?.tooltip,\n      }}\n    >\n      {iconElement}\n    </ConditionalTooltip>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/HoverableIcon.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

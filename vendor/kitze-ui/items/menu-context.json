@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "menu-context",
+  "title": "Menu Context",
+  "description": "Internal context shared by dropdown menus, context menus and bottom-drawer menus. It tells CommonMenuItem which surface to render and how to close its owning menu. Menu wrappers install and provide it automatically; use it when implementing a compatible menu surface, not as a standalone visible component.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/menu-context/MenuContext.tsx",
+      "content": "\"use client\";\n\nimport React, { createContext, useContext, useMemo } from \"react\";\n\ntype MenuType = \"dropdown\" | \"context\" | \"bottom-drawer\";\n\ninterface MenuContextValue {\n  menuType: MenuType;\n  open?: boolean | undefined;\n  closeMenu?: (() => void) | undefined;\n}\n\nconst MenuContext = createContext<MenuContextValue | undefined>(undefined);\n\nexport const MenuProvider = ({\n  children,\n  menuType,\n  closeMenu,\n  open = true,\n}: {\n  children: React.ReactNode;\n  menuType: MenuType;\n  open?: boolean | undefined;\n  closeMenu?: (() => void) | undefined;\n}) => {\n  const value = useMemo(\n    () => ({ closeMenu, menuType, open }),\n    [menuType, closeMenu, open]\n  );\n\n  return <MenuContext.Provider value={value}>{children}</MenuContext.Provider>;\n};\n\nexport const useMenuContext = (): MenuContextValue => {\n  const context = useContext(MenuContext);\n  if (!context) {\n    throw new Error(\"Menu components must be used within a MenuProvider\");\n  }\n  return context;\n};\n",
+      "type": "registry:component",
+      "target": "components/MenuContext.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

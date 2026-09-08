@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "full-page-spinner",
+  "title": "Full Page Spinner",
+  "description": "A page-level loading layout around the shared Spinner. Use it while an entire page is waiting for data or a route boundary to resolve, rather than rebuilding centering and viewport layout at each loading boundary.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/spinner.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/full-page-spinner/FullPageSpinner.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport type { ReactFC } from \"@/lib/types\";\nimport type { SpinnerProps } from \"@/registry/new-york/spinner/Spinner\";\nimport { Spinner } from \"@/registry/new-york/spinner/Spinner\";\n\nexport type FullPageSpinnerProps = SpinnerProps;\nexport const FullPageSpinner: ReactFC<FullPageSpinnerProps> = ({\n  size = \"xl\",\n  ...props\n}) => (\n  <div className=\"flex min-h-screen min-w-screen items-center justify-center\">\n    <Spinner size={size} {...props} />\n  </div>\n);\n",
+      "type": "registry:component",
+      "target": "components/FullPageSpinner.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

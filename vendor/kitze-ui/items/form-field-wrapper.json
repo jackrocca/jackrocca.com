@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "form-field-wrapper",
+  "title": "Form Field Wrapper",
+  "description": "The common react-hook-form field shell for label, control, description and validation message composition. Use it to give custom field controls the same form integration and error layout as the prebuilt FormField components.",
+  "dependencies": [
+    "react-hook-form",
+    "@hookform/resolvers",
+    "zod"
+  ],
+  "registryDependencies": [
+    "form",
+    "button",
+    "card",
+    "https://ui.kitze.io/r/form-field-input.json",
+    "https://ui.kitze.io/r/form-debug.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/form-field-wrapper/FormFieldWrapper.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\nimport type {\n  FieldValues,\n  FieldPath,\n  FieldPathValue,\n  ControllerRenderProps,\n} from \"react-hook-form\";\nimport { useFormContext } from \"react-hook-form\";\n\nimport {\n  FormControl,\n  FormDescription,\n  FormField,\n  FormItem,\n  FormLabel,\n  FormMessage,\n} from \"@/components/ui/form\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface FormFieldWrapperProps<\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n> {\n  name: TName;\n  label?: React.ReactNode | undefined;\n  renderLabel?: (() => React.ReactNode) | undefined;\n  description?: React.ReactNode | undefined;\n  className?: string | undefined;\n  required?: boolean | undefined;\n  defaultValue?: FieldPathValue<TFieldValues, TName> | undefined;\n  children: (\n    field: ControllerRenderProps<TFieldValues, TName>\n  ) => React.ReactNode;\n}\nexport const FormFieldWrapper = <\n  TFieldValues extends FieldValues = FieldValues,\n  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,\n>({\n  name,\n  label,\n  renderLabel,\n  description,\n  className,\n  required,\n  defaultValue,\n  children,\n}: FormFieldWrapperProps<TFieldValues, TName>) => {\n  const form = useFormContext<TFieldValues>();\n  const defaultLabel = label && (\n    <FormLabel>\n      {label}\n      {required && <span className=\"text-destructive ml-1\">*</span>}\n    </FormLabel>\n  );\n  const labelContent = renderLabel ? renderLabel() : defaultLabel;\n  return (\n    <FormField\n      control={form.control}\n      name={name}\n      {...(defaultValue === undefined ? {} : { defaultValue })}\n      render={({ field }) => {\n        const control = children(field);\n        return (\n          <FormItem className={cn(\"flex flex-col gap-0\", className)}>\n            {labelContent}\n            <FormControl\n              render={\n                React.isValidElement(control) ? control : <span>{control}</span>\n              }\n            />\n            {description && <FormDescription>{description}</FormDescription>}\n            <div data-slot=\"form-message-slot\" className=\"min-h-5\">\n              <FormMessage />\n            </div>\n          </FormItem>\n        );\n      }}\n    />\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/FormFieldWrapper.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

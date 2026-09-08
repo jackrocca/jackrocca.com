@@ -1,0 +1,29 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "emoji-icon-picker",
+  "title": "Emoji / Icon Picker",
+  "description": "A single picker with segmented emoji/icon modes and a stable panel size across them. It composes EmojiPicker and IconPicker and returns a discriminated value identifying the selected kind. Use it for workspace or item identities when users should choose either an emoji or a styled icon through one control.",
+  "dependencies": [],
+  "registryDependencies": [
+    "button",
+    "https://ui.kitze.io/r/emoji-picker.json",
+    "https://ui.kitze.io/r/icon-picker.json",
+    "https://ui.kitze.io/r/picked-icon.json",
+    "https://ui.kitze.io/r/picker-popover.json",
+    "https://ui.kitze.io/r/segmented-control.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/emoji-icon-picker/EmojiIconPicker.tsx",
+      "content": "\"use client\";\n\nimport type { ReactNode } from \"react\";\nimport { useState } from \"react\";\n\nimport { Button } from \"@/components/ui/button\";\nimport { EmojiPickerContent } from \"@/registry/new-york/emoji-picker/EmojiPickerContent\";\nimport type { IconPickerContentProps } from \"@/registry/new-york/icon-picker/IconPickerContent\";\nimport { IconPickerContent } from \"@/registry/new-york/icon-picker/IconPickerContent\";\nimport type { IconValue } from \"@/registry/new-york/picked-icon/icon-types\";\nimport { PickedIcon } from \"@/registry/new-york/picked-icon/PickedIcon\";\nimport { PickerPopover } from \"@/registry/new-york/picker-popover/PickerPopover\";\nimport { SegmentedControl } from \"@/registry/new-york/segmented-control/SegmentedControl\";\n\nexport type EmojiIconValue =\n  | { type: \"emoji\"; emoji: string }\n  | { type: \"icon\"; icon: IconValue };\nexport interface EmojiIconPickerProps extends Omit<\n  IconPickerContentProps,\n  \"value\" | \"onSelect\"\n> {\n  value?: EmojiIconValue;\n  onChange: (value: EmojiIconValue) => void;\n  trigger?: ReactNode;\n  disabled?: boolean;\n  label?: string;\n  theme?: \"light\" | \"dark\" | \"auto\";\n}\nconst CombinedContent = ({\n  value,\n  onChange,\n  theme,\n  ...props\n}: Omit<EmojiIconPickerProps, \"trigger\" | \"disabled\" | \"label\">) => {\n  const [tab, setTab] = useState(value?.type ?? \"emoji\");\n  return (\n    <div>\n      <div className=\"p-3 pb-0\">\n        <SegmentedControl\n          options={[\n            { label: \"Emoji\", value: \"emoji\" },\n            { label: \"Icons\", value: \"icon\" },\n          ]}\n          value={tab}\n          onChange={(next) => {\n            if (next === \"emoji\" || next === \"icon\") {\n              setTab(next);\n            }\n          }}\n          className=\"w-full\"\n          tabClassName=\"flex-1\"\n        />\n      </div>\n      {tab === \"emoji\" ? (\n        <EmojiPickerContent\n          theme={theme}\n          onSelect={(emoji) => onChange({ emoji, type: \"emoji\" })}\n        />\n      ) : (\n        <IconPickerContent\n          {...props}\n          value={value?.type === \"icon\" ? value.icon : undefined}\n          onSelect={(icon) => onChange({ icon, type: \"icon\" })}\n        />\n      )}\n    </div>\n  );\n};\nexport const EmojiIconPicker = ({\n  trigger,\n  disabled,\n  label = \"Choose emoji or icon\",\n  ...props\n}: EmojiIconPickerProps) => (\n  <PickerPopover\n    label={label}\n    disabled={disabled}\n    trigger={\n      trigger ?? (\n        <Button\n          variant=\"outline\"\n          disabled={disabled}\n          aria-label={label}\n          className=\"size-10 cursor-pointer p-0 text-xl shadow-none\"\n        >\n          {props.value?.type === \"icon\" ? (\n            <PickedIcon value={props.value.icon} />\n          ) : (\n            props.value?.emoji || \"😀\"\n          )}\n        </Button>\n      )\n    }\n  >\n    {(close) => (\n      <CombinedContent\n        {...props}\n        onChange={(value) => {\n          props.onChange(value);\n          close();\n        }}\n      />\n    )}\n  </PickerPopover>\n);\n",
+      "type": "registry:component",
+      "target": "components/EmojiIconPicker.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

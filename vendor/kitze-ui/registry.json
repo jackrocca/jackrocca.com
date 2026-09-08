@@ -1,0 +1,2019 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "homepage": "https://ui.kitze.io",
+  "items": [
+    {
+      "config": {
+        "iconLibrary": "lucide",
+        "rsc": true,
+        "style": "base-nova",
+        "tsx": true
+      },
+      "dependencies": [],
+      "description": "The base registry setup for installing Kitze UI source through shadcn. It supplies the common project conventions used by component entries. Start with the usage guide and install individual components as needed rather than copying an entire UI library.",
+      "files": [],
+      "name": "base",
+      "registryDependencies": [],
+      "title": "Kitze UI Base",
+      "type": "registry:base"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for expandable sections. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/accordion.tsx",
+          "target": "components/ui/accordion.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "accordion",
+      "registryDependencies": [],
+      "title": "Accordion",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "lucide-react",
+        "motion"
+      ],
+      "description": "A multi-select built from Popover, Command and Badge primitives for choosing tags, members or filters. It adds optional search, removable selection badges, select-all/clear actions, loading, a visible-badge limit and optional creation of new options. Use it when selecting several values; SimpleSelect is the smaller API for one value. This saves rebuilding selection state and badge/search composition in every form.",
+      "files": [
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelect.tsx",
+          "type": "registry:component",
+          "target": "components/AdvancedSelect.tsx"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectDropdown.tsx",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectDropdown.tsx"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectDropdownParts.tsx",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectDropdownParts.tsx"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectOptionRow.tsx",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectOptionRow.tsx"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectState.ts",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectState.ts"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectTrigger.tsx",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectTrigger.tsx"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectTypes.ts",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectTypes.ts"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectUtils.ts",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectUtils.ts"
+        },
+        {
+          "path": "registry/new-york/advanced-select/AdvancedSelectVariants.ts",
+          "type": "registry:component",
+          "target": "components/AdvancedSelectVariants.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "advanced-select",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/popover.json",
+        "command",
+        "separator",
+        "badge",
+        "button"
+      ],
+      "title": "Advanced Select",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for explicit confirmation dialogs. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/alert-dialog.tsx",
+          "target": "components/ui/alert-dialog.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "alert-dialog",
+      "registryDependencies": [
+        "button"
+      ],
+      "title": "Alert Dialog",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [],
+      "description": "An inline Apple brand mark for interfaces that need Apple-specific branding. Use it instead of substituting a generic fruit icon or repeating SVG paths; it provides artwork only, not authentication behavior.",
+      "files": [
+        {
+          "path": "registry/new-york/apple-logo/AppleLogo.tsx",
+          "type": "registry:component",
+          "target": "components/AppleLogo.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "apple-logo",
+      "registryDependencies": [],
+      "title": "Apple Logo",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "A Base UI Drawer wrapper with shared title, description, swipe handle, content and menu variants. Use it for touch-friendly sheets and action menus without rebuilding drawer anatomy and dismissal behavior. CommonMenuItem actions reuse this surface on mobile, including inline confirmation that keeps the sheet open until the second activation.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/new-york/bottom-drawer/BottomDrawer.tsx",
+          "type": "registry:component",
+          "target": "components/BottomDrawer.tsx"
+        },
+        {
+          "path": "registry/new-york/bottom-drawer/BottomDrawerMenu.tsx",
+          "type": "registry:component",
+          "target": "components/BottomDrawerMenu.tsx"
+        },
+        {
+          "path": "registry/new-york/bottom-drawer/DrawerContext.tsx",
+          "type": "registry:component",
+          "target": "components/DrawerContext.tsx"
+        },
+        {
+          "path": "registry/new-york/bottom-drawer/BottomDrawerMenuItem.tsx",
+          "type": "registry:component",
+          "target": "components/BottomDrawerMenuItem.tsx"
+        },
+        {
+          "path": "registry/new-york/bottom-drawer/BottomDrawerMenuComponents.tsx",
+          "type": "registry:component",
+          "target": "components/BottomDrawerMenuComponents.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "bottom-drawer",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/help-info-circle.json",
+        "https://ui.kitze.io/r/menu-context.json",
+        "https://ui.kitze.io/r/kbd-shortcuts.json"
+      ],
+      "title": "Bottom Drawer",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for boolean selection. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/checkbox.tsx",
+          "target": "components/ui/checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "checkbox",
+      "registryDependencies": [],
+      "title": "Checkbox",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [],
+      "description": "Add a SimpleTooltip only when a condition and tooltip content are present; otherwise render the original child. Use it for disabled explanations or context-dependent hints without duplicating the trigger in two branches. It reuses the shared tooltip composition and styling.",
+      "files": [
+        {
+          "path": "registry/new-york/conditional-tooltip/ConditionalTooltip.tsx",
+          "type": "registry:component",
+          "target": "components/ConditionalTooltip.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "conditional-tooltip",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-tooltip.json"
+      ],
+      "title": "Conditional Tooltip",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "Conditionally apply a wrapper function, with an optional alternative wrapper, while writing the child content once. Use it when a link, provider or layout wrapper is optional and duplicating the full child tree in a ternary would make maintenance harder.",
+      "files": [
+        {
+          "path": "registry/new-york/conditional-wrap/ConditionalWrap.tsx",
+          "type": "registry:component",
+          "target": "components/ConditionalWrap.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "conditional-wrap",
+      "registryDependencies": [],
+      "title": "Conditional Wrap",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for right-click menus. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/context-menu-selection.tsx",
+          "target": "components/ui/context-menu-selection.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "components/ui/context-menu.tsx",
+          "target": "components/ui/context-menu.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "context-menu",
+      "registryDependencies": [],
+      "title": "Context Menu",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "tailwind-variants"
+      ],
+      "description": "A styled badge with shared size, color and appearance variants. Use it for statuses, tags and counts when the stock badge variants are too limited, so the same semantic color and spacing choices can be reused across screens.",
+      "files": [
+        {
+          "path": "registry/new-york/custom-badge/CustomBadge.tsx",
+          "type": "registry:component",
+          "target": "components/CustomBadge.tsx"
+        },
+        {
+          "path": "lib/process-color.ts",
+          "type": "registry:lib",
+          "target": "lib/process-color.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "custom-badge",
+      "registryDependencies": [],
+      "title": "Custom Badge",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "tailwind-variants",
+        "lucide-react"
+      ],
+      "description": "The shared button for application actions. It adds loading spinners, left/right icons and content, sizes, color variants, optional tooltips and link rendering to one prop API. Use it instead of repeating spinner, icon-spacing and disabled-state markup around a vanilla button; keep the underlying button primitive for compositions outside this API.",
+      "files": [
+        {
+          "path": "registry/hooks/useLinkableComponent.ts",
+          "type": "registry:hook",
+          "target": "hooks/useLinkableComponent.ts"
+        },
+        {
+          "path": "registry/new-york/custom-button/CustomButton.tsx",
+          "type": "registry:component",
+          "target": "components/CustomButton.tsx"
+        },
+        {
+          "path": "registry/new-york/custom-button/CustomButtonContent.tsx",
+          "type": "registry:component",
+          "target": "components/CustomButtonContent.tsx"
+        },
+        {
+          "path": "registry/new-york/custom-button/CustomButtonStyles.ts",
+          "type": "registry:component",
+          "target": "components/CustomButtonStyles.ts"
+        },
+        {
+          "path": "registry/new-york/custom-button/CustomButtonTypes.ts",
+          "type": "registry:component",
+          "target": "components/CustomButtonTypes.ts"
+        },
+        {
+          "path": "lib/process-color.ts",
+          "type": "registry:lib",
+          "target": "lib/process-color.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "custom-button",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/conditional-tooltip.json",
+        "https://ui.kitze.io/r/spinner.json"
+      ],
+      "title": "Custom Button",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "Open and dismiss dialogs through a shared manager instead of keeping a separate open boolean and mounted dialog beside every trigger. Managed dialogs use the responsive dialog defaults, including mobile drawers, and remain mounted through their closing transitions. Use it for dialogs triggered from menus or distant parts of the component tree.",
+      "files": [
+        {
+          "path": "registry/new-york/dialog-manager/DialogList.tsx",
+          "type": "registry:component",
+          "target": "components/DialogList.tsx"
+        },
+        {
+          "path": "registry/new-york/dialog-manager/DialogManager.tsx",
+          "type": "registry:component",
+          "target": "components/DialogManager.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "dialog-manager",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-dialog.json"
+      ],
+      "title": "Dialog Manager",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for modal dialogs. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/dialog.tsx",
+          "target": "components/ui/dialog.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "dialog",
+      "registryDependencies": [],
+      "title": "Dialog",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for click-triggered menus. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/dropdown-menu-selection.tsx",
+          "target": "components/ui/dropdown-menu-selection.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "components/ui/dropdown-menu.tsx",
+          "target": "components/ui/dropdown-menu.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "dropdown-menu",
+      "registryDependencies": [],
+      "title": "Dropdown Menu",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [],
+      "description": "A single picker with segmented emoji/icon modes and a stable panel size across them. It composes EmojiPicker and IconPicker and returns a discriminated value identifying the selected kind. Use it for workspace or item identities when users should choose either an emoji or a styled icon through one control.",
+      "files": [
+        {
+          "path": "registry/new-york/emoji-icon-picker/EmojiIconPicker.tsx",
+          "type": "registry:component",
+          "target": "components/EmojiIconPicker.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "emoji-icon-picker",
+      "registryDependencies": [
+        "button",
+        "https://ui.kitze.io/r/emoji-picker.json",
+        "https://ui.kitze.io/r/icon-picker.json",
+        "https://ui.kitze.io/r/picked-icon.json",
+        "https://ui.kitze.io/r/picker-popover.json",
+        "https://ui.kitze.io/r/segmented-control.json"
+      ],
+      "title": "Emoji / Icon Picker",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-error-boundary",
+        "emoji-picker-react"
+      ],
+      "description": "A ready-to-use emoji selector built on emoji-picker-react, loaded when opened. It handles picker presentation, search and categories while returning a Unicode string, and uses a popover or mobile bottom sheet. Use it instead of wiring an emoji library and separate desktop/mobile overlays yourself.",
+      "files": [
+        {
+          "path": "registry/new-york/emoji-picker/EmojiPicker.tsx",
+          "type": "registry:component",
+          "target": "components/EmojiPicker.tsx"
+        },
+        {
+          "path": "registry/new-york/emoji-picker/EmojiPickerContent.tsx",
+          "type": "registry:component",
+          "target": "components/EmojiPickerContent.tsx"
+        },
+        {
+          "path": "registry/new-york/emoji-picker/EmojiLibrary.tsx",
+          "type": "registry:component",
+          "target": "components/EmojiLibrary.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "emoji-picker",
+      "registryDependencies": [
+        "button",
+        "https://ui.kitze.io/r/picker-popover.json"
+      ],
+      "title": "Emoji Picker",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A square artwork layout combining a supplied icon with a gradient background, configurable dimensions and corner radius. Use it to prepare favicon or app-icon artwork with consistent proportions. It does not fetch favicons from remote sites or export image files itself.",
+      "files": [
+        {
+          "path": "registry/new-york/favicon-image/FaviconImage.tsx",
+          "type": "registry:component",
+          "target": "components/FaviconImage.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "favicon-image",
+      "registryDependencies": [],
+      "title": "Favicon Image",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A loading layout that fills the available parent height around the shared Spinner. Use it inside panels and bounded content areas so loading stays centered in the region being replaced rather than covering the whole page.",
+      "files": [
+        {
+          "path": "registry/new-york/fill-height-spinner/FillHeightSpinner.tsx",
+          "type": "registry:component",
+          "target": "components/FillHeightSpinner.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "fill-height-spinner",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/spinner.json"
+      ],
+      "title": "Fill Height Spinner",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A development helper for inspecting form state while integrating react-hook-form fields. Use it when debugging values and validation rather than adding temporary JSON panels throughout a form; it is not a production-facing input.",
+      "files": [
+        {
+          "path": "registry/new-york/form-debug/FormDebug.tsx",
+          "type": "registry:component",
+          "target": "components/FormDebug.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-debug",
+      "registryDependencies": [],
+      "title": "Form Debug",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared multi-select component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-advanced-select/FormFieldAdvancedSelect.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldAdvancedSelect.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-advanced-select",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/form-field-wrapper.json",
+        "https://ui.kitze.io/r/advanced-select.json"
+      ],
+      "title": "Form Field Advanced Select",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared checkbox component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-checkbox/FormFieldCheckbox.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldCheckbox.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-checkbox",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/checkbox.json",
+        "label",
+        "https://ui.kitze.io/r/form-field-wrapper.json"
+      ],
+      "title": "Form Field Checkbox",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared text input component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-input/FormFieldInput.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldInput.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-input",
+      "registryDependencies": [
+        "input",
+        "https://ui.kitze.io/r/form-field-wrapper.json"
+      ],
+      "title": "Form Field Input",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared segmented choice component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-segmented-control/FormFieldSegmentedControl.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldSegmentedControl.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-segmented-control",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/form-field-wrapper.json",
+        "https://ui.kitze.io/r/segmented-control.json"
+      ],
+      "title": "Form Field Segmented Control",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared single-value select component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-select/FormFieldSelect.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldSelect.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-select",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/form-field-wrapper.json",
+        "https://ui.kitze.io/r/simple-select.json"
+      ],
+      "title": "Form Field Select",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form"
+      ],
+      "description": "A react-hook-form adapter for the shared multiline input component. It connects field value, changes, label and validation feedback through the common FormFieldWrapper. Use it to avoid repeating Controller/FormField wiring and error layout; use the underlying control outside react-hook-form.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-textarea/FormFieldTextarea.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldTextarea.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-textarea",
+      "registryDependencies": [
+        "textarea",
+        "https://ui.kitze.io/r/form-field-wrapper.json"
+      ],
+      "title": "Form Field Textarea",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "react-hook-form",
+        "@hookform/resolvers",
+        "zod"
+      ],
+      "description": "The common react-hook-form field shell for label, control, description and validation message composition. Use it to give custom field controls the same form integration and error layout as the prebuilt FormField components.",
+      "files": [
+        {
+          "path": "registry/new-york/form-field-wrapper/FormFieldWrapper.tsx",
+          "type": "registry:component",
+          "target": "components/FormFieldWrapper.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "form-field-wrapper",
+      "registryDependencies": [
+        "form",
+        "button",
+        "card",
+        "https://ui.kitze.io/r/form-field-input.json",
+        "https://ui.kitze.io/r/form-debug.json"
+      ],
+      "title": "Form Field Wrapper",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A page-level loading layout around the shared Spinner. Use it while an entire page is waiting for data or a route boundary to resolve, rather than rebuilding centering and viewport layout at each loading boundary.",
+      "files": [
+        {
+          "path": "registry/new-york/full-page-spinner/FullPageSpinner.tsx",
+          "type": "registry:component",
+          "target": "components/FullPageSpinner.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "full-page-spinner",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/spinner.json"
+      ],
+      "title": "Full Page Spinner",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A reusable text treatment for gradient-colored typography. Use it where gradient text is an intentional part of the design so clipping and color classes stay in one place instead of being repeated across headings.",
+      "files": [
+        {
+          "path": "registry/new-york/gradient-text/GradientText.tsx",
+          "type": "registry:component",
+          "target": "components/GradientText.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "gradient-text",
+      "registryDependencies": [],
+      "title": "Gradient Text",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A compact help icon connected to the shared tooltip/drawer explanation pattern. Use it beside a field or menu action when a label needs an optional explanation, so every screen does not invent its own help trigger and touch behavior.",
+      "files": [
+        {
+          "path": "registry/new-york/help-info-circle/HelpInfoCircle.tsx",
+          "type": "registry:component",
+          "target": "components/HelpInfoCircle.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "help-info-circle",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-tooltip.json"
+      ],
+      "title": "Help Info Circle",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A reusable interactive icon treatment with consistent hover behavior and optional tooltip. Use it for compact secondary actions rather than repeatedly styling naked icons as click targets; give the action an accessible name.",
+      "files": [
+        {
+          "path": "registry/hooks/useLinkableComponent.ts",
+          "type": "registry:hook",
+          "target": "hooks/useLinkableComponent.ts"
+        },
+        {
+          "path": "registry/new-york/hoverable-icon/HoverableIcon.tsx",
+          "type": "registry:component",
+          "target": "components/HoverableIcon.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "hoverable-icon",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/conditional-tooltip.json"
+      ],
+      "title": "Hoverable Icon",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "zod"
+      ],
+      "description": "A Lucide icon selector with the full name catalog loaded on demand and only displayed SVGs fetched through Iconify. It returns a small IconValue with optional foreground, background and frame, including paired presets and custom colors. Use it to avoid shipping an entire icon catalog or rebuilding icon search and styling controls; render saved values with PickedIcon.",
+      "files": [
+        {
+          "path": "registry/new-york/icon-picker/IconColorFields.tsx",
+          "type": "registry:component",
+          "target": "components/IconColorFields.tsx"
+        },
+        {
+          "path": "registry/new-york/icon-picker/IconGrid.tsx",
+          "type": "registry:component",
+          "target": "components/IconGrid.tsx"
+        },
+        {
+          "path": "registry/new-york/icon-picker/IconPicker.tsx",
+          "type": "registry:component",
+          "target": "components/IconPicker.tsx"
+        },
+        {
+          "path": "registry/new-york/icon-picker/IconPickerContent.tsx",
+          "type": "registry:component",
+          "target": "components/IconPickerContent.tsx"
+        },
+        {
+          "path": "registry/new-york/icon-picker/IconAppearance.tsx",
+          "type": "registry:component",
+          "target": "components/IconAppearance.tsx"
+        },
+        {
+          "path": "registry/new-york/icon-picker/icon-search.ts",
+          "type": "registry:component",
+          "target": "components/icon-search.ts"
+        },
+        {
+          "path": "registry/new-york/icon-picker/use-icon-search.ts",
+          "type": "registry:component",
+          "target": "components/use-icon-search.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "icon-picker",
+      "registryDependencies": [
+        "button",
+        "https://ui.kitze.io/r/picked-icon.json",
+        "https://ui.kitze.io/r/picker-popover.json"
+      ],
+      "title": "Icon Picker",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "An enhanced text input with left/right icons or content slots and an integrated loading state. Use it to avoid repeating adornment spacing, loading indicators and disabled styling around a vanilla input. It remains a normal input for form integration; use the base input for a plain field without these additions.",
+      "files": [
+        {
+          "path": "registry/new-york/input/InputAffix.tsx",
+          "type": "registry:component",
+          "target": "components/InputAffix.tsx"
+        },
+        {
+          "path": "registry/new-york/input/Input.tsx",
+          "type": "registry:component",
+          "target": "components/Input.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "input",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/spinner.json"
+      ],
+      "title": "Input",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A reusable layout for displaying multiple shortcut descriptions with the shared keycap components. Use it for keyboard-help panels or command documentation instead of recreating the alignment between action labels and their keys. It does not register shortcuts.",
+      "files": [
+        {
+          "path": "registry/new-york/kbd-shortcuts-list/KbdShortcutsList.tsx",
+          "type": "registry:component",
+          "target": "components/KbdShortcutsList.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "kbd-shortcuts-list",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/kbd-shortcuts.json",
+        "https://ui.kitze.io/r/kbd.json"
+      ],
+      "title": "Keyboard Shortcuts List",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "Render shortcut keys as individual Kbd keycaps with a configurable separator and shared style overrides. Menus use this component so modifier keys, destructive colors and sizing remain consistent across dropdowns, context menus and drawers. It displays hints; your application must bind the actual shortcuts.",
+      "files": [
+        {
+          "path": "registry/new-york/kbd-shortcuts/MenuShortcut.tsx",
+          "type": "registry:component",
+          "target": "components/MenuShortcut.tsx"
+        },
+        {
+          "path": "registry/new-york/kbd-shortcuts/KbdShortcuts.tsx",
+          "type": "registry:component",
+          "target": "components/KbdShortcuts.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "kbd-shortcuts",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/kbd.json"
+      ],
+      "title": "Keyboard Shortcuts",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "The shared visual keycap component for a sequence of keyboard keys. Use it to display shortcut hints with consistent sizing, borders and typography instead of plain strings. It is a display component and does not bind keyboard handlers.",
+      "files": [
+        {
+          "path": "registry/new-york/kbd/Kbd.tsx",
+          "type": "registry:component",
+          "target": "components/Kbd.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "kbd",
+      "registryDependencies": [],
+      "title": "Keyboard Shortcut",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "The application provider for shared Kitze UI configuration, including the isMobile value used by responsive components. Supply the breakpoint decision once so dialogs, pickers and menus make the same desktop/mobile choice. It is setup infrastructure rather than a visible widget.",
+      "files": [
+        {
+          "path": "registry/new-york/kitze-ui-context/KitzeUIContext.tsx",
+          "type": "registry:component",
+          "target": "components/KitzeUIContext.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "kitze-ui-context",
+      "registryDependencies": [],
+      "title": "Kitze UI Context",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A checkbox paired with its label through a small prop API. Use it for standard boolean fields to avoid repeating label association and row spacing; use the checkbox primitive for a custom field layout.",
+      "files": [
+        {
+          "path": "registry/new-york/labeled-checkbox/LabeledCheckbox.tsx",
+          "type": "registry:component",
+          "target": "components/LabeledCheckbox.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "labeled-checkbox",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/checkbox.json"
+      ],
+      "title": "Labeled Checkbox",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A switch paired with its label through a small prop API. Use it for standard on/off settings so text alignment and accessible label association stay consistent; use the switch primitive for more specialized layouts.",
+      "files": [
+        {
+          "path": "registry/new-york/labeled-switch/LabeledSwitch.tsx",
+          "type": "registry:component",
+          "target": "components/LabeledSwitch.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "labeled-switch",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/switch.json"
+      ],
+      "title": "Labeled Switch",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A reusable macOS-style window frame for showcasing application content. Use it for product illustrations or demos where desktop window chrome provides useful context; it is decorative framing, not an operating-system window.",
+      "files": [
+        {
+          "path": "registry/new-york/mac-window/MacWindow.tsx",
+          "type": "registry:component",
+          "target": "components/MacWindow.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "mac-window",
+      "registryDependencies": [],
+      "title": "Mac Window",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "Internal context shared by dropdown menus, context menus and bottom-drawer menus. It tells CommonMenuItem which surface to render and how to close its owning menu. Menu wrappers install and provide it automatically; use it when implementing a compatible menu surface, not as a standalone visible component.",
+      "files": [
+        {
+          "path": "registry/new-york/menu-context/MenuContext.tsx",
+          "type": "registry:component",
+          "target": "components/MenuContext.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "menu-context",
+      "registryDependencies": [],
+      "title": "Menu Context",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A 1200×630 layout for composing OpenGraph artwork from a title, tagline, icon and optional background accents. Use it to keep social-share image composition consistent across products instead of designing a new canvas for each page. It supplies the layout; your image-generation or screenshot process produces the final asset.",
+      "files": [
+        {
+          "path": "registry/new-york/meta-image/MetaImage.tsx",
+          "type": "registry:component",
+          "target": "components/MetaImage.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "meta-image",
+      "registryDependencies": [],
+      "title": "Meta Image",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "An application header with left/middle/right content slots, optional scroll-fixed positioning and a shared drawer-menu trigger. Use it to keep header sizing and mobile navigation composition consistent across screens instead of rebuilding header and drawer wiring together.",
+      "files": [
+        {
+          "path": "registry/hooks/useScrolledPast.ts",
+          "type": "registry:hook",
+          "target": "hooks/useScrolledPast.ts"
+        },
+        {
+          "path": "registry/new-york/page-header/PageHeader.tsx",
+          "type": "registry:component",
+          "target": "components/PageHeader.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "page-header",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/custom-button.json",
+        "https://ui.kitze.io/r/bottom-drawer.json"
+      ],
+      "title": "Page Header",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@iconify/react"
+      ],
+      "description": "Render a saved IconValue independently of the picker, applying its foreground, background and frame. Only the named icon is loaded; trusted preloaded iconData supports immediate or offline rendering. Use it on normal pages so displaying one saved icon does not import picker UI or a search catalog.",
+      "files": [
+        {
+          "path": "registry/new-york/picked-icon/PickedIcon.tsx",
+          "type": "registry:component",
+          "target": "components/PickedIcon.tsx"
+        },
+        {
+          "path": "registry/new-york/picked-icon/IconGlyph.tsx",
+          "type": "registry:component",
+          "target": "components/IconGlyph.tsx"
+        },
+        {
+          "path": "registry/new-york/picked-icon/icon-types.ts",
+          "type": "registry:component",
+          "target": "components/icon-types.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "picked-icon",
+      "registryDependencies": [],
+      "title": "Picked Icon",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "The shared popover-on-desktop and bottom-drawer-on-mobile container for picker controls. Use it when building another picker that should follow the same responsive opening and closing behavior, instead of duplicating overlay and trigger wiring.",
+      "files": [
+        {
+          "path": "registry/new-york/picker-popover/PickerPopover.tsx",
+          "type": "registry:component",
+          "target": "components/PickerPopover.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "picker-popover",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-popover.json"
+      ],
+      "title": "Picker Popover",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A purchase call-to-action that builds a Polar checkout redirect from checkoutUrl and productId, with price text and a pending state. Use it for the existing checkout flow instead of rebuilding redirect and loading-button markup. It does not create products or validate payment completion.",
+      "files": [
+        {
+          "path": "registry/new-york/polar-checkout-button/PolarCheckoutButton.tsx",
+          "type": "registry:component",
+          "target": "components/PolarCheckoutButton.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "polar-checkout-button",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/apple-logo.json"
+      ],
+      "title": "Polar Checkout Button",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for anchored panels. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/popover.tsx",
+          "target": "components/ui/popover.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "popover",
+      "registryDependencies": [],
+      "title": "Popover",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for single-choice groups. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/radio-group.tsx",
+          "target": "components/ui/radio-group.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "radio-group",
+      "registryDependencies": [],
+      "title": "Radio Group",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "use-long-press"
+      ],
+      "description": "A context-menu wrapper that adapts right-click actions to the mobile drawer presentation. Use it when the same actions need desktop context-menu and touch access, so content and dismissal rules stay shared instead of being duplicated.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/new-york/responsive-context-menu/ResponsiveContextMenu.tsx",
+          "type": "registry:component",
+          "target": "components/ResponsiveContextMenu.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "responsive-context-menu",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-context-menu.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json"
+      ],
+      "title": "Responsive Context Menu",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "The standard dialog wrapper with bottom-drawer behavior enabled on mobile through KitzeUIProvider. It delegates content and actions to SimpleDialog so callers share one API across desktop and touch layouts. Use mobileView=\"keep\" when a centered dialog is deliberately needed on both.",
+      "files": [
+        {
+          "path": "registry/new-york/responsive-dialog/ResponsiveDialog.tsx",
+          "type": "registry:component",
+          "target": "components/ResponsiveDialog.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "responsive-dialog",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-dialog.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/custom-button.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json"
+      ],
+      "title": "Responsive Dialog",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A dropdown wrapper that selects the mobile bottom-drawer presentation using KitzeUIProvider. Use it when an action menu should adapt automatically while keeping one content tree and shared menu-item API, rather than branching between two independently implemented menus.",
+      "files": [
+        {
+          "path": "registry/new-york/responsive-dropdown-menu/ResponsiveDropdownMenu.tsx",
+          "type": "registry:component",
+          "target": "components/ResponsiveDropdownMenu.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "responsive-dropdown-menu",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-dropdown-menu.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json"
+      ],
+      "title": "Responsive Dropdown Menu",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "The mobile option-list surface used by SimpleSelect. It renders selection choices in a bottom-drawer menu and connects selection to drawer closing. It is an implementation building block; normally install SimpleSelect rather than composing this helper directly.",
+      "files": [
+        {
+          "path": "registry/new-york/responsive-select-bottom-drawer-menu/ResponsiveSelectBottomDrawerMenu.tsx",
+          "type": "registry:component",
+          "target": "components/ResponsiveSelectBottomDrawerMenu.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "responsive-select-bottom-drawer-menu",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/search-bar.json"
+      ],
+      "title": "Responsive Select Bottom Drawer Menu",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "motion"
+      ],
+      "description": "A header treatment that responds to page scrolling. Use it when a landing-page header needs the same scroll-dependent presentation across routes instead of adding independent scroll listeners and header styles to each page.",
+      "files": [
+        {
+          "path": "registry/new-york/scrolling-header/ScrollingHeader.tsx",
+          "type": "registry:component",
+          "target": "components/ScrollingHeader.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "scrolling-header",
+      "registryDependencies": [],
+      "title": "Scrolling Header",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A controlled search input with clear/close actions and keyboard handling. Use it to share the same search entry interaction across lists and toolbars; it reports text changes and leaves filtering to the caller. WithSearchBar adds the collapsible trigger and reserved toolbar layout.",
+      "files": [
+        {
+          "path": "registry/new-york/search-bar/SearchBar.tsx",
+          "type": "registry:component",
+          "target": "components/SearchBar.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "search-bar",
+      "registryDependencies": [],
+      "title": "Search Bar",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react",
+        "tailwind-variants"
+      ],
+      "description": "A compact controlled choice between a few values, with text, icon-and-text or icon-only presentation, per-option tooltips and disabled options. It provides shared selection styling and arrow/Home/End keyboard navigation, with optional native-select or bottom-drawer behavior on mobile. Use it for view, theme and mode switches instead of coordinating several independent buttons.",
+      "files": [
+        {
+          "path": "registry/new-york/segmented-control/SegmentedControlStyles.ts",
+          "type": "registry:component",
+          "target": "components/SegmentedControlStyles.ts"
+        },
+        {
+          "path": "registry/new-york/segmented-control/SegmentedControl.tsx",
+          "type": "registry:component",
+          "target": "components/SegmentedControl.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "segmented-control",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/simple-select.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json",
+        "https://ui.kitze.io/r/conditional-tooltip.json"
+      ],
+      "title": "Segmented Control",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for single-value selects. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/select.tsx",
+          "target": "components/ui/select.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "select",
+      "registryDependencies": [],
+      "title": "Select",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [],
+      "description": "An accordion built from an items array rather than repeated item, trigger and content primitives. Use it for FAQs and expandable settings with standard layout and behavior. Choose the accordion primitive when individual items require substantially different composition.",
+      "files": [
+        {
+          "path": "registry/new-york/simple-accordion/SimpleAccordion.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleAccordion.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-accordion",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/accordion.json"
+      ],
+      "title": "Simple Accordion",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "use-long-press",
+        "lucide-react"
+      ],
+      "description": "A right-click menu wrapper with optional long-press bottom-drawer behavior on mobile. Supply the trigger content and shared CommonMenuItem components from simple-dropdown-menu so actions behave the same in context menus, dropdowns and drawers. It saves repeating trigger, portal and mobile gesture wiring; use context-menu directly when you need a custom primitive structure.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/hooks/useLinkableComponent.ts",
+          "type": "registry:hook",
+          "target": "hooks/useLinkableComponent.ts"
+        },
+        {
+          "path": "registry/new-york/simple-context-menu/SimpleContextMenu.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleContextMenu.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-context-menu",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/context-menu.json",
+        "https://ui.kitze.io/r/dropdown-menu.json",
+        "https://ui.kitze.io/r/tooltip.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/menu-context.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json"
+      ],
+      "title": "Simple Context Menu",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react",
+        "lucide-react"
+      ],
+      "description": "A dialog with title, description, body and optional submit/cancel actions exposed as props. It centralizes overlay composition, controlled or uncontrolled opening, action layout and optional mobile drawer behavior. Use it for standard dialogs instead of assembling every dialog primitive; use the dialog primitive for a substantially custom structure.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/new-york/simple-dialog/SimpleDialogActions.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleDialogActions.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dialog/SimpleDialog.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleDialog.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dialog/SimpleDialogParts.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleDialogParts.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dialog/SimpleDialogTypes.ts",
+          "type": "registry:component",
+          "target": "components/SimpleDialogTypes.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-dialog",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/dialog.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/custom-button.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json"
+      ],
+      "title": "Simple Dialog",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A click-triggered menu that composes the dropdown primitives and shares CommonMenuItem, groups, labels, separators and delete actions with context menus and drawers. Inline confirmation keeps its label width and resets on menu close. Command/Control-click skips inline or ordinary dialog confirmation, but never a required confirmationText. mobileView=\"bottom-drawer\" adapts the same content on touch screens. Use it for ordinary action or account menus to avoid rebuilding closing, link and mobile behavior; use the dropdown-menu primitive for custom composition.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/hooks/useLinkableComponent.ts",
+          "type": "registry:hook",
+          "target": "hooks/useLinkableComponent.ts"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/SimpleDropdownMenu.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleDropdownMenu.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuItem.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuItem.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuItemEdit.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuItemEdit.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuItemDelete.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuItemDelete.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuLabel.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuLabel.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuSeparator.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuSeparator.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-dropdown-menu/CommonMenuGroup.tsx",
+          "type": "registry:component",
+          "target": "components/CommonMenuGroup.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-dropdown-menu",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/dropdown-menu.json",
+        "https://ui.kitze.io/r/context-menu.json",
+        "https://ui.kitze.io/r/bottom-drawer.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json",
+        "https://ui.kitze.io/r/menu-context.json",
+        "https://ui.kitze.io/r/ui-alert.json",
+        "https://ui.kitze.io/r/help-info-circle.json",
+        "https://ui.kitze.io/r/kbd-shortcuts.json"
+      ],
+      "title": "Simple Dropdown Menu",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A trigger-and-content API over the popover primitives. It centralizes open state, positioning and standard content styling for small anchored panels. Use it for ordinary popovers instead of repeating Root, Trigger, Portal, Positioner and Popup composition; use the primitive when the panel needs a custom structure.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/new-york/simple-popover/index.tsx",
+          "type": "registry:component",
+          "target": "components/index.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-popover",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/popover.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json",
+        "https://ui.kitze.io/r/bottom-drawer.json"
+      ],
+      "title": "Simple Popover",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "A single-value select driven by an options array, value and onValueChange. It composes the trigger, option list and optional search, and can use a native select or bottom-drawer menu on mobile. Use it to avoid repeating primitive composition and mobile branching for every field; use AdvancedSelect for multiple values.",
+      "files": [
+        {
+          "path": "registry/hooks/useControlledOpen.ts",
+          "type": "registry:hook",
+          "target": "hooks/useControlledOpen.ts"
+        },
+        {
+          "path": "registry/new-york/simple-select/SimpleSelect.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleSelect.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-select/SimpleSelectNative.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleSelectNative.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-select/SimpleSelectPopover.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleSelectPopover.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-select/SimpleSelectTrigger.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleSelectTrigger.tsx"
+        },
+        {
+          "path": "registry/new-york/simple-select/SimpleSelectTypes.ts",
+          "type": "registry:component",
+          "target": "components/SimpleSelectTypes.ts"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-select",
+      "registryDependencies": [
+        "button",
+        "command",
+        "https://ui.kitze.io/r/popover.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json",
+        "https://ui.kitze.io/r/responsive-select-bottom-drawer-menu.json"
+      ],
+      "title": "Simple Select",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A content prop wrapped around the existing trigger, with optional popover or bottom-drawer presentation on mobile. It removes repetitive tooltip provider, trigger, portal and content markup while retaining focus and hover behavior. Use it for short explanations; choose an interactive popover or drawer when touch users need to inspect richer content.",
+      "files": [
+        {
+          "path": "registry/new-york/simple-tooltip/SimpleTooltip.tsx",
+          "type": "registry:component",
+          "target": "components/SimpleTooltip.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "simple-tooltip",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/tooltip.json",
+        "https://ui.kitze.io/r/popover.json",
+        "https://ui.kitze.io/r/kitze-ui-context.json",
+        "https://ui.kitze.io/r/bottom-drawer.json"
+      ],
+      "title": "Simple Tooltip",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A shared set of document-head tags for canonical URLs, favicons, SEO, OpenGraph/Twitter cards and optional JSON-LD or DataFast configuration. Use it in sites that manage their head markup directly to avoid repeating metadata conventions. It is not a visible header; use your framework metadata API when that already owns these tags.",
+      "files": [
+        {
+          "path": "registry/new-york/site-head/SiteHead.tsx",
+          "type": "registry:component",
+          "target": "components/SiteHead.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "site-head",
+      "registryDependencies": [],
+      "title": "Site Head",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@icons-pack/react-simple-icons"
+      ],
+      "description": "Provider sign-in actions built on CustomButton, with inline icons for twelve providers and light/dark outline or brand styling. It reuses the shared button behavior and adds provider labels, accessible icon-only presentation and stable loading dimensions. Connect onClick to your auth client; this component saves repeated provider branding and layout code and does not implement OAuth.",
+      "files": [
+        {
+          "path": "registry/new-york/social-login-button/SocialLoginButton.tsx",
+          "type": "registry:component",
+          "target": "components/SocialLoginButton.tsx"
+        },
+        {
+          "path": "registry/new-york/social-login-button/social-login-providers.ts",
+          "type": "registry:component",
+          "target": "components/social-login-providers.ts"
+        },
+        {
+          "path": "registry/new-york/social-login-button/SocialLoginBrandIcons.tsx",
+          "type": "registry:component",
+          "target": "components/SocialLoginBrandIcons.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "social-login-button",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/custom-button.json"
+      ],
+      "title": "Social Login Button",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "The shared loading indicator with size and appearance variants. Use it in buttons and pending content so loading visuals remain consistent across the application instead of choosing a different animated icon in every component.",
+      "files": [
+        {
+          "path": "registry/new-york/spinner/Spinner.tsx",
+          "type": "registry:component",
+          "target": "components/Spinner.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "spinner",
+      "registryDependencies": [],
+      "title": "Spinner",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [],
+      "description": "A small Suspense wrapper with a supplied fallback and a force prop for deliberately showing that fallback. Use it when loading-boundary composition is repeated or you need to demonstrate a loading state. It does not fetch data or choose a spinner automatically.",
+      "files": [
+        {
+          "path": "registry/new-york/suspensed/Suspensed.tsx",
+          "type": "registry:component",
+          "target": "components/Suspensed.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "suspensed",
+      "registryDependencies": [],
+      "title": "Suspensed",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for on/off toggles. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/switch.tsx",
+          "target": "components/ui/switch.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "switch",
+      "registryDependencies": [],
+      "title": "Switch",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "motion",
+        "lucide-react"
+      ],
+      "description": "A tabs array API that combines SegmentedControl with animated content panels, controlled or internal selection, and optional mobile select behavior. Use it to avoid manually coordinating selector values and matching panel content. Use SegmentedControl alone when only a value selector is needed.",
+      "files": [
+        {
+          "path": "registry/new-york/tab-panels/TabPanels.tsx",
+          "type": "registry:component",
+          "target": "components/TabPanels.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "tab-panels",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/segmented-control.json"
+      ],
+      "title": "Tab Panels",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "next-themes"
+      ],
+      "description": "The compact theme switch connected to next-themes. Use it in apps already using ThemeProvider to avoid repeating theme reads and setTheme wiring around the visual switch. Use the framework-independent theme switch when another system owns the theme.",
+      "files": [
+        {
+          "path": "registry/hooks/useMounted.ts",
+          "type": "registry:hook",
+          "target": "hooks/useMounted.ts"
+        },
+        {
+          "path": "registry/new-york/theme-switch-minimal-next-themes/ThemeSwitchMinimalNextThemes.tsx",
+          "type": "registry:component",
+          "target": "components/ThemeSwitchMinimalNextThemes.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "theme-switch-minimal-next-themes",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/theme-switch-minimal.json",
+        "https://ui.kitze.io/r/custom-button.json"
+      ],
+      "title": "Theme Switch Minimal with Next-Themes",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "motion",
+        "lucide-react"
+      ],
+      "description": "A compact light/dark theme control with an application-supplied value and change handler. Use it to share the visual theme-switch interaction without coupling the control to a theme storage library; the next-themes variant provides that integration when needed.",
+      "files": [
+        {
+          "path": "registry/new-york/theme-switch-minimal/ThemeSwitchMinimal.tsx",
+          "type": "registry:component",
+          "target": "components/ThemeSwitchMinimal.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "theme-switch-minimal",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/custom-button.json"
+      ],
+      "title": "Theme Switch Minimal",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "next-themes"
+      ],
+      "description": "The sliding theme switch connected to next-themes. Use it in apps already using ThemeProvider to avoid repeating theme reads and setTheme wiring around the visual switch. Use the framework-independent theme switch when another system owns the theme.",
+      "files": [
+        {
+          "path": "registry/hooks/useMounted.ts",
+          "type": "registry:hook",
+          "target": "hooks/useMounted.ts"
+        },
+        {
+          "path": "registry/new-york/theme-switch-slider-next-themes/ThemeSwitchNextThemes.tsx",
+          "type": "registry:component",
+          "target": "components/ThemeSwitchNextThemes.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "theme-switch-slider-next-themes",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/theme-switch-slider.json"
+      ],
+      "title": "Theme Switch Slider with Next-Themes",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "motion",
+        "lucide-react"
+      ],
+      "description": "A sliding light/dark theme control with an application-supplied value and change handler. Use it to share the visual theme-switch interaction without coupling the control to a theme storage library; the next-themes variant provides that integration when needed.",
+      "files": [
+        {
+          "path": "registry/new-york/theme-switch-slider/ThemeSwitchSlider.tsx",
+          "type": "registry:component",
+          "target": "components/ThemeSwitchSlider.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "theme-switch-slider",
+      "registryDependencies": [],
+      "title": "Theme Switch Slider",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "@base-ui/react"
+      ],
+      "description": "Kitze UI’s styled Base UI primitives for hover and focus hints. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+      "files": [
+        {
+          "path": "components/ui/tooltip.tsx",
+          "target": "components/ui/tooltip.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "name": "tooltip",
+      "registryDependencies": [],
+      "title": "Tooltip",
+      "type": "registry:ui"
+    },
+    {
+      "dependencies": [
+        "lucide-react"
+      ],
+      "description": "Shared confirmation and delete dialogs opened through AlertProvider hooks. They centralize destructive action styling, confirm/cancel callbacks, optional typed confirmationText and transition-aware cleanup. Use them instead of embedding a new confirmation dialog at every delete button; CommonMenuItemDelete can request these dialogs or use inline confirmation.",
+      "files": [
+        {
+          "path": "registry/new-york/ui-alert/Alert.tsx",
+          "type": "registry:component",
+          "target": "components/Alert.tsx"
+        },
+        {
+          "path": "registry/new-york/ui-alert/ConfirmAlert.tsx",
+          "type": "registry:component",
+          "target": "components/ConfirmAlert.tsx"
+        },
+        {
+          "path": "registry/new-york/ui-alert/ConfirmAlertDelete.tsx",
+          "type": "registry:component",
+          "target": "components/ConfirmAlertDelete.tsx"
+        },
+        {
+          "path": "registry/new-york/ui-alert/AlertContext.tsx",
+          "type": "registry:component",
+          "target": "components/AlertContext.tsx"
+        },
+        {
+          "path": "registry/new-york/ui-alert/AlertContextState.ts",
+          "type": "registry:component",
+          "target": "components/AlertContextState.ts"
+        },
+        {
+          "path": "registry/new-york/ui-alert/AlertContextStore.ts",
+          "type": "registry:component",
+          "target": "components/AlertContextStore.ts"
+        },
+        {
+          "path": "registry/new-york/ui-alert/AlertContextTypes.ts",
+          "type": "registry:component",
+          "target": "components/AlertContextTypes.ts"
+        },
+        {
+          "path": "registry/new-york/ui-alert/AlertRenderer.tsx",
+          "type": "registry:component",
+          "target": "components/AlertRenderer.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "ui-alert",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/alert-dialog.json",
+        "input"
+      ],
+      "title": "UI Alert",
+      "type": "registry:component"
+    },
+    {
+      "dependencies": [
+        "motion",
+        "lucide-react"
+      ],
+      "description": "Wrap a toolbar title or other content with a search trigger that reveals SearchBar in the same reserved space. It coordinates opening, closing and Escape focus restoration. Use it to avoid rebuilding the expandable toolbar-search pattern around every searchable section.",
+      "files": [
+        {
+          "path": "registry/new-york/with-search-bar/WithSearchBar.tsx",
+          "type": "registry:component",
+          "target": "components/WithSearchBar.tsx"
+        },
+        {
+          "path": "lib/types.ts",
+          "type": "registry:lib"
+        }
+      ],
+      "name": "with-search-bar",
+      "registryDependencies": [
+        "https://ui.kitze.io/r/search-bar.json"
+      ],
+      "title": "With Search Bar",
+      "type": "registry:component"
+    }
+  ],
+  "name": "kitze-ui"
+}

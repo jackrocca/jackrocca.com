@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "checkbox",
+  "title": "Checkbox",
+  "description": "Kitze UI’s styled Base UI primitives for boolean selection. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+  "dependencies": [
+    "@base-ui/react",
+    "lucide-react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/checkbox.tsx",
+      "content": "\"use client\";\n\nimport { Checkbox as CheckboxPrimitive } from \"@base-ui/react/checkbox\";\nimport { CheckIcon, MinusIcon } from \"lucide-react\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst Checkbox = ({\n  className,\n  indeterminate,\n  ...props\n}: CheckboxPrimitive.Root.Props) => (\n  <CheckboxPrimitive.Root\n    data-slot=\"checkbox\"\n    indeterminate={indeterminate}\n    className={cn(\n      \"peer border-muted-foreground/40 text-primary-foreground data-checked:border-primary data-checked:bg-primary data-indeterminate:border-primary data-indeterminate:bg-primary focus-visible:ring-ring aria-invalid:border-destructive relative flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-md border-2 bg-transparent transition-[background-color,border-color] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-disabled:cursor-not-allowed data-disabled:opacity-40 motion-reduce:transition-none\",\n      className\n    )}\n    {...props}\n  >\n    <CheckboxPrimitive.Indicator\n      data-slot=\"checkbox-indicator\"\n      keepMounted\n      className=\"flex items-center justify-center text-current transition-[opacity,scale] duration-150 data-unchecked:scale-50 data-unchecked:opacity-0 motion-reduce:transition-none\"\n    >\n      {indeterminate ? (\n        <MinusIcon className=\"size-3.5\" strokeWidth={3} />\n      ) : (\n        <CheckIcon className=\"size-3.5\" strokeWidth={3} />\n      )}\n    </CheckboxPrimitive.Indicator>\n  </CheckboxPrimitive.Root>\n);\nexport { Checkbox };\n",
+      "type": "registry:ui",
+      "target": "components/ui/checkbox.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}

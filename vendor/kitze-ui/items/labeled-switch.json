@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "labeled-switch",
+  "title": "Labeled Switch",
+  "description": "A switch paired with its label through a small prop API. Use it for standard on/off settings so text alignment and accessible label association stay consistent; use the switch primitive for more specialized layouts.",
+  "dependencies": [],
+  "registryDependencies": [
+    "https://ui.kitze.io/r/switch.json"
+  ],
+  "files": [
+    {
+      "path": "registry/new-york/labeled-switch/LabeledSwitch.tsx",
+      "content": "\"use client\";\n\nimport React from \"react\";\n\nimport { Switch } from \"@/components/ui/switch\";\nimport { cn } from \"@/lib/utils\";\n\nexport interface LabeledSwitchProps {\n  id?: string;\n  label: React.ReactNode;\n  className?: string;\n  checked?: boolean;\n  onCheckedChange?: (checked: boolean) => void;\n  disabled?: boolean;\n}\nexport const LabeledSwitch: React.FC<LabeledSwitchProps> = ({\n  id,\n  label,\n  className,\n  checked,\n  onCheckedChange,\n  disabled,\n  ...switchProps\n}) => {\n  const generatedId = React.useId();\n  const switchId = id || `labeled-switch-${generatedId}`;\n  return (\n    <div className={cn(\"flex min-h-8 items-center gap-3\", className)}>\n      <Switch\n        id={switchId}\n        checked={checked}\n        onCheckedChange={onCheckedChange}\n        disabled={disabled}\n        {...switchProps}\n      />\n      <label\n        htmlFor={switchId}\n        className=\"cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70\"\n      >\n        {label}\n      </label>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/LabeledSwitch.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

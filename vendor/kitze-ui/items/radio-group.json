@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "radio-group",
+  "title": "Radio Group",
+  "description": "Kitze UI’s styled Base UI primitives for single-choice groups. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/radio-group.tsx",
+      "content": "\"use client\";\nimport { Radio } from \"@base-ui/react/radio\";\nimport { RadioGroup as RadioGroupPrimitive } from \"@base-ui/react/radio-group\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst RadioGroup = ({ className, ...props }: RadioGroupPrimitive.Props) => (\n  <RadioGroupPrimitive\n    data-slot=\"radio-group\"\n    className={cn(\"grid gap-3\", className)}\n    {...props}\n  />\n);\nconst RadioGroupItem = ({ className, ...props }: Radio.Root.Props) => (\n  <Radio.Root\n    data-slot=\"radio-group-item\"\n    className={cn(\n      \"border-muted-foreground/40 data-checked:border-primary focus-visible:ring-ring flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-disabled:cursor-not-allowed data-disabled:opacity-40 motion-reduce:transition-none\",\n      className\n    )}\n    {...props}\n  >\n    <Radio.Indicator\n      keepMounted\n      className=\"bg-primary size-2.5 rounded-full transition-[opacity,scale] duration-150 data-unchecked:scale-50 data-unchecked:opacity-0 motion-reduce:transition-none\"\n    />\n  </Radio.Root>\n);\nexport { RadioGroup, RadioGroupItem };\n",
+      "type": "registry:ui",
+      "target": "components/ui/radio-group.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}

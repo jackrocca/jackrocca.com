@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "favicon-image",
+  "title": "Favicon Image",
+  "description": "A square artwork layout combining a supplied icon with a gradient background, configurable dimensions and corner radius. Use it to prepare favicon or app-icon artwork with consistent proportions. It does not fetch favicons from remote sites or export image files itself.",
+  "dependencies": [],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/new-york/favicon-image/FaviconImage.tsx",
+      "content": "import type { ReactNode } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nexport interface FaviconImageProps {\n  /**\n   * The icon to display (should be a Lucide icon or similar)\n   */\n  icon: ReactNode;\n  /**\n   * Gradient classes for the background (e.g., \"from-blue-500 to-cyan-500\")\n   */\n  gradient: string;\n  /**\n   * Size in pixels (will be rendered as a square)\n   * @default 512\n   */\n  size?: number;\n  /**\n   * Border radius as percentage of size\n   * @default 20\n   */\n  borderRadiusPercent?: number;\n  /**\n   * Icon size as percentage of container\n   * @default 60\n   */\n  iconSizePercent?: number;\n  /**\n   * Additional className for the container\n   */\n  className?: string;\n}\nexport const FaviconImage = ({\n  icon,\n  gradient,\n  size = 512,\n  borderRadiusPercent = 20,\n  iconSizePercent = 60,\n  className,\n}: FaviconImageProps) => {\n  const borderRadius = (size * borderRadiusPercent) / 100;\n  const iconSize = (size * iconSizePercent) / 100;\n  return (\n    <div\n      className={cn(\n        \"flex items-center justify-center bg-gradient-to-br\",\n        gradient,\n        className\n      )}\n      style={{\n        borderRadius,\n        height: size,\n        width: size,\n      }}\n    >\n      <div\n        className=\"text-white\"\n        style={{\n          height: iconSize,\n          width: iconSize,\n        }}\n      >\n        {icon}\n      </div>\n    </div>\n  );\n};\n",
+      "type": "registry:component",
+      "target": "components/FaviconImage.tsx"
+    },
+    {
+      "path": "lib/types.ts",
+      "content": "import type { LucideIcon } from \"lucide-react\";\nimport type { PropsWithChildren } from \"react\";\n\nexport type ReactFC<T> = React.FC<PropsWithChildren & T>;\nexport type Size = \"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\";\nexport interface SelectOption {\n  value: string;\n  label?: string | undefined;\n  emoji?: string | undefined;\n  icon?: LucideIcon | undefined;\n  closeOnClick?: boolean | undefined;\n  disabled?: boolean | undefined;\n}\n",
+      "type": "registry:lib"
+    }
+  ],
+  "type": "registry:component"
+}

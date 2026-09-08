@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "tooltip",
+  "title": "Tooltip",
+  "description": "Kitze UI’s styled Base UI primitives for hover and focus hints. These keep the accessible primitive API while sharing the library’s visual and motion conventions, so installed components match the documentation. Use them for custom compositions; choose a Simple or Responsive wrapper when its smaller prop API already covers the interaction.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "components/ui/tooltip.tsx",
+      "content": "\"use client\";\n\nimport { Tooltip as TooltipPrimitive } from \"@base-ui/react/tooltip\";\n\nimport { cn } from \"@/lib/utils\";\n\nconst TooltipProvider = ({\n  delay = 0,\n  ...props\n}: TooltipPrimitive.Provider.Props) => (\n  <TooltipPrimitive.Provider\n    data-slot=\"tooltip-provider\"\n    delay={delay}\n    {...props}\n  />\n);\nconst Tooltip = ({ ...props }: TooltipPrimitive.Root.Props) => (\n  <TooltipPrimitive.Root data-slot=\"tooltip\" {...props} />\n);\nconst TooltipTrigger = ({ ...props }: TooltipPrimitive.Trigger.Props) => (\n  <TooltipPrimitive.Trigger data-slot=\"tooltip-trigger\" {...props} />\n);\nconst TooltipContent = ({\n  className,\n  side = \"top\",\n  sideOffset = 4,\n  align = \"center\",\n  alignOffset = 0,\n  children,\n  ...props\n}: TooltipPrimitive.Popup.Props &\n  Pick<\n    TooltipPrimitive.Positioner.Props,\n    \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\"\n  >) => (\n  <TooltipPrimitive.Portal>\n    <TooltipPrimitive.Positioner\n      align={align}\n      alignOffset={alignOffset}\n      side={side}\n      sideOffset={sideOffset}\n      className=\"isolate z-50\"\n    >\n      <TooltipPrimitive.Popup\n        data-slot=\"tooltip-content\"\n        className={cn(\n          \"bg-primary text-primary-foreground z-50 origin-(--transform-origin) overflow-hidden rounded-md px-3 py-1.5 text-xs transition-[opacity,scale] duration-150 ease-out data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none\",\n          className\n        )}\n        {...props}\n      >\n        {children}\n        <TooltipPrimitive.Arrow className=\"bg-primary fill-primary z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-left-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-right-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5\" />\n      </TooltipPrimitive.Popup>\n    </TooltipPrimitive.Positioner>\n  </TooltipPrimitive.Portal>\n);\nexport { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };\n",
+      "type": "registry:ui",
+      "target": "components/ui/tooltip.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}
