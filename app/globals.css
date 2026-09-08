@@ -148,3 +148,56 @@ body {
 .skip-link:focus {
   top: 16px;
 }
+
+.photo-masonry {
+  columns: 2;
+  column-gap: 12px;
+}
+.photo-tile {
+  display: block;
+  height: auto;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 12px;
+  border-radius: 0;
+  break-inside: avoid;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.photo-tile img {
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
+}
+.photo-loupe {
+  max-height: 96dvh;
+  overflow-y: auto;
+  border-radius: 0;
+  padding: 48px 16px 8px;
+}
+.photo-loupe > [data-slot="dialog-close"],
+.photo-loupe > button {
+  min-width: 40px;
+  min-height: 40px;
+}
+@media (min-width: 768px) {
+  .photo-masonry {
+    columns: 3;
+    column-gap: 20px;
+  }
+  .photo-tile {
+    margin-bottom: 20px;
+  }
+  .photo-masonry-small {
+    columns: 2;
+  }
+}
+@media (min-width: 1440px) {
+  .photo-masonry:not(.photo-masonry-small) {
+    columns: 4;
+  }
+}
+
+.photo-masonry-small {
+  max-width: 1100px;
+  margin-inline: auto;
+}

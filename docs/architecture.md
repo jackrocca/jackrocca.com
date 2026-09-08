@@ -15,7 +15,17 @@ One Next.js application serves Jack Rocca’s public personal site and his singl
 | `assets/brand/`                  | Original supplied artwork; the navbar copy changes only SVG canvas bounds                  |
 | `legacy/`                        | Preserved original Streamlit implementation and historical data; not deployed              |
 
-Public identity and links live in `lib/site.ts`. Homepage tile order, destinations, and optional selected photo paths live in `lib/home-grid.ts`; the homepage has no visible captions or introductory copy. The photography tile uses a camera mark until actual portfolio images are selected. UI tokens live in `ui/theme.css`. The site uses one self-hosted font through Next/font; the supplied signature is its primary brand asset. The league maintains a compact layout and semantic status labels without a separate decorative theme.
+Public identity and links live in `lib/site.ts`. The home and photography routes use
+`components/photo-gallery.tsx`, a masonry gallery with a centered signature and member
+Photos/People/Places views. Writing and Projects remain separate routes. UI tokens live
+in `ui/theme.css`.
+
+Photo Archivist SQLite remains the catalog authority. `scripts/photography/read_catalog.py`
+reads it without migrations or writes; `scripts/sync-photos.ts` derives a versioned private
+publication of ranked previews. `lib/photography.ts` validates the projection and applies
+visibility; `lib/photo-store.ts` reads it; `/api/photos` and `/api/photos/image/:id` enforce
+Google session access on every request. The browser never gets Blob paths or originals.
+See `docs/photography.md` for publication and privacy boundaries.
 
 The UI dependency direction is application → UI. Shared components cannot import account or league code. `npm run check:boundaries` enforces this and rejects runtime imports from archived/upstream source.
 

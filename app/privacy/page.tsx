@@ -30,6 +30,14 @@ export default function Privacy() {
         is visible to you and the commissioner. The commissioner can export league records
         and review an activity log.
       </p>
+      <h2>Photographs</h2>
+      <p>
+        Visitors can view previews rated four or five stars. Signing in unlocks all ranked
+        previews, along with published people and place labels. The website stores small
+        preview copies in private storage; original photographs remain in Jack’s local
+        archive. Web copies omit embedded EXIF and GPS coordinates. Private notes, face
+        crops, and recognition embeddings are not published.
+      </p>
       <h2>Storage and cookies</h2>
       <p>
         Account and league records are stored in private Vercel Blob storage. An essential

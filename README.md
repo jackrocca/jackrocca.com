@@ -94,3 +94,10 @@ UI source is installed from [Kitze UI](https://ui.kitze.io/guide), a shadcn regi
 Our UI fork lives in `ui/`, with semantic tokens in `ui/theme.css`. The complete Kitze registry (76 entries, 134 source files) is downloaded under `vendor/kitze-ui/` with an offline checksum verifier. `npm run ui:prepare -- component-name` safely stages additions with UI-specific paths and imports, isolating UI types from the league model. See [UI maintenance](ui/README.md), [contributing](CONTRIBUTING.md), [architecture](docs/architecture.md), and [operations](docs/operations.md). The local `/dev/ui` workshop returns 404 in production.
 
 This deploy uses the existing personal Vercel project. It does not attach or alter `jackrocca.com`; domain setup remains a separate step, including Google authorized origin/callback updates and `APP_URL` if the canonical origin changes.
+
+## Photography publication
+
+The homepage is a masonry gallery sourced from Photo Archivist. Visitors see 4–5-star
+previews; signed-in Google accounts see all 1–5-star previews and People/Places.
+Run `npm run photos:sync` to prepare the local export; publication is explicit.
+See [photography integration](docs/photography.md) for sync, visibility, and storage.

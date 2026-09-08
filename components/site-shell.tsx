@@ -9,7 +9,7 @@ import { PageHeader } from "@/ui/components/PageHeader";
 import { CustomButton } from "@/ui/components/CustomButton";
 export function SiteHeader() {
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/photography";
   const [name, setName] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
@@ -27,6 +27,22 @@ export function SiteHeader() {
       window.removeEventListener("account-changed", refresh);
     };
   }, [pathname]);
+  const logo = (
+    <Link
+      href="/"
+      aria-label="Jack Rocca home"
+      className="mx-auto flex min-h-11 w-[132px] items-center sm:w-[150px]"
+    >
+      <Image
+        src="/jack-rocca-logo.svg"
+        alt="Jack Rocca"
+        width={202}
+        height={87}
+        priority
+        className="h-auto w-full"
+      />
+    </Link>
+  );
   const nav = (mobile = false) => (
     <nav
       aria-label={mobile ? "Mobile site navigation" : "Site navigation"}
@@ -51,28 +67,15 @@ export function SiteHeader() {
         height={100}
         classNames={{
           root: isHome
-            ? "mx-auto max-w-[1440px] px-0 sm:px-4"
+            ? "mx-auto max-w-[1800px] px-0 sm:px-2"
             : "mx-auto max-w-[1024px] px-2 sm:px-6",
           container: "mx-auto max-w-none",
           leftSide: "flex-1",
-          rightSide: "flex-none gap-5",
+          rightSide: isHome ? "flex-1 gap-0 sm:gap-2" : "flex-none gap-5",
+          middle: "flex-none",
         }}
-        leftSide={
-          <Link
-            href="/"
-            aria-label="Jack Rocca home"
-            className="flex min-h-11 w-[132px] items-center sm:w-[150px]"
-          >
-            <Image
-              src="/jack-rocca-logo.svg"
-              alt="Jack Rocca"
-              width={202}
-              height={87}
-              priority
-              className="h-auto w-full"
-            />
-          </Link>
-        }
+        leftSide={isHome ? null : logo}
+        middle={isHome ? logo : undefined}
         renderRightSide={({ bottomDrawer }) => (
           <>
             {!isHome && nav()}
@@ -93,7 +96,7 @@ export function SiteHeader() {
 }
 export function SiteFooter() {
   const pathname = usePathname();
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname === "/photography") return null;
   return (
     <footer className="mx-auto flex w-full max-w-[1024px] flex-wrap items-center justify-between gap-4 border-t px-6 py-8 text-xs text-muted-foreground sm:px-10">
       <span>© {new Date().getFullYear()} Jack Rocca</span>
