@@ -1879,3 +1879,61 @@ tr.you {
     padding-bottom: 80px;
   }
 }
+
+.google-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 28px 0 20px;
+  padding: 12px 16px;
+  border: 1px solid #747775;
+  border-radius: 8px;
+  background: white;
+  color: #1f1f1f;
+  font:
+    500 14px/1.4 Arial,
+    sans-serif;
+  text-decoration: none;
+  transition:
+    background 150ms,
+    box-shadow 150ms;
+}
+.google-signin:hover {
+  background: #f8fafd;
+  box-shadow: 0 1px 3px #0002;
+}
+.google-signin:focus-visible {
+  outline: 3px solid #4285f4;
+  outline-offset: 3px;
+}
+.google-signin:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.google-signin svg {
+  flex-shrink: 0;
+}
+.privacy-page {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 32px;
+}
+.privacy-page .eyebrow {
+  display: block;
+  margin-top: 32px;
+}
+.privacy-page h2 {
+  margin-top: 28px;
+}
+.privacy-page p {
+  line-height: 1.7;
+}
+@media (max-width: 760px) {
+  .privacy-page {
+    margin: 16px;
+    padding: 24px;
+  }
+}

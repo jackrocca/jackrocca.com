@@ -46,9 +46,10 @@ export type Week = {
 };
 export type User = {
   id: string;
-  username: string;
+  username?: string; // Legacy accounts are retained for historical exports.
   name: string;
-  passwordHash: string;
+  googleSub?: string;
+  email?: string;
   role: "admin" | "player";
   sessionVersion: number;
   createdAt: string;

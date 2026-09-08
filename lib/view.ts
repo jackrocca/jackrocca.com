@@ -1,6 +1,11 @@
 import { currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
 import { State, User } from "./types";
-export function view(state: State, user: User | null, weekNumber: number) {
+export function view(
+  state: State,
+  user: User | null,
+  weekNumber: number,
+  googleReady = false,
+) {
   const week = state.weeks.find((w) => w.number === weekNumber)!;
   const allGames = state.weeks.flatMap((w) => w.games);
   const scores = state.entries.map((e) => ({
@@ -37,12 +42,12 @@ export function view(state: State, user: User | null, weekNumber: number) {
     user: user
       ? {
           id: user.id,
-          username: user.username,
+          email: user.email,
           name: user.name,
           role: user.role,
         }
       : null,
-    setupRequired: state.users.length === 0,
+    authentication: { provider: "google", ready: googleReady },
     week: {
       ...week,
       error: week.error
@@ -75,19 +80,11 @@ export function view(state: State, user: User | null, weekNumber: number) {
     admin:
       user?.role === "admin"
         ? {
-            invites: state.invites
-              .filter((i) => !i.usedAt && Date.parse(i.expiresAt) > Date.now())
-              .map(({ id, name, expiresAt, resetUserId }) => ({
-                id,
-                name,
-                expiresAt,
-                resetUserId,
-              })),
             audit: state.audit.slice(-40).reverse(),
-            members: state.users.map(({ id, name, username, role }) => ({
+            members: state.users.map(({ id, name, email, role }) => ({
               id,
               name,
-              username,
+              email,
               role,
             })),
           }

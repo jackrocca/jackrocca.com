@@ -82,11 +82,8 @@ export default function League() {
     [busy, setBusy] = useState(false),
     [notice, setNotice] = useState(""),
     [error, setError] = useState(""),
-    [authToken, setAuthToken] = useState(""),
-    [authMode, setAuthMode] = useState("login"),
     [tick, setTick] = useState(Date.now()),
     [filter, setFilter] = useState<PickType | "all">("all"),
-    [inviteLink, setInviteLink] = useState(""),
     [accountOpen, setAccountOpen] = useState(false);
   const load = useCallback(async (number: number | null) => {
     try {
@@ -104,14 +101,19 @@ export default function League() {
   }, []);
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const invite = params.get("invite"),
-      setup = params.get("setup");
-    if (invite || setup) {
-      setAuthMode(invite ? "join" : "setup");
-      setAuthToken(invite ?? setup ?? "");
+    const messages: Record<string, string> = {
+      canceled:
+        "Google sign-in was canceled. You can try again whenever you’re ready.",
+      failed: "Google sign-in could not be completed. Please try again.",
+      unavailable:
+        "Google sign-in is being connected. Please check back shortly.",
+    };
+    const authError = params.get("authError");
+    if (authError || params.has("invite") || params.has("setup"))
       history.replaceState(null, "", location.pathname);
-    }
-    void load(null);
+    void load(null).then(() => {
+      if (authError && messages[authError]) setError(messages[authError]);
+    });
   }, [load]);
   useEffect(() => {
     if (!data || dirty) return;
@@ -172,21 +174,6 @@ export default function League() {
     setDirty(false);
     setFilter("all");
     await load(number);
-  }
-  async function auth(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    await act(async () => {
-      await api(authMode, {
-        username: form.get("username"),
-        password: form.get("password"),
-        name: form.get("name"),
-        token: authToken,
-      });
-      setAuthToken("");
-      setAuthMode("login");
-      await load(week);
-    });
   }
   async function save() {
     await act(async () => {
@@ -276,7 +263,7 @@ export default function League() {
           </div>
         ) : (
           <span className="private-label">
-            <LockKeyhole size={14} /> PRIVATE LEAGUE
+            <LockKeyhole size={14} /> JACK’S LEAGUE
           </span>
         )}
       </header>
@@ -337,98 +324,31 @@ export default function League() {
             </div>
           </section>
           <section className="login-card">
-            <span className="eyebrow">
-              {authMode === "setup"
-                ? "COMMISSIONER SETUP"
-                : authMode === "join"
-                  ? "YOU’RE INVITED"
-                  : "WELCOME BACK"}
-            </span>
-            <h2>
-              {authMode === "setup"
-                ? "Start your league."
-                : authMode === "join"
-                  ? "Your season starts here."
-                  : "Get in the game."}
-            </h2>
+            <span className="eyebrow">JACK’S PICK 4 LEAGUE</span>
+            <h2>Get in the game.</h2>
             <p>
-              {authMode === "login"
-                ? "Sign in to make your picks and follow the league."
-                : authMode === "setup"
-                  ? "Create your commissioner account, then invite the league."
-                  : "Choose your username and password to join. Recovery links reset your existing account."}
+              Sign in with Google to join the league, make your picks, and
+              follow the season.
             </p>
-            <form onSubmit={auth}>
-              {authMode !== "login" && (
-                <label>
-                  Display name
-                  <input
-                    name="name"
-                    autoComplete="name"
-                    minLength={2}
-                    maxLength={40}
-                    required
-                    placeholder="What the league calls you"
-                  />
-                </label>
-              )}
-              <label>
-                Username
-                <input
-                  name="username"
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  required
-                  minLength={3}
-                  maxLength={30}
-                  pattern="[a-zA-Z0-9][a-zA-Z0-9._\-]{2,29}"
-                  placeholder="Your username"
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete={
-                    authMode === "login" ? "current-password" : "new-password"
-                  }
-                  required
-                  minLength={authMode === "login" ? 1 : 12}
-                  maxLength={128}
-                  placeholder={
-                    authMode === "login"
-                      ? "Your password"
-                      : "At least 12 characters"
-                  }
-                />
-              </label>
-              <button className="primary" disabled={busy}>
-                {busy
-                  ? "One moment…"
-                  : authMode === "login"
-                    ? "Sign in"
-                    : authMode === "setup"
-                      ? "Create league"
-                      : "Join the league"}
-                <ArrowRight size={18} />
-              </button>
-            </form>
-            <div className="login-foot">
-              <ShieldCheck size={17} />
-              {authMode === "login"
-                ? "New player or forgot your password? Ask your commissioner for an invite link."
-                : "Your invitation is private and can only be used once."}
-            </div>
-            {authMode !== "login" && (
-              <button
-                className="text-button"
-                onClick={() => setAuthMode("login")}
-              >
-                Already have an account? Sign in
+            {data.authentication.ready ? (
+              <a className="google-signin" href="/api/auth/google">
+                <GoogleMark /> Continue with Google
+              </a>
+            ) : (
+              <button className="google-signin" disabled>
+                <GoogleMark /> Google sign-in is being connected
               </button>
             )}
+            <div className="login-foot">
+              <ShieldCheck size={17} />
+              <span>
+                Your account automatically joins Jack’s league. Choose your
+                league display name after signing in.
+              </span>
+            </div>
+            <a className="text-button" href="/privacy">
+              Privacy
+            </a>
           </section>
           <footer>
             FAVORITE · UNDERDOG · OVER · UNDER<span>2026 / PICK 4</span>
@@ -1152,84 +1072,24 @@ export default function League() {
               <div className="admin-grid">
                 <section className="panel">
                   <div className="section-heading">
-                    <h2>Invite the league</h2>
+                    <h2>Share the league</h2>
                     <UserRound size={20} />
                   </div>
                   <p>
-                    Create a private, single-use link. Invitations expire after
-                    seven days.
+                    Send friends the league link. Everyone who signs in with
+                    Google joins this league automatically.
                   </p>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const form = new FormData(e.currentTarget);
-                      void act(async () => {
-                        const result = await api("admin/invite", {
-                          name: form.get("name"),
-                        });
-                        setInviteLink(result.url);
-                        await load(week);
-                      });
-                    }}
+                  <button
+                    className="primary"
+                    onClick={() =>
+                      act(async () => {
+                        await navigator.clipboard.writeText(location.origin);
+                        setNotice("League link copied.");
+                      })
+                    }
                   >
-                    <label>
-                      Player name
-                      <input
-                        name="name"
-                        required
-                        maxLength={40}
-                        placeholder="Who’s joining?"
-                      />
-                    </label>
-                    <button className="primary" disabled={busy}>
-                      Create invite
-                      <ArrowRight size={17} />
-                    </button>
-                  </form>
-                  {inviteLink && (
-                    <div className="invite-result">
-                      <label>
-                        Share this private link
-                        <input readOnly value={inviteLink} />
-                      </label>
-                      <button
-                        className="text-button"
-                        onClick={() =>
-                          act(async () => {
-                            await navigator.clipboard.writeText(inviteLink);
-                            setNotice("Invite link copied.");
-                          })
-                        }
-                      >
-                        <Clipboard size={15} />
-                        Copy link
-                      </button>
-                    </div>
-                  )}
-                  <h3 className="subheading">Pending invitations</h3>
-                  {data.admin.invites.map((i) => (
-                    <div className="admin-row" key={i.id}>
-                      <span>
-                        <b>{i.name}</b>
-                        <small>
-                          {i.resetUserId ? "Recovery · " : ""}Expires{" "}
-                          {date(i.expiresAt)}
-                        </small>
-                      </span>
-                      <button
-                        className="text-button"
-                        onClick={() =>
-                          act(async () => {
-                            await api("admin/revoke", { id: i.id });
-                            await load(week);
-                          })
-                        }
-                      >
-                        Revoke
-                      </button>
-                    </div>
-                  ))}
-                  {!data.admin.invites.length && <p>No pending invitations.</p>}
+                    <Clipboard size={17} /> Copy league link
+                  </button>
                 </section>
                 <section className="panel">
                   <h2>Week {week} operations</h2>
@@ -1290,7 +1150,7 @@ export default function League() {
                   </a>
                   <p className="source-note">
                     Data includes all picks, frozen lines, results, and the
-                    audit log. Passwords and invitation secrets are excluded.
+                    audit log. Google credentials are never included.
                   </p>
                 </section>
                 <section className="panel">
@@ -1300,29 +1160,10 @@ export default function League() {
                       <span>
                         <b>{m.name}</b>
                         <small>
-                          @{m.username} ·{" "}
+                          {m.email} ·{" "}
                           {m.role === "admin" ? "Commissioner" : "Player"}
                         </small>
                       </span>
-                      <button
-                        className="text-button"
-                        disabled={busy}
-                        onClick={() =>
-                          act(async () => {
-                            const result = await api("admin/invite", {
-                              name: m.name,
-                              resetUserId: m.id,
-                            });
-                            setInviteLink(result.url);
-                            await load(week);
-                            setNotice(
-                              "Recovery link created in the invite panel.",
-                            );
-                          })
-                        }
-                      >
-                        Recovery link
-                      </button>
                     </div>
                   ))}
                 </section>
@@ -1545,47 +1386,32 @@ export default function League() {
                 <X size={20} />
               </button>
             </div>
-            <p>
-              {user.name} · @{user.username}
-            </p>
+            <p>Connected with Google · {user.email}</p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 const form = new FormData(e.currentTarget);
                 void act(async () => {
-                  await api("password", {
-                    current: form.get("current"),
-                    password: form.get("password"),
-                  });
+                  await api("profile", { name: form.get("name") });
+                  await load(week);
                   setAccountOpen(false);
-                  setNotice(
-                    "Password changed. Other sessions have been signed out.",
-                  );
+                  setNotice("Display name updated.");
                 });
               }}
             >
               <label>
-                Current password
+                League display name
                 <input
-                  name="current"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                />
-              </label>
-              <label>
-                New password
-                <input
-                  name="password"
-                  type="password"
-                  minLength={12}
-                  maxLength={128}
-                  autoComplete="new-password"
+                  name="name"
+                  defaultValue={user.name}
+                  minLength={2}
+                  maxLength={40}
+                  autoComplete="nickname"
                   required
                 />
               </label>
               <button className="primary" disabled={busy}>
-                Change password
+                Save display name
               </button>
             </form>
           </section>
@@ -1699,5 +1525,28 @@ function Rules() {
         </p>
       </section>
     </div>
+  );
+}
+
+function GoogleMark() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M21.6 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-1.99 3.02v2.51h3.23c1.89-1.74 2.98-4.3 2.98-7.36Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 22c2.7 0 4.96-.9 6.62-2.41l-3.23-2.51c-.9.6-2.05.96-3.39.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.59A10 10 0 0 0 12 22Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.41 13.92a6 6 0 0 1 0-3.84V7.49H3.07a10 10 0 0 0 0 9.02l3.34-2.59Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.96c1.47 0 2.79.5 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.93 5.49l3.34 2.59A6 6 0 0 1 12 5.96Z"
+      />
+    </svg>
   );
 }

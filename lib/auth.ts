@@ -1,26 +1,12 @@
-import { randomBytes, scrypt, timingSafeEqual, createHash } from "node:crypto";
-import { promisify } from "node:util";
+import { randomBytes, timingSafeEqual, createHash } from "node:crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { AppError } from "./rules";
 import { State, User } from "./types";
-const scryptAsync = promisify(scrypt);
 export const tokenHash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
 export const newToken = () => randomBytes(32).toString("base64url");
-export async function passwordHash(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const key = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${salt}:${key.toString("hex")}`;
-}
-export async function verifyPassword(password: string, hash: string) {
-  const [salt, stored] = hash.split(":");
-  if (!salt || !stored) return false;
-  const key = (await scryptAsync(password, salt, 64)) as Buffer;
-  const expected = Buffer.from(stored, "hex");
-  return key.length === expected.length && timingSafeEqual(key, expected);
-}
-function secret() {
+export function secret() {
   const value = process.env.SESSION_SECRET;
   if (!value || value.length < 32)
     throw new Error("SESSION_SECRET is not configured.");
@@ -45,17 +31,29 @@ export async function session(
       audience: "pick4-league",
       algorithms: ["HS256"],
     });
+    if (payload.provider !== "google") return null;
     return (
       state.users.find(
-        (u) => u.id === payload.sub && u.sessionVersion === payload.version,
+        (u) =>
+          u.id === payload.sub &&
+          u.googleSub &&
+          u.sessionVersion === payload.version,
       ) ?? null
     );
   } catch {
     return null;
   }
 }
-export async function loginResponse(user: User) {
-  const token = await new SignJWT({ version: user.sessionVersion })
+export async function loginResponse(
+  user: User,
+  response: NextResponse = NextResponse.json({ ok: true }),
+) {
+  if (!user.googleSub)
+    throw new Error("A verified Google identity is required.");
+  const token = await new SignJWT({
+    version: user.sessionVersion,
+    provider: "google",
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuer("pick4")
@@ -63,7 +61,6 @@ export async function loginResponse(user: User) {
     .setIssuedAt()
     .setExpirationTime("14d")
     .sign(secret());
-  const response = NextResponse.json({ ok: true });
   response.cookies.set("pick4-session", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -83,7 +80,6 @@ export function requireAdmin(user: User | null) {
   return user!;
 }
 export function sameOrigin(req: NextRequest) {
-  const origin = req.headers.get("origin");
-  if (!origin || origin !== new URL(req.url).origin)
+  if (req.headers.get("origin") !== new URL(req.url).origin)
     throw new AppError("This request must come from the league app.", 403);
 }
