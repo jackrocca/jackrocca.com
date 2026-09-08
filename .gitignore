@@ -64,3 +64,18 @@ Thumbs.db
 .venv/
 google-keys.json
 .cursor/
+
+# Next.js / Vercel
+node_modules/
+.next/
+.vercel/
+.env*
+!.env.example
+*.tsbuildinfo
+next-env.d.ts
+work/
+.vercel
+
+# The TypeScript application library is source, not a Python build artifact.
+!lib/
+!lib/*.ts
