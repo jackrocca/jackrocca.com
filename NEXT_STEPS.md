@@ -62,6 +62,18 @@ metadata stays redacted; ordering and pagination remain stable; partial upload
 does not change the live snapshot; duplicate commit is idempotent; stale publisher
 gets a conflict; revoked credentials fail; preview cannot write production.
 
+**Performance gate:** R2 is selected for archive economics and ecosystem fit, not
+a proven latency win. Benchmark identical previews through the actual protected
+delivery paths on Blob and R2: cold/warm p50/p95 time-to-first-byte, first useful
+gallery paint, and full preview load on mobile/desktop connections. Record regions,
+cache state, object sizes, and sample counts. Keep Blob serving previews if the R2
+path regresses materially; originals can still use R2. Do not enable public bucket
+URLs or shared authenticated-response caching to manufacture a faster result.
+Cloudflare edge caching can improve R2 delivery, but storage choice alone does not
+enable it. Any cache design must prove rating-reduction/withdrawal revocation.
+[R2 read performance](https://developers.cloudflare.com/r2/how-r2-works/),
+[Vercel private-storage guidance](https://vercel.com/docs/vercel-blob/private-storage)
+
 ## Next milestones
 
 ### Owner-only Atlas access and shared UI
