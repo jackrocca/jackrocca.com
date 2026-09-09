@@ -968,14 +968,18 @@ export default function League() {
                                     p.wins === s.wins,
                                 ) + 1}
                           </td>
-                          <td className="player-cell">
-                            <PlayerAvatar
-                              name={s.name}
-                              userId={s.id}
-                              revision={s.avatarRevision}
-                            />
-                            <b>{s.name}</b>
-                            {s.id === user.id && <small className="you-label">YOU</small>}
+                          <td>
+                            <div className="player-cell">
+                              <PlayerAvatar
+                                name={s.name}
+                                userId={s.id}
+                                revision={s.avatarRevision}
+                              />
+                              <b>{s.name}</b>
+                              {s.id === user.id && (
+                                <small className="you-label">YOU</small>
+                              )}
+                            </div>
                           </td>
                           <td className="points">{s.points}</td>
                           <td>
