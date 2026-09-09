@@ -7,7 +7,7 @@ Use Node 22 (`nvm use`) and `npm ci`. Copy `.env.example` to `.env.local`, fill 
 - `npm run format` formats maintained source; upstream snapshots, artwork, data, and archived code are excluded.
 - `npm run check` verifies formatting, upstream checksums, UI dependency boundaries, types, unit/API tests, and the production build.
 - `npm audit --omit=dev` checks production dependencies.
-- Exercise changed UI on desktop and at 390px width, including keyboard navigation and loading/error/disabled states. `/dev/ui` is the local workshop.
+- Exercise changed UI on desktop and at 390px width, including keyboard navigation and loading/error/disabled states. `/ui` shows every library component with a desktop/mobile preview toggle.
 
 CI runs these same checks without production credentials. Integration tests seed isolated identities through internal functions and remove their temporary stores; never add a public test-login endpoint.
 

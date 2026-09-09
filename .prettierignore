@@ -12,3 +12,5 @@ next-env.d.ts
 *.tsbuildinfo
 private-atlas-build/
 .atlas-bundle-*/
+# Installed agent skills are third-party content tracked by skills-lock.json hashes.
+.agents/

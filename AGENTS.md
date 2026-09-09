@@ -14,6 +14,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Supported runtime: Node 22 / Next.js app at the repository root. `legacy/` is an archive, not the app.
 - Read `docs/architecture.md` before moving module boundaries. The UI fork in `ui/` must not import app/domain code.
 - Modify `ui/`, never the accepted snapshot in `vendor/kitze-ui/`. See `ui/README.md` before updating or adding registry components.
+- The component library is public at `/ui` and driven by `lib/ui-catalog.ts`. For any `ui/` change use the skills in `.agents/skills/`: `rocca-ui-build-component`, `rocca-ui-adopt-upstream`, `rocca-ui-document-component`.
 - Preserve supplied artwork in `assets/brand/`. Branding and navigation must not invent personal content or portfolio photographs.
 - Run `npm run check` for structural changes; run targeted tests and a production build for smaller changes. Verify responsive and keyboard behavior for affected controls.
 - Never add public development authentication endpoints. Tests use isolated local stores through internal functions.

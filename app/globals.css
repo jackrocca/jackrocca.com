@@ -2,6 +2,9 @@
 @source "./";
 @source "../components";
 @source "../ui";
+/* Palette colors the /ui demos pass as CustomButton/CustomBadge `color` props. Tailwind only
+   emits a --color-* variable when a utility uses it, so name them here. */
+@source inline("bg-{emerald,sky,rose}-600");
 @import "../ui/theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -79,7 +82,9 @@
   }
 }
 
-@theme inline {
+/* `static` always emits these as CSS variables: CustomButton and CustomBadge resolve
+   color="primary" to var(--color-primary) at runtime, which no utility class references. */
+@theme inline static {
   --font-heading: var(--font-sans);
   --font-sans: var(--font-geist);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -543,4 +548,135 @@ body {
 }
 .photo-field-button {
   min-height: 40px;
+}
+
+/* Rocca UI library */
+.ui-library-link {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+.ui-library-link:hover,
+.ui-library-link[aria-current="page"] {
+  background: color-mix(in srgb, var(--brand-teal) 6%, white);
+  color: var(--brand-teal);
+}
+.ui-library-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  list-style: none;
+}
+.ui-library-summary::-webkit-details-marker,
+.ui-library-summary::marker {
+  display: none;
+  content: "";
+}
+.ui-library-summary > span:first-child {
+  flex: 1;
+}
+.ui-library-count {
+  min-width: 1.5rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ui-library-chevron {
+  color: var(--muted-foreground);
+}
+.ui-library-group[open] .ui-library-chevron {
+  transform: rotate(180deg);
+}
+/* Unlayered, so it outranks Tailwind's lg:hidden; hide it here at the sidebar breakpoint. */
+.ui-library-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+@media (min-width: 64rem) {
+  .ui-library-toolbar {
+    display: none;
+  }
+}
+.ui-library-credit a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ui-demo-section {
+  display: grid;
+  gap: 1rem;
+}
+.ui-demo-section + .ui-demo-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.ui-demo-heading h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.ui-demo-heading p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+.ui-guide-prose h2 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+.ui-guide-prose p,
+.ui-guide-prose li {
+  max-width: 65ch;
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+.ui-guide-prose p + p {
+  margin-top: 0.75rem;
+}
+.ui-guide-prose ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding-left: 1.15rem;
+}
+.ui-guide-prose pre {
+  margin-top: 1rem;
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--foreground);
+  color: var(--background);
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.ui-guide-prose code {
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+}
+.ui-guide-prose a {
+  color: var(--brand-teal);
 }

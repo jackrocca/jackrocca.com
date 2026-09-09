@@ -10,7 +10,7 @@ Our local source fork of Kitze UI: small prop APIs, accessible Base UI behavior,
 
 ## Working on components
 
-Run `npm run dev` and open `/dev/ui`. This workshop returns 404 in production. Keep component APIs small; customize tokens or a shared component before adding one-off wrappers. Preserve labels, native button semantics, disabled behavior, keyboard focus, mobile dismissal, and reduced motion. Add app-specific combinations in `components/`, not here.
+The public library is at `/ui`. Catalog entries live in `lib/ui-catalog.ts`; interactive demos live in `components/ui-library/demos/<slug>.tsx`. Adding a component means adding a catalog entry and a demo — `tests/ui-catalog.test.ts` enforces that pairing. Keep component APIs small; customize tokens or a shared component before adding one-off wrappers. Preserve labels, native button semantics, disabled behavior, keyboard focus, mobile dismissal, and reduced motion. Add app-specific combinations in `components/`, not here.
 
 `components.json` defines UI-specific aliases, but Kitze registry entries also contain explicit file targets that can bypass those aliases. **Do not run upstream `shadcn add` directly in this app.** Use `npm run ui:prepare -- component-name` to stage a component and its registry dependencies under `work/ui-candidates/`. It rewrites source imports and file targets into our UI structure, records required npm packages, and never overwrites the working fork. The destination must be new. UI `lib/types.ts` stays separate from the league model.
 
