@@ -3511,6 +3511,237 @@
   font-weight: 600;
   color: var(--ink);
 }
+.league-app .rules-figure {
+  margin: 22px 0 0;
+  padding: 22px 22px 20px;
+  border-radius: 12px;
+  background: var(--muted);
+}
+.league-app .rules-figure + .rules-figure {
+  margin-top: 16px;
+}
+.league-app .rules-figure figcaption {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.league-app .rules-figure > p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--league-muted);
+}
+.league-app .rules-figure > p:last-child {
+  margin: 16px 0 0;
+}
+.league-app .rules-matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 16px 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.league-app .rules-matchup > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.league-app .rules-matchup .team-mark {
+  width: 40px;
+  height: 40px;
+  margin: 0 0 6px;
+}
+.league-app .rules-matchup strong {
+  font-size: 14px;
+}
+.league-app .rules-matchup em {
+  font-style: normal;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .rules-matchup small {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--league-teal);
+}
+.league-app .rules-matchup > span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .rules-outcomes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.league-app .rules-outcomes > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 14px 16px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.league-app .rules-outcomes b {
+  font-size: 13px;
+  font-weight: 600;
+}
+.league-app .rules-outcomes span {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--league-muted);
+}
+.league-app .rules-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.league-app .rules-figure .rules-result {
+  margin: 12px 0 0;
+}
+.league-app .rules-result span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .rules-result strong {
+  flex: 1;
+  font-size: 14px;
+}
+.league-app .rules-result em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+  white-space: nowrap;
+}
+.league-app .rules-total-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.league-app .rules-total-scores > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.league-app .rules-total-scores .team-mark {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+}
+.league-app .rules-total-scores b {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .rules-total-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.league-app .rules-total-under,
+.league-app .rules-total-over {
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.league-app .rules-total-under {
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+}
+.league-app .rules-total-over {
+  color: var(--league-muted);
+}
+.league-app .rules-total-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: var(--ink);
+}
+.league-app .rules-total-dot {
+  position: absolute;
+  top: 50%;
+  left: calc(50% - 10px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--league-teal);
+  box-shadow: 0 0 0 3px #fff;
+  transform: translate(-50%, -50%);
+}
+.league-app .rules-total-legend {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--league-muted);
+}
+.league-app .rules-total-legend span:last-child {
+  text-align: right;
+}
+.league-app .rules-total-legend strong {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .rules-aside {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+}
+.league-app .rules-aside b {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.league-app .rules-aside p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--league-muted);
+}
 .league-app .rules-slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3681,6 +3912,25 @@
   padding: 0 16px;
 }
 @media (max-width: 640px) {
+  .league-app .rules-figure {
+    padding: 18px 16px 16px;
+  }
+  .league-app .rules-outcomes {
+    grid-template-columns: 1fr;
+  }
+  .league-app .rules-matchup em {
+    font-size: 20px;
+  }
+  .league-app .rules-result strong {
+    flex-basis: 100%;
+  }
+  .league-app .rules-total-scores {
+    grid-template-columns: 1fr 1fr;
+  }
+  .league-app .rules-total-scores b {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
   .league-app .league-tour {
     padding: 20px 18px 56px;
   }
