@@ -3,8 +3,11 @@ import assert from "node:assert/strict";
 import { initialState } from "../lib/store";
 import {
   currentWeek,
+  buyInStatus,
+  confirmBuyIn,
   deadline,
   freezeTime,
+  openingKickoff,
   publishWeek,
   saveEntry,
   scoreEntry,
@@ -68,7 +71,15 @@ test("all 272 games have unique ids, 18 weeks, and 32 teams with 17 games each",
   assert.ok([...teams.values()].every((n) => n === 17));
 });
 test("opening kickoff is Wednesday September 9 at 5:20 PM Pacific", () => {
-  assert.equal(deadline(initialState().weeks[0]), Date.parse("2026-09-10T00:20:00Z"));
+  assert.equal(
+    openingKickoff(initialState().weeks[0]),
+    Date.parse("2026-09-10T00:20:00Z"),
+  );
+});
+test("Week 1 pick deadline is the Sunday slate, not the Wednesday opener", () => {
+  const week = initialState().weeks[0];
+  assert.equal(deadline(week), Date.parse("2026-09-13T17:00:00Z"));
+  assert.equal(deadline(initialState().weeks[1]), openingKickoff(initialState().weeks[1]));
 });
 test("freeze is Wednesday 9 AM Pacific; winter DST handled", () => {
   const s = initialState();
@@ -104,12 +115,48 @@ test("server constructs lines, never trusts a client line", () => {
     -Math.abs(w.lines[input.picks.favorite].homeSpread!),
   );
 });
+test("a first-week card stays pending until the commissioner confirms its buy-in", () => {
+  const { s, input } = fixture();
+  const entry = saveEntry(s, "one", input, now);
+  assert.equal(buyInStatus(entry), "pending");
+  confirmBuyIn(s, "one", now + 1);
+  assert.equal(buyInStatus(entry), "confirmed");
+  assert.equal(entry.buyIn?.confirmedAt, new Date(now + 1).toISOString());
+});
+test("a commissioner cannot confirm a nonexistent or already confirmed buy-in", () => {
+  const { s, input } = fixture();
+  assert.throws(() => confirmBuyIn(s, "one", now), /no pending/);
+  saveEntry(s, "one", input, now);
+  confirmBuyIn(s, "one", now);
+  assert.throws(() => confirmBuyIn(s, "one", now), /no pending/);
+});
 test("revision rejects an overwrite from a stale tab", () => {
   const { s, input } = fixture();
   saveEntry(s, "one", input, now);
   assert.throws(() => saveEntry(s, "one", input, now), /another tab/);
 });
-test("existing card locks precisely at first kickoff", () => {
+test("every player can edit submitted picks and powerups until the weekly deadline", () => {
+  const { s, input } = fixture();
+  saveEntry(s, "one", input, now);
+  const replacement = s.weeks[0].games[4].id;
+  const updated = saveEntry(
+    s,
+    "one",
+    {
+      ...input,
+      picks: { ...input.picks, favorite: replacement },
+      totalHelper: "over",
+      perfectPrediction: true,
+      revision: 1,
+    },
+    now + 1,
+  );
+  assert.equal(updated.picks.favorite.gameId, replacement);
+  assert.equal(updated.totalHelper, "over");
+  assert.equal(updated.perfectPrediction, true);
+  assert.equal(updated.revision, 2);
+});
+test("existing card locks precisely at the weekly deadline", () => {
   const { s, w, input } = fixture();
   saveEntry(s, "one", input, now);
   assert.throws(
@@ -117,12 +164,32 @@ test("existing card locks precisely at first kickoff", () => {
     /locked/,
   );
 });
+test("Week 1 stays punishment-free after the Wednesday opener", () => {
+  const { s, w, input } = fixture();
+  const afterOpener = openingKickoff(w) + 1;
+  assert.throws(() => saveEntry(s, "one", input, afterOpener), /started/);
+  input.picks = Object.fromEntries(
+    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+  ) as PickInput["picks"];
+  const first = saveEntry(s, "one", input, afterOpener);
+  assert.equal(first.late, false);
+  const replacement = w.games[5].id;
+  const updated = saveEntry(
+    s,
+    "one",
+    { ...input, picks: { ...input.picks, under: replacement }, revision: 1 },
+    afterOpener + 1,
+  );
+  assert.equal(updated.late, false);
+  assert.equal(updated.picks.under.gameId, replacement);
+});
 test("late entry may only choose unstarted games, locks immediately", () => {
   const { s, w, input } = fixture();
   const time = deadline(w) + 1;
+  const open = w.games.filter((g) => Date.parse(g.kickoff) > time);
   assert.throws(() => saveEntry(s, "one", input, time), /started/);
   input.picks = Object.fromEntries(
-    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+    PICK_TYPES.map((t, i) => [t, open[i].id]),
   ) as PickInput["picks"];
   const e = saveEntry(s, "one", input, time);
   assert.equal(e.late, true);
@@ -130,11 +197,13 @@ test("late entry may only choose unstarted games, locks immediately", () => {
 });
 test("late entries cannot use any powerup", () => {
   const { s, w, input } = fixture();
+  const time = deadline(w) + 1;
+  const open = w.games.filter((g) => Date.parse(g.kickoff) > time);
   input.picks = Object.fromEntries(
-    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+    PICK_TYPES.map((t, i) => [t, open[i].id]),
   ) as PickInput["picks"];
   input.totalHelper = "over";
-  assert.throws(() => saveEntry(s, "one", input, deadline(w) + 1), /powerups/);
+  assert.throws(() => saveEntry(s, "one", input, time), /powerups/);
 });
 test("powerups cannot be reused in another week", () => {
   const { s, input } = fixture();

@@ -3,9 +3,5 @@ export const site = {
   name: "Jack Rocca",
   substack: "https://substack.com/@jackrocca",
   github: "https://github.com/jackrocca",
-  navigation: [
-    { label: "Photography", href: "/photography" },
-    { label: "Writing", href: "/writing" },
-    { label: "Projects", href: "/projects" },
-  ],
+  navigation: [{ label: "Projects", href: "/projects" }],
 } as const;

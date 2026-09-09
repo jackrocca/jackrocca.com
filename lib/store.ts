@@ -4,13 +4,17 @@ import path from "node:path";
 import schedule from "../data/schedule-2026.json";
 import { State, Week } from "./types";
 import { AppError } from "./rules";
-const blobPath = process.env.LEAGUE_STORAGE_PREFIX
-  ? `${process.env.LEAGUE_STORAGE_PREFIX}/state.json`
-  : process.env.VERCEL_ENV === "production"
-    ? "pick4/2026/state.json"
-    : process.env.VERCEL_ENV === "preview"
-      ? "pick4/preview/state.json"
-      : "pick4/development/state.json";
+export function leaguePrefix() {
+  if (process.env.LEAGUE_STORAGE_PREFIX)
+    return process.env.LEAGUE_STORAGE_PREFIX.replace(/\/+$/, "");
+  if (process.env.VERCEL_ENV === "production") return "pick4/2026";
+  if (process.env.VERCEL_ENV === "preview") return "pick4/preview";
+  return "pick4/development";
+}
+const blobPath = `${leaguePrefix()}/state.json`;
+export function hasCloudStorage() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+}
 export function initialState(): State {
   return {
     version: 1,
@@ -23,8 +27,6 @@ export function initialState(): State {
     rates: {},
   };
 }
-const cloud = () =>
-  Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 function localPath() {
   if (process.env.VERCEL || process.env.NODE_ENV === "production")
     throw new Error("Private league storage is not configured.");
@@ -32,8 +34,11 @@ function localPath() {
     process.env.LOCAL_STORE_PATH ?? path.join(process.cwd(), "work", "league.local.json")
   );
 }
+export function localLeagueDir() {
+  return path.dirname(localPath());
+}
 export async function readState(): Promise<{ state: State; etag?: string }> {
-  if (cloud()) {
+  if (hasCloudStorage()) {
     const result = await get(blobPath, {
       access: "private",
       useCache: false,
@@ -65,7 +70,7 @@ export async function mutate<T>(fn: (state: State) => T): Promise<T> {
       const { state, etag } = await readState();
       const result = fn(state);
       state.revision++;
-      if (cloud()) {
+      if (hasCloudStorage()) {
         try {
           await put(blobPath, JSON.stringify(state), {
             access: "private",
@@ -98,7 +103,7 @@ export async function mutate<T>(fn: (state: State) => T): Promise<T> {
     }
     throw new AppError("The league is busy. Please try saving again.", 409);
   }
-  if (cloud()) return run();
+  if (hasCloudStorage()) return run();
   const result = queue.then(run);
   queue = result.catch(() => {});
   return result;

@@ -1,0 +1,446 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/albums"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/combine-events"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/merge"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/move-assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/suggest-events"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/albums/{album_id}/assets"
+  },
+  {
+    "method": "GET",
+    "path": "/api/albums/{album_id}/assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/{album_id}/assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/{album_id}/copy-to"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/{album_id}/rename"
+  },
+  {
+    "method": "POST",
+    "path": "/api/albums/{album_id}/status"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/bulk-capture-date"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/bulk-orientation"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/bulk-star"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assets/timeline"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/trash"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assets/{asset_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/annotation-edit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/assets/{asset_id}/annotations"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/caption"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/capture-date"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/keywords"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/orientation"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/people"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/assets/{asset_id}/people/{person_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/place"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/reveal"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/star"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/status"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/tags"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/assets/{asset_id}/tags/{tag_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/assets/{asset_id}/trash"
+  },
+  {
+    "method": "GET",
+    "path": "/api/atlas-map-config"
+  },
+  {
+    "method": "GET",
+    "path": "/api/devices"
+  },
+  {
+    "method": "GET",
+    "path": "/api/duplicates"
+  },
+  {
+    "method": "GET",
+    "path": "/api/duplicates/summary"
+  },
+  {
+    "method": "POST",
+    "path": "/api/duplicates/{group_id}/dismiss"
+  },
+  {
+    "method": "POST",
+    "path": "/api/equipment-names"
+  },
+  {
+    "method": "POST",
+    "path": "/api/export"
+  },
+  {
+    "method": "POST",
+    "path": "/api/export/reveal"
+  },
+  {
+    "method": "GET",
+    "path": "/api/faces/{face_id}/crop"
+  },
+  {
+    "method": "GET",
+    "path": "/api/jobs"
+  },
+  {
+    "method": "POST",
+    "path": "/api/jobs"
+  },
+  {
+    "method": "GET",
+    "path": "/api/jobs/{job_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/labeling/people-bulk"
+  },
+  {
+    "method": "POST",
+    "path": "/api/labeling/place-bulk"
+  },
+  {
+    "method": "GET",
+    "path": "/api/labeling/queue/{key}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/labeling/summary"
+  },
+  {
+    "method": "POST",
+    "path": "/api/labeling/tags-bulk"
+  },
+  {
+    "method": "GET",
+    "path": "/api/named-places"
+  },
+  {
+    "method": "POST",
+    "path": "/api/named-places"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/named-places/{place_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/named-places/{place_id}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/named-places/{place_id}/apply"
+  },
+  {
+    "method": "GET",
+    "path": "/api/next-up"
+  },
+  {
+    "method": "GET",
+    "path": "/api/on-this-day"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/clusters"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/clusters/merge"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/clusters/{cluster_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/clusters/{cluster_id}/assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/clusters/{cluster_id}/assign"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/clusters/{cluster_id}/ignore"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/clusters/{cluster_id}/name"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/graph"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/match-known"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/match-known/apply"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/maybe-faces/review-queue"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/merge"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/relationships"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/relationships"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/people/relationships/{relationship_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/{person_id}/assets"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/assets/review"
+  },
+  {
+    "method": "GET",
+    "path": "/api/people/{person_id}/maybe-faces"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/maybe-faces/assign"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/maybe-faces/review"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/maybe-faces/review-bulk"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/maybe-faces/undo"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/name"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/profile"
+  },
+  {
+    "method": "POST",
+    "path": "/api/people/{person_id}/relationship"
+  },
+  {
+    "method": "GET",
+    "path": "/api/pipeline/status"
+  },
+  {
+    "method": "GET",
+    "path": "/api/places"
+  },
+  {
+    "method": "POST",
+    "path": "/api/publication"
+  },
+  {
+    "method": "GET",
+    "path": "/api/publication/preview"
+  },
+  {
+    "method": "GET",
+    "path": "/api/publication/status"
+  },
+  {
+    "method": "POST",
+    "path": "/api/publication/{job_id}/discard"
+  },
+  {
+    "method": "POST",
+    "path": "/api/publication/{job_id}/retry"
+  },
+  {
+    "method": "GET",
+    "path": "/api/saved-searches"
+  },
+  {
+    "method": "POST",
+    "path": "/api/saved-searches"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/saved-searches/{search_id}"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/saved-searches/{search_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/summary"
+  },
+  {
+    "method": "GET",
+    "path": "/api/tags"
+  },
+  {
+    "method": "POST",
+    "path": "/api/tags"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/tags/{tag_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/trash"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ui-events/batch"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ui-events/clear"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ui-events/prune"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ui-events/session"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/ui-events/session/{session_id}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/ui-events/summary"
+  },
+  {
+    "method": "POST",
+    "path": "/api/uploads/abort"
+  },
+  {
+    "method": "POST",
+    "path": "/api/uploads/begin"
+  },
+  {
+    "method": "POST",
+    "path": "/api/uploads/commit"
+  },
+  {
+    "method": "GET",
+    "path": "/api/zips"
+  }
+]

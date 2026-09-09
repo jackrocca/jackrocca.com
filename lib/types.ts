@@ -53,6 +53,18 @@ export type User = {
   role: "admin" | "player";
   sessionVersion: number;
   createdAt: string;
+  avatarRevision?: number;
+};
+export type ChatMessage = {
+  id: string;
+  userId: string;
+  body: string;
+  createdAt: string;
+};
+export type ChatState = {
+  version: 1;
+  revision: number;
+  messages: ChatMessage[];
 };
 export type Selection = {
   gameId: string;
@@ -73,6 +85,13 @@ export type Entry = {
   submittedAt: string;
   updatedAt: string;
   revision: number;
+  // Entries created before buy-ins were introduced remain valid; an absent value
+  // is treated as confirmed for backward compatibility with the live season.
+  buyIn?: {
+    status: "pending" | "confirmed";
+    requestedAt: string;
+    confirmedAt?: string;
+  };
 };
 export type Invite = {
   id: string;
@@ -114,4 +133,6 @@ export type PickInput = {
   perfectPrediction: boolean;
   revision: number;
 };
-export type PublicUser = Pick<User, "id" | "username" | "name" | "role">;
+export type PublicUser = Pick<User, "id" | "username" | "name" | "role"> & {
+  avatarRevision: number;
+};

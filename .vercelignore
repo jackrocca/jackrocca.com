@@ -3,8 +3,11 @@ work
 .env*
 legacy
 vendor
-assets
+assets/brand/jack-rocca-logo.original.svg
+*.tsbuildinfo
 .github
 tests
 docs
 *.md
+
+.DS_Store

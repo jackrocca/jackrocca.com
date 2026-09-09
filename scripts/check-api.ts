@@ -20,6 +20,9 @@ async function main() {
   process.env.OWNER_EMAIL = "owner@gmail.com";
   const base = (process.env.APP_URL = "http://localhost:3106");
   const { GET, POST } = await import("../app/api/[...path]/route");
+  const { POST: postAvatar, DELETE: deleteAvatar } =
+    await import("../app/api/profile/avatar/route");
+  const { GET: getAvatar } = await import("../app/api/avatars/[userId]/route");
   const { mutate, readState } = await import("../lib/store");
   const { joinLeagueWithGoogle } = await import("../lib/google-account");
   const { loginResponse } = await import("../lib/auth");
@@ -64,6 +67,8 @@ async function main() {
       await request(route, { role: "admin", email: "owner@gmail.com" }, 410);
     await request("picks", {}, 401);
     await request("profile", { name: "Fake" }, 401);
+    await request("chat", undefined, 401);
+    await request("chat", { body: "hello" }, 401);
     await request("export", undefined, 401);
     await request("cron", undefined, 401);
     const start = await request("auth/google", undefined, 307);
@@ -125,6 +130,7 @@ async function main() {
       name: "player",
       email: "player@gmail.com",
       role: "player",
+      avatarRevision: 0,
     });
     assert.deepEqual(Object.keys(account).sort(), ["authentication", "user"]);
     assert.ok(!JSON.stringify(account).includes("googleSub"));
@@ -140,7 +146,86 @@ async function main() {
     assert.equal(profile.user.name, "New nickname");
     assert.equal(profile.user.role, "player");
     assert.equal(profile.user.email, "player@gmail.com");
+    assert.equal(profile.user.avatarRevision, 0);
     assert.equal(profile.admin, null);
+    await request("chat", { body: "hi" }, 403, player, "https://evil.example");
+    await request("chat", { body: "   " }, 400, player);
+    await request("chat", { body: "Kickoff drinks at my place." }, 200, player);
+    const sent = await (
+      await request("chat", { body: "Bring wings." }, 200, second)
+    ).json();
+    const thread = await (await request("chat", undefined, 200, player)).json();
+    assert.equal(thread.messages.length, 2);
+    assert.equal(thread.messages[1].id, sent.message.id);
+    assert.equal(thread.messages[0].body, "Kickoff drinks at my place.");
+    assert.ok(thread.players.some((p: { id: string }) => p.id === users[1].id));
+    assert.ok(!JSON.stringify(thread).includes("@gmail.com"));
+    const delta = await (
+      await request(`chat?after=${thread.messages[0].id}`, undefined, 200, player)
+    ).json();
+    assert.equal(delta.reset, false);
+    assert.equal(delta.messages.length, 1);
+    const sharp = (await import("sharp")).default;
+    const png = await sharp({
+      create: { width: 32, height: 48, channels: 3, background: "#0b706f" },
+    })
+      .png()
+      .toBuffer();
+    async function avatarRequest(
+      method: "GET" | "POST" | "DELETE",
+      cookie = "",
+      origin = base,
+      body?: FormData,
+      userId = users[1].id,
+      expected = 200,
+    ) {
+      const req = new NextRequest(
+        method === "GET" ? `${base}/api/avatars/${userId}` : `${base}/api/profile/avatar`,
+        {
+          method,
+          headers: origin ? { origin, cookie } : { cookie },
+          body,
+        },
+      );
+      const response =
+        method === "GET"
+          ? await getAvatar(req, { params: Promise.resolve({ userId }) })
+          : method === "POST"
+            ? await postAvatar(req)
+            : await deleteAvatar(req);
+      assert.equal(response.status, expected, `avatar ${method} status`);
+      checks++;
+      return response;
+    }
+    const upload = () => {
+      const data = new FormData();
+      data.append("photo", new File([png], "me.png", { type: "image/png" }));
+      return data;
+    };
+    await avatarRequest("GET", "", base, undefined, users[1].id, 401);
+    await avatarRequest(
+      "POST",
+      player,
+      "https://evil.example",
+      upload(),
+      users[1].id,
+      403,
+    );
+    const uploaded = await avatarRequest("POST", player, base, upload());
+    const uploadedBody = await uploaded.json();
+    assert.equal(uploadedBody.avatarRevision, 1);
+    const photo = await avatarRequest("GET", player);
+    assert.equal(photo.headers.get("content-type"), "image/webp");
+    assert.ok((await photo.arrayBuffer()).byteLength > 32);
+    const withPhoto = await (await request("state", undefined, 200, player)).json();
+    assert.equal(withPhoto.user.avatarRevision, 1);
+    assert.equal(
+      withPhoto.standings.find((entry: { id: string }) => entry.id === users[1].id)
+        .avatarRevision,
+      1,
+    );
+    await avatarRequest("DELETE", player);
+    await avatarRequest("GET", player, base, undefined, users[1].id, 404);
     await request("admin/lines", {}, 403, player);
     await request("export", undefined, 403, player);
     const state = (await readState()).state;
@@ -169,8 +254,25 @@ async function main() {
       request("picks", input, 200, second),
     ]);
     await request("picks", input, 409, player);
+    const pending = await (await request("state?week=1", undefined, 200, player)).json();
+    assert.equal(pending.entries.length, 1);
+    assert.equal(pending.entries[0].buyIn.status, "pending");
+    assert.equal(
+      pending.standings.find((entry: { id: string }) => entry.id === users[1].id).played,
+      0,
+    );
+    const commissioner = await (
+      await request("state?week=1", undefined, 200, admin)
+    ).json();
+    assert.equal(commissioner.admin.pendingBuyIns.length, 2);
+    await request("admin/buy-ins/confirm", { userId: users[1].id }, 200, admin);
+    await request("admin/buy-ins/confirm", { userId: users[2].id }, 200, admin);
     const saved = await (await request("state?week=1", undefined, 200, player)).json();
     assert.equal(saved.entries.length, 2);
+    assert.equal(
+      saved.standings.find((entry: { id: string }) => entry.id === users[1].id).played,
+      1,
+    );
     assert.ok(
       saved.entries.find((e: { userId: string }) => e.userId === users[1].id).picks,
     );
@@ -190,7 +292,7 @@ async function main() {
     });
     await request("profile", { name: "Revoked session" }, 401, player);
     console.log(
-      `${checks} isolated API checks passed: OAuth redirect, retired endpoints, CSRF, profile changes, roles, concurrent picks, privacy, exports, and session invalidation. Real Google authentication still requires a browser smoke test.`,
+      `${checks} isolated API checks passed: OAuth redirect, retired endpoints, CSRF, profile changes, photos, chat, roles, concurrent picks, privacy, exports, and session invalidation. Real Google authentication still requires a browser smoke test.`,
     );
   } finally {
     await rm(directory, { recursive: true, force: true });

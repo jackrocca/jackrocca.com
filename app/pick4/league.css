@@ -288,6 +288,33 @@
     font-size: 12px;
     font-weight: 600;
     flex-shrink: 0;
+    overflow: hidden;
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    outline: 1px solid rgb(0 0 0 / 10%);
+    outline-offset: -1px;
+  }
+  .avatar-md {
+    height: 40px;
+    width: 40px;
+    font-size: 14px;
+  }
+  .avatar-lg {
+    height: 72px;
+    width: 72px;
+    font-size: 28px;
+  }
+  .player-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  td.player-cell {
+    display: flex;
   }
   .user-menu > .icon-button {
     color: #bbbbbb;
@@ -672,12 +699,24 @@
     justify-content: center;
     width: 42px;
     height: 42px;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 750;
-    color: #fff;
+    flex-shrink: 0;
     margin-bottom: 10px;
-    box-shadow: inset 0 0 0 3px #ffffff25;
+  }
+  .team-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .team-mark-fallback {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    background: var(--muted);
+    color: var(--foreground);
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
   }
   .team-city {
     font-size: 9px;
@@ -731,7 +770,7 @@
     font-size: 10px;
     font-weight: 650;
   }
-  .game-options button:hover:not(:disabled) {
+  .game-options button:hover:not(:disabled):not(.chosen) {
     background: #f2f2f2;
     border-color: #adadad;
   }
@@ -2034,13 +2073,6 @@
     outline-color: var(--foreground);
     box-shadow: none;
   }
-  .team-mark {
-    background: var(--muted) !important;
-    color: var(--foreground);
-    box-shadow: none;
-    border-radius: 4px;
-    font-weight: 500;
-  }
   .week-banner {
     background: var(--muted);
   }
@@ -2085,5 +2117,589 @@
     .page-heading h1 {
       max-width: 220px;
     }
+  }
+}
+
+/* Keep the board quiet; use the signature teal for actions and selection. */
+.league-app,
+.league-navigation {
+  --league-teal: var(--brand-teal);
+  --league-teal-soft: color-mix(in srgb, var(--brand-teal) 8%, white);
+  --primary: var(--brand-teal);
+  --ring: var(--brand-teal);
+}
+.league-app {
+  .topbar {
+    height: 64px;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    line-height: 1.2;
+  }
+  .league-menu-trigger {
+    min-height: 44px;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .league-menu-trigger svg {
+    color: var(--league-teal);
+  }
+  .app-shell {
+    padding-top: 28px;
+    padding-bottom: 48px;
+  }
+  .board-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .board-toolbar h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .week-selector > button {
+    min-width: 40px;
+    min-height: 44px;
+  }
+  .week-scroll button.selected {
+    background: var(--league-teal);
+  }
+  .current-dot {
+    background: var(--league-teal);
+  }
+  .week-scroll button.selected .current-dot {
+    background: white;
+  }
+  .week-banner .text-button {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+    color: var(--league-teal);
+  }
+  .week-banner:not(.warning) .live-dot,
+  .progress span {
+    background: var(--league-teal);
+  }
+  .game-card.has-pick {
+    outline-color: var(--league-teal);
+  }
+  .game-options button.chosen {
+    background: var(--league-teal-soft);
+    border-color: var(--league-teal);
+    color: var(--league-teal);
+  }
+  .game-options button.chosen small {
+    color: var(--league-teal);
+  }
+  .game-top .picked-badge {
+    color: var(--league-teal) !important;
+  }
+  .slot-icon {
+    border: 0;
+    flex-shrink: 0;
+    color: var(--league-teal);
+  }
+  .filled .slot-icon {
+    border: 0;
+    background: var(--league-teal-soft);
+    color: var(--league-teal);
+  }
+  .slip-slot .icon-button {
+    min-width: 40px;
+    width: 40px;
+    min-height: 40px;
+  }
+  .slip-slot strong {
+    color: var(--muted-foreground);
+  }
+  .powerups {
+    margin: 16px 0;
+  }
+  .powerups summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 13px;
+  }
+  .powerups summary::-webkit-details-marker {
+    display: none;
+  }
+  .powerups summary small {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted-foreground);
+  }
+  .powerups summary > svg,
+  .power-row > span > svg,
+  .rule-icon,
+  .empty-state > svg {
+    color: var(--league-teal);
+  }
+  .powerups[open] summary > svg:last-child {
+    transform: rotate(180deg);
+  }
+  .powerups-note {
+    font-size: 11px;
+    margin: 4px 0 8px;
+  }
+  .primary {
+    background: var(--league-teal);
+    color: white;
+  }
+  .primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--league-teal) 85%, black);
+  }
+  tr.you {
+    background: var(--league-teal-soft);
+  }
+  .you-label {
+    background: white;
+    color: var(--league-teal);
+  }
+  button:focus-visible,
+  a:focus-visible,
+  summary:focus-visible {
+    outline-color: var(--league-teal);
+  }
+  .welcome {
+    display: block;
+    max-width: 500px;
+    min-height: auto;
+    padding: 56px 20px;
+    margin: auto;
+  }
+  .login-card {
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+  .login-card h1 {
+    font-size: 28px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .login-card p {
+    font-size: 14px;
+  }
+  .login-card .login-foot {
+    display: block;
+    border: 0;
+    padding: 0;
+    font-size: 12px;
+  }
+  @media (max-width: 600px) {
+    .board-toolbar {
+      gap: 12px;
+    }
+    .board-toolbar h1 {
+      font-size: 22px;
+    }
+    .app-shell {
+      padding-bottom: 100px;
+    }
+    .mobile-card-jump {
+      background: var(--league-teal);
+    }
+  }
+}
+.league-menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 16px;
+}
+.league-menu-items button {
+  display: flex;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 150ms;
+  width: 100%;
+  min-height: 48px;
+  justify-content: flex-start;
+  gap: 12px;
+  font-weight: 400;
+}
+.league-menu-items button > span {
+  flex: 1;
+  text-align: left;
+}
+.league-menu-items button > svg {
+  color: var(--league-teal);
+}
+.league-menu-items button[aria-current="page"] {
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+}
+.league-menu-account {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  color: var(--muted-foreground);
+}
+.league-menu-account button {
+  min-height: 44px;
+  gap: 10px;
+}
+
+.league-menu-items button:hover {
+  background: var(--muted);
+}
+.league-menu-items button:focus-visible {
+  outline: 2px solid var(--league-teal);
+  outline-offset: 2px;
+}
+
+/* One site header above; the league controls stay within easy reach below. */
+.league-app .league-dock {
+  position: fixed;
+  z-index: 40;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+  padding: 6px;
+  border-radius: 20px;
+  background: rgb(255 255 255 / 95%);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 10%),
+    0 0 0 1px rgb(0 0 0 / 6%);
+  backdrop-filter: blur(16px);
+}
+.league-app .league-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.league-app .league-menu-trigger:hover {
+  background: var(--league-teal-soft);
+}
+.league-app .league-menu-trigger:focus-visible {
+  outline: 2px solid var(--league-teal);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.league-menu-logo {
+  width: 24px;
+  height: 28px;
+  object-fit: contain;
+}
+.league-app .app-shell {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+.league-navigation {
+  width: min(100%, 400px);
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+}
+.league-menu-items button {
+  border-radius: 12px;
+}
+@media (max-width: 640px) {
+  .league-app .league-dock {
+    width: max-content;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .league-app .league-menu-trigger {
+    padding-inline: 10px;
+    gap: 8px;
+  }
+  .league-app .league-dock .mobile-card-jump {
+    position: static;
+    display: flex;
+    gap: 8px;
+    width: auto;
+    min-height: 48px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+  .league-app .league-dock .mobile-card-jump span {
+    margin: 0;
+    font-size: 11px;
+    color: white;
+    opacity: 0.8;
+  }
+}
+
+.league-app .buy-in-list {
+  display: grid;
+  gap: 12px;
+}
+.league-app .buy-in-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.league-app .buy-in-row b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.league-app .buy-in-row small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.league-app .buy-in-row .secondary {
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 9px 12px;
+  gap: 7px;
+  color: var(--league-teal);
+}
+.league-app .buy-in-empty {
+  margin: 0;
+  font-size: 12px;
+}
+.buy-in-dialog {
+  text-align: center;
+}
+.buy-in-dialog > p:first-child {
+  margin: 0 auto 18px;
+  max-width: 320px;
+  color: var(--muted-foreground);
+  line-height: 1.55;
+}
+.buy-in-amount {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 auto 18px;
+  max-width: 280px;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--muted);
+}
+.buy-in-amount span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+.buy-in-amount strong {
+  color: var(--foreground);
+  font-size: 22px;
+  letter-spacing: -0.6px;
+}
+.venmo-code {
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  margin: 0 auto 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+}
+.venmo-code img {
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  transform: translateY(-25%);
+}
+.venmo-handle {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 16px;
+}
+.venmo-handle strong {
+  color: var(--foreground);
+  font-size: 14px;
+}
+.venmo-handle span,
+.buy-in-disclaimer {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.venmo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.buy-in-confirm {
+  justify-content: space-between;
+}
+.buy-in-disclaimer {
+  margin: 13px auto 0;
+  max-width: 310px;
+}
+
+.league-app .photo-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 22px;
+}
+.league-app .photo-field-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.league-app .photo-field-copy p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.league-app .photo-field-copy > span {
+  color: var(--league-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.league-app .photo-field-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.league-app .photo-field-button {
+  min-height: 40px;
+}
+.league-app .chat-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-height: calc(100dvh - 280px);
+}
+.league-app .chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.league-app .chat-message {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  max-width: min(100%, 640px);
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+}
+.league-app .chat-message.own {
+  background: var(--league-teal-soft);
+  margin-left: auto;
+  grid-template-columns: minmax(0, 1fr) 30px;
+}
+.league-app .chat-message.own .avatar {
+  grid-column: 2;
+  grid-row: 1;
+}
+.league-app .chat-message.own > div {
+  grid-column: 1;
+  grid-row: 1;
+}
+.league-app .chat-message header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.league-app .chat-message strong {
+  font-size: 12px;
+  font-weight: 650;
+}
+.league-app .chat-message time {
+  color: var(--league-muted);
+  font-size: 10px;
+}
+.league-app .chat-message p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.league-app .chat-composer {
+  position: sticky;
+  z-index: 20;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 22px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow:
+    0 8px 28px rgb(0 0 0 / 8%),
+    0 0 0 1px rgb(0 0 0 / 6%);
+  backdrop-filter: blur(16px);
+}
+.league-app .chat-composer-field {
+  flex: 1;
+  margin: 0;
+}
+.league-app .chat-composer textarea {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  max-height: 140px;
+  resize: none;
+  margin: 0;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--muted);
+  color: var(--ink);
+  line-height: 1.4;
+  field-sizing: content;
+}
+.league-app .chat-composer textarea:focus {
+  outline: 2px solid var(--league-teal);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.league-app .chat-send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--league-teal);
+  color: #fff;
+  flex-shrink: 0;
+}
+.league-app .chat-send:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--league-teal) 86%, black);
+}
+.league-app .chat-send:disabled {
+  opacity: 0.35;
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-app .chat-message {
+    box-shadow: none;
   }
 }

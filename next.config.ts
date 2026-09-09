@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/next/dist/lib/framework/boundary-constants.js"],
+    "/atlas/[[...path]]": ["./private-atlas-build/**/*"],
+  },
+  outputFileTracingExcludes: {
+    "/*": ["./work/**/*", "./.env*", "./tests/**/*"],
+  },
   async headers() {
     return [
       {

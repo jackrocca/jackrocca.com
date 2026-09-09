@@ -1,5 +1,18 @@
 {
   "framework": "nextjs",
   "regions": ["sfo1"],
-  "crons": [{ "path": "/api/cron", "schedule": "*/5 * * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "functions": {
+    "app/api/photos/**/route.ts": {
+      "regions": ["iad1"]
+    },
+    "app/api/photo-publications/**/route.ts": {
+      "regions": ["iad1"]
+    }
+  }
 }

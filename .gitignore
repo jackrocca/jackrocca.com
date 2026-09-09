@@ -79,3 +79,5 @@ work/
 # The TypeScript application library is source, not a Python build artifact.
 !lib/
 !lib/*.ts
+private-atlas-build/
+.atlas-bundle-*/

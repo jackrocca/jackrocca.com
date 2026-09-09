@@ -18,14 +18,33 @@ export class AppError extends Error {
   }
 }
 export const signed = (n: number) => (n > 0 ? `+${n}` : `${n}`);
+function kickoffs(week: Week) {
+  return week.games
+    .filter((g) => g.state !== "canceled")
+    .map((g) => Date.parse(g.kickoff));
+}
+export function openingKickoff(week: Week) {
+  return Math.min(...kickoffs(week));
+}
+function weekdayInLosAngeles(time: number) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    weekday: "short",
+  }).format(new Date(time));
+}
 export function deadline(week: Week) {
-  return Math.min(
-    ...week.games.filter((g) => g.state !== "canceled").map((g) => Date.parse(g.kickoff)),
-  );
+  const times = kickoffs(week);
+  // Week 1 2026: waive the Wednesday/Thursday openers. Cards stay unlocked and
+  // punishment-free until the Sunday slate, while started games remain unpickable.
+  if (week.number === 1) {
+    const sunday = times.filter((time) => weekdayInLosAngeles(time) === "Sun");
+    if (sunday.length) return Math.min(...sunday);
+  }
+  return Math.min(...times);
 }
 export function freezeTime(week: Week) {
   // Wednesday 09:00 America/Los_Angeles in the NFL week containing its opening game.
-  const start = new Date(deadline(week));
+  const start = new Date(openingKickoff(week));
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Los_Angeles",
     year: "numeric",
@@ -139,8 +158,28 @@ export function saveEntry(
     submittedAt: old?.submittedAt ?? time,
     updatedAt: time,
     revision: (old?.revision ?? 0) + 1,
+    buyIn:
+      old?.buyIn ??
+      (input.week === 1 ? { status: "pending", requestedAt: time } : undefined),
   };
   state.entries = state.entries.filter((e) => e.id !== entry.id).concat(entry);
+  return entry;
+}
+export function buyInStatus(entry: Entry) {
+  // Existing cards predate the payment flow and must not be retroactively blocked.
+  return entry.buyIn?.status ?? "confirmed";
+}
+export function confirmBuyIn(state: State, userId: string, now = Date.now()) {
+  const entry = state.entries.find(
+    (item) => item.userId === userId && item.week === 1 && item.season === SEASON,
+  );
+  if (!entry || buyInStatus(entry) !== "pending")
+    throw new AppError("There is no pending Week 1 buy-in for this player.", 404);
+  entry.buyIn = {
+    ...entry.buyIn!,
+    status: "confirmed",
+    confirmedAt: new Date(now).toISOString(),
+  };
   return entry;
 }
 export function scoreEntry(entry: Entry, games: Game[]): Score {
@@ -202,7 +241,7 @@ export function scoreEntry(entry: Entry, games: Game[]): Score {
 }
 export function publishWeek(week: Week, now = Date.now()) {
   if (week.publishedAt) throw new AppError("This week’s lines are already frozen.", 409);
-  if (now >= deadline(week))
+  if (now >= openingKickoff(week))
     throw new AppError("Cannot publish new lines after the opening kickoff.");
   const eligible = week.games.filter(
     (g) => gameOpen(g, now) && (g.homeSpread !== null || g.total !== null),

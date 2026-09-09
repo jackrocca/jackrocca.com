@@ -1,5 +1,6 @@
 /* Rocca UI: shared semantic tokens. Keep component APIs independent of branding. */
 :root {
+  --brand-teal: #0b706f;
   --background: #fff;
   --foreground: #171717;
   --card: #fff;

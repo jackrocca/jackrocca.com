@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { readState, mutate, audit, rateLimit } from "@/lib/store";
 import { session, requireUser, requireAdmin, sameOrigin, safeSecret } from "@/lib/auth";
-import { AppError, currentWeek, publishWeek, saveEntry, deadline } from "@/lib/rules";
+import {
+  AppError,
+  confirmBuyIn,
+  currentWeek,
+  publishWeek,
+  saveEntry,
+  openingKickoff,
+} from "@/lib/rules";
 import { syncWeeks } from "@/lib/sync";
 import { view } from "@/lib/view";
 import { startGoogle, finishGoogle, googleConfigured } from "@/lib/google-auth";
+import { chatView, postChatMessage } from "@/lib/chat";
+import { mutateChat, readChat } from "@/lib/chat-store";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -82,7 +91,13 @@ export async function GET(
     if (route === "account")
       return json({
         user: user
-          ? { id: user.id, name: user.name, email: user.email, role: user.role }
+          ? {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              avatarRevision: user.avatarRevision ?? 0,
+            }
           : null,
         authentication: { provider: "google", ready: googleConfigured() },
       });
@@ -102,6 +117,14 @@ export async function GET(
         req.nextUrl.searchParams.get("week") ?? currentWeek(state.weeks),
       );
       return json(view(state, user, week, googleConfigured()));
+    }
+    if (route === "chat") {
+      requireUser(user);
+      const after = req.nextUrl.searchParams.get("after");
+      if (after && !z.uuid().safeParse(after).success)
+        throw new AppError("Invalid chat cursor.");
+      const { chat } = await readChat();
+      return json(chatView(state, chat, after));
     }
     if (route === "export") {
       requireAdmin(user);
@@ -185,12 +208,34 @@ export async function POST(
       });
       return json({ ok: true });
     }
+    if (route === "chat") {
+      const input = z.object({ body: z.string().min(1).max(800) }).parse(await body(req));
+      const message = await mutateChat((chat) =>
+        postChatMessage(chat, member.id, input.body),
+      );
+      return json({ ok: true, message });
+    }
     if (route === "refresh") {
       const input = z.object({ week: weekSchema }).parse(await body(req));
       await syncWeeks([input.week]);
       return json({ ok: true });
     }
     const admin = requireAdmin(member);
+    if (route === "admin/buy-ins/confirm") {
+      const input = z
+        .object({ userId: z.string().min(1).max(128) })
+        .parse(await body(req));
+      await mutate((s) => {
+        const entry = confirmBuyIn(s, input.userId);
+        audit(
+          s,
+          admin.id,
+          "confirm-buy-in",
+          `Week 1 buy-in confirmed for ${entry.userId}.`,
+        );
+      });
+      return json({ ok: true });
+    }
     if (route === "admin/publish") {
       const input = z.object({ week: weekSchema }).parse(await body(req));
       const results = await syncWeeks([input.week], true);
@@ -222,7 +267,7 @@ export async function POST(
         .parse(await body(req));
       await mutate((s) => {
         const w = s.weeks.find((w) => w.number === input.week)!;
-        if (w.publishedAt || Date.now() >= deadline(w))
+        if (w.publishedAt || Date.now() >= openingKickoff(w))
           throw new AppError("Published lines cannot be edited.");
         const g = w.games.find((g) => g.id === input.gameId);
         if (!g) throw new AppError("Game not found.");

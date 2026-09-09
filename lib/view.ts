@@ -1,4 +1,4 @@
-import { currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
+import { buyInStatus, currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
 import { State, User } from "./types";
 export function view(
   state: State,
@@ -8,10 +8,16 @@ export function view(
 ) {
   const week = state.weeks.find((w) => w.number === weekNumber)!;
   const allGames = state.weeks.flatMap((w) => w.games);
-  const scores = state.entries.map((e) => ({
+  const allScores = state.entries.map((e) => ({
     ...e,
     score: scoreEntry(e, allGames),
   }));
+  const scores = allScores.filter((entry) => buyInStatus(entry) === "confirmed");
+  const visibleScores = user
+    ? allScores.filter(
+        (entry) => entry.userId === user.id || buyInStatus(entry) === "confirmed",
+      )
+    : [];
   const standings = user
     ? state.users
         .map((u) => {
@@ -19,6 +25,7 @@ export function view(
           return {
             id: u.id,
             name: u.name,
+            avatarRevision: u.avatarRevision ?? 0,
             points: entries.reduce((s, e) => s + e.score.points, 0),
             wins: entries.reduce((s, e) => s + e.score.wins, 0),
             perfect: entries.filter((e) => e.score.perfect).length,
@@ -44,6 +51,7 @@ export function view(
           email: user.email,
           name: user.name,
           role: user.role,
+          avatarRevision: user.avatarRevision ?? 0,
         }
       : null,
     authentication: { provider: "google", ready: googleReady },
@@ -57,13 +65,20 @@ export function view(
     },
     standings,
     entries: user
-      ? scores
+      ? visibleScores
           .filter((e) => e.week === weekNumber)
           .map((e) => {
             const own = e.userId === user.id;
             const reveal = Date.now() >= deadline(week);
             return {
               ...e,
+              buyIn: own
+                ? {
+                    status: buyInStatus(e),
+                    requestedAt: e.buyIn?.requestedAt ?? e.submittedAt,
+                    confirmedAt: e.buyIn?.confirmedAt,
+                  }
+                : undefined,
               picks: own || reveal ? e.picks : null,
               superSpread: own || reveal ? e.superSpread : false,
               totalHelper: own || reveal ? e.totalHelper : null,
@@ -72,18 +87,28 @@ export function view(
           })
       : [],
     history: user
-      ? scores.filter((e) => e.userId === user.id).sort((a, b) => b.week - a.week)
+      ? allScores.filter((e) => e.userId === user.id).sort((a, b) => b.week - a.week)
       : [],
     admin:
       user?.role === "admin"
         ? {
             audit: state.audit.slice(-40).reverse(),
-            members: state.users.map(({ id, name, email, role }) => ({
+            members: state.users.map(({ id, name, email, role, avatarRevision }) => ({
               id,
               name,
               email,
               role,
+              avatarRevision: avatarRevision ?? 0,
             })),
+            pendingBuyIns: state.entries
+              .filter((entry) => entry.week === 1 && buyInStatus(entry) === "pending")
+              .map((entry) => ({
+                userId: entry.userId,
+                name:
+                  state.users.find((member) => member.id === entry.userId)?.name ??
+                  "Player",
+                requestedAt: entry.buyIn!.requestedAt,
+              })),
           }
         : null,
   };

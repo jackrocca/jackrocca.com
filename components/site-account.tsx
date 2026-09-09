@@ -4,12 +4,18 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, LogOut, ShieldCheck } from "lucide-react";
 import { Input } from "@/ui/components/Input";
 import { CustomButton } from "@/ui/components/CustomButton";
-import { SocialLoginButton } from "@/ui/components/SocialLoginButton";
+import { SignInPage } from "@/components/sign-in-page";
 import { CustomBadge } from "@/ui/components/CustomBadge";
-import { Spinner } from "@/ui/components/Spinner";
 import { Editorial } from "@/components/personal-pages";
+import { ProfilePhotoField } from "@/components/player-avatar";
 type Account = {
-  user: { id: string; name: string; email: string; role: string } | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    avatarRevision: number;
+  } | null;
   authentication: { ready: boolean };
 };
 export function SiteAccount() {
@@ -53,6 +59,24 @@ export function SiteAccount() {
       setBusy(false);
     }
   }
+  if (!data?.user) {
+    return (
+      <SignInPage
+        returnTo="/account"
+        ready={data?.authentication.ready ?? false}
+        loading={!data && !error}
+        error={error}
+        onRetry={
+          !data && error
+            ? () => {
+                setError("");
+                void load().catch((e) => setError(e.message));
+              }
+            : undefined
+        }
+      />
+    );
+  }
   return (
     <Editorial
       title="Your account"
@@ -69,103 +93,73 @@ export function SiteAccount() {
             {notice}
           </p>
         )}
-        {!data && error ? (
-          <CustomButton
-            onClick={() => {
-              setError("");
-              void load().catch((e) => setError(e.message));
+        <div className="space-y-7">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">{data.user.name}</h2>
+              <p className="mt-2 break-all text-sm text-muted-foreground">
+                {data.user.email}
+              </p>
+            </div>
+            <CustomBadge color="bg-zinc-700" variant="outline" className="shrink-0">
+              Google
+            </CustomBadge>
+          </div>
+          <ProfilePhotoField
+            name={data.user.name}
+            userId={data.user.id}
+            revision={data.user.avatarRevision ?? 0}
+            disabled={busy}
+            onRevision={() => void load()}
+            onNotice={setNotice}
+            onError={setError}
+          />
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void action("profile", {
+                name: new FormData(e.currentTarget).get("name"),
+              });
             }}
           >
-            Try again
-          </CustomButton>
-        ) : !data ? (
-          <div className="flex items-center gap-3 text-sm">
-            <Spinner />
-            Loading your account
-          </div>
-        ) : data.user ? (
-          <div className="space-y-7">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold">{data.user.name}</h2>
-                <p className="mt-2 break-all text-sm text-muted-foreground">
-                  {data.user.email}
-                </p>
-              </div>
-              <CustomBadge color="bg-zinc-700" variant="outline" className="shrink-0">
-                Google
-              </CustomBadge>
-            </div>
-            <form
-              className="space-y-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void action("profile", {
-                  name: new FormData(e.currentTarget).get("name"),
-                });
-              }}
-            >
-              <label htmlFor="display-name" className="text-sm font-medium">
-                Display name
-              </label>
-              <Input
-                id="display-name"
-                name="name"
-                defaultValue={data.user.name}
-                minLength={2}
-                maxLength={40}
-                required
-                autoComplete="nickname"
-                className="h-11"
-              />
-              <CustomButton type="submit" loading={busy}>
-                Save display name
-              </CustomButton>
-            </form>
-            <div className="border-t pt-6">
-              <p className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <ShieldCheck size={17} />
-                {data.user.role === "admin"
-                  ? "You’re the league commissioner."
-                  : "You’re a member of Jack’s league."}
-              </p>
-              <CustomButton href="/pick4" variant="outline" rightIcon={ArrowRight}>
-                Open Pick 4
-              </CustomButton>
-            </div>
-            <CustomButton
-              variant="ghost"
-              leftIcon={LogOut}
-              disabled={busy}
-              onClick={() => void action("logout", {})}
-            >
-              Sign out
+            <label htmlFor="display-name" className="text-sm font-medium">
+              Display name
+            </label>
+            <Input
+              id="display-name"
+              name="name"
+              defaultValue={data.user.name}
+              minLength={2}
+              maxLength={40}
+              required
+              autoComplete="nickname"
+              className="h-11"
+            />
+            <CustomButton type="submit" loading={busy}>
+              Save display name
+            </CustomButton>
+          </form>
+          <div className="border-t pt-6">
+            <p className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <ShieldCheck size={17} />
+              {data.user.role === "admin"
+                ? "You’re the league commissioner."
+                : "You’re a member of Jack’s league."}
+            </p>
+            <CustomButton href="/pick4" variant="outline" rightIcon={ArrowRight}>
+              Open Pick 4
             </CustomButton>
           </div>
-        ) : (
-          <>
-            <h2 className="mb-3 text-2xl font-medium">Welcome in.</h2>
-            <p className="mb-7 text-sm leading-7 text-muted-foreground">
-              Sign in with Google to create your account. You’ll automatically join Jack’s
-              Pick 4 league.
-            </p>
-            <SocialLoginButton
-              provider="google"
-              size="lg"
-              className="w-full"
-              disabled={!data.authentication.ready}
-              onClick={() => {
-                location.href = "/api/auth/google?returnTo=/account";
-              }}
-            />
-            <p className="mt-5 text-xs leading-6 text-muted-foreground">
-              By signing in, your name and email are used for your account.{" "}
-              <a href="/privacy" className="underline">
-                Privacy details
-              </a>
-            </p>
-          </>
-        )}
+          <CustomButton
+            variant="ghost"
+            leftIcon={LogOut}
+            disabled={busy}
+            onClick={() => void action("logout", {})}
+          >
+            Sign out
+          </CustomButton>
+        </div>
       </div>
     </Editorial>
   );

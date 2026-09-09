@@ -1,6 +1,6 @@
 import { fetchWeek } from "./feed";
 import { audit, mutate, readState } from "./store";
-import { currentWeek, deadline, freezeTime, publishWeek } from "./rules";
+import { currentWeek, freezeTime, openingKickoff, publishWeek } from "./rules";
 export async function syncWeeks(numbers?: number[], force = false) {
   const { state } = await readState();
   const current = currentWeek(state.weeks);
@@ -54,7 +54,11 @@ export async function syncWeeks(numbers?: number[], force = false) {
           });
           w.fetchedAt = at;
           w.error = null;
-          if (!w.publishedAt && Date.now() >= freezeTime(w) && Date.now() < deadline(w)) {
+          if (
+            !w.publishedAt &&
+            Date.now() >= freezeTime(w) &&
+            Date.now() < openingKickoff(w)
+          ) {
             try {
               publishWeek(w);
               audit(

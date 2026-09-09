@@ -1,18 +1,26 @@
 "use client";
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
   ArrowUpRight,
   Check,
   ChevronLeft,
   ChevronRight,
   Clipboard,
+  Clock3,
+  Crown,
   Flag,
   Grid2X2,
   History,
   LockKeyhole,
   LogOut,
+  ChevronUp,
+  ChevronDown,
   RefreshCw,
+  Shield,
   ShieldCheck,
   Trophy,
   X,
@@ -21,15 +29,17 @@ import {
   Sparkles,
   Download,
   UserRound,
+  MessagesSquare,
 } from "lucide-react";
 import { CustomButton } from "@/ui/components/CustomButton";
 import { Input } from "@/ui/components/Input";
 import { Checkbox } from "@/ui/primitives/checkbox";
-import { SocialLoginButton } from "@/ui/components/SocialLoginButton";
+import { SignInPage } from "@/components/sign-in-page";
 import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { CustomBadge } from "@/ui/components/CustomBadge";
+import { BottomDrawer } from "@/ui/components/BottomDrawer";
 import { Spinner } from "@/ui/components/Spinner";
+import { LeagueChat } from "@/components/league-chat";
+import { PlayerAvatar, ProfilePhotoField } from "@/components/player-avatar";
 import {
   Accordion,
   AccordionItem,
@@ -47,10 +57,10 @@ const labels = {
   under: "Under",
 };
 const slotIcons = {
-  favorite: Flag,
-  underdog: Zap,
-  over: ArrowUpRight,
-  under: Target,
+  favorite: Crown,
+  underdog: Shield,
+  over: ArrowUp,
+  under: ArrowDown,
 };
 const blank = (): PickInput => ({
   week: 1,
@@ -82,9 +92,21 @@ const date = (value: string | number, full = false) =>
   });
 function TeamMark({ game, side }: { game: Game; side: "home" | "away" }) {
   const team = game[side];
+  const [failedTeamId, setFailedTeamId] = useState<string | null>(null);
   return (
-    <span className="team-mark" style={{ background: team.color }}>
-      {team.abbreviation}
+    <span className="team-mark" aria-hidden="true">
+      {failedTeamId === team.id ? (
+        <span className="team-mark-fallback">{team.abbreviation}</span>
+      ) : (
+        <Image
+          src={`/nfl/${encodeURIComponent(team.id)}.png`}
+          alt=""
+          width={500}
+          height={500}
+          sizes="48px"
+          onError={() => setFailedTeamId(team.id)}
+        />
+      )}
     </span>
   );
 }
@@ -99,8 +121,9 @@ export default function League() {
     [notice, setNotice] = useState(""),
     [error, setError] = useState(""),
     [tick, setTick] = useState(Date.now()),
-    [filter, setFilter] = useState<PickType | "all">("all"),
-    [accountOpen, setAccountOpen] = useState(false);
+    [navigationOpen, setNavigationOpen] = useState(false),
+    [accountOpen, setAccountOpen] = useState(false),
+    [buyInOpen, setBuyInOpen] = useState(false);
   const load = useCallback(async (number: number | null) => {
     try {
       const result = (await api(`state${number ? `?week=${number}` : ""}`)) as AppView;
@@ -174,8 +197,10 @@ export default function League() {
     setNotice("");
     try {
       await fn();
+      return true;
     } catch (e) {
       setError((e as Error).message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -183,11 +208,10 @@ export default function League() {
   async function changeWeek(number: number) {
     if (dirty && !(await ask("Discard your unsaved picks and change weeks?"))) return;
     setDirty(false);
-    setFilter("all");
     await load(number);
   }
   async function save() {
-    await act(async () => {
+    return act(async () => {
       await api("picks", draft);
       setDirty(false);
       await load(week);
@@ -214,7 +238,24 @@ export default function League() {
     locked = tick >= w.deadline && Boolean(own),
     late = tick >= w.deadline && !own,
     canPick = Boolean(user && w.publishedAt && !locked),
-    count = PICK_TYPES.filter((t) => draft.picks[t]).length;
+    count = PICK_TYPES.filter((t) => draft.picks[t]).length,
+    buyInPending = week === 1 && own?.buyIn?.status === "pending";
+  function submit() {
+    if (own && !dirty) {
+      const board = document.getElementById("game-board");
+      board?.scrollIntoView({ block: "start" });
+      board?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({
+        preventScroll: true,
+      });
+      setNotice("Choose a new pick, then save your updated card.");
+      return;
+    }
+    if (week === 1 && !own) {
+      setBuyInOpen(true);
+      return;
+    }
+    void save();
+  }
   const used = (power: "superSpread" | "totalHelper" | "perfectPrediction") =>
     data.history.some((e) => e.week !== week && e[power]);
   const updated = w.fetchedAt ? date(w.fetchedAt, true) : "Not yet synced";
@@ -228,64 +269,110 @@ export default function League() {
     }));
     setNotice("");
   }
-  const games = w.games.filter(
-    (g) =>
-      filter === "all" ||
-      (filter === "over" || filter === "under"
-        ? (w.publishedAt ? w.lines[g.id]?.total : g.total) != null
-        : (w.publishedAt ? w.lines[g.id]?.homeSpread : g.homeSpread) != null),
-  );
-  const leagueLeader = data.standings[0];
+  const pages = [
+    { value: "board", label: "Score Board", icon: Grid2X2 },
+    { value: "standings", label: "Standings", icon: Trophy },
+    { value: "chat", label: "Chat", icon: MessagesSquare },
+    { value: "history", label: "My season", icon: History },
+    { value: "rules", label: "How to play", icon: Flag },
+    ...(user?.role === "admin"
+      ? [{ value: "admin", label: "Commissioner", icon: ShieldCheck }]
+      : []),
+  ];
+  const activePage = pages.find((page) => page.value === tab)!;
+  const activePowerups =
+    Number(draft.superSpread) +
+    Number(Boolean(draft.totalHelper)) +
+    Number(draft.perfectPrediction);
   return (
     <div className="league-app">
       {confirmationDialog}
-      <header className="topbar">
-        <a className="brand" href="/pick4" aria-label="Pick 4 home">
-          <span className="brand-mark">4</span>
-          <span>
-            PICK <b>4</b>
-            <small>THE LEAGUE</small>
-          </span>
-        </a>
-        <CustomBadge color="bg-zinc-700" variant="outline" className="season-pill">
-          2026 SEASON
-        </CustomBadge>
-        {user ? (
-          <div className="user-menu">
-            <CustomButton
-              variant="unstyled"
-              className="avatar-button"
-              onClick={() => setAccountOpen(!accountOpen)}
-              aria-label="Account settings"
+      {user && (
+        <div className="league-dock">
+          <BottomDrawer
+            title="Pick 4"
+            open={navigationOpen}
+            onOpenChange={setNavigationOpen}
+            classNames={{ content: "league-navigation" }}
+            trigger={
+              <CustomButton
+                variant="unstyled"
+                className="league-menu-trigger"
+                aria-label={`League menu: ${activePage.label}`}
+              >
+                <Image
+                  src="/nfl/league.png"
+                  alt=""
+                  width={24}
+                  height={28}
+                  className="league-menu-logo"
+                />
+                <span>{activePage.label}</span>
+                <ChevronUp size={16} />
+              </CustomButton>
+            }
+          >
+            <nav aria-label="League navigation" className="league-menu-items">
+              {pages.map(({ value, label, icon: Icon }) => (
+                <CustomButton
+                  key={value}
+                  variant="unstyled"
+                  aria-current={tab === value ? "page" : undefined}
+                  onClick={() => {
+                    setTab(value);
+                    setNavigationOpen(false);
+                    window.scrollTo({ top: 0, behavior: "instant" });
+                  }}
+                >
+                  <Icon size={19} />
+                  <span>{label}</span>
+                  {tab === value && <Check size={16} />}
+                </CustomButton>
+              ))}
+            </nav>
+            <div className="league-menu-account">
+              <CustomButton
+                variant="ghost"
+                leftIcon={UserRound}
+                onClick={() => {
+                  setNavigationOpen(false);
+                  setAccountOpen(true);
+                }}
+              >
+                Account settings
+              </CustomButton>
+              <CustomButton
+                variant="ghost"
+                aria-label="Sign out"
+                icon={LogOut}
+                disabled={busy}
+                onClick={() => {
+                  setNavigationOpen(false);
+                  void act(async () => {
+                    if (dirty && !(await ask("Sign out and discard unsaved picks?")))
+                      return;
+                    await api("logout", {});
+                    window.dispatchEvent(new Event("account-changed"));
+                    setDirty(false);
+                    await load(week);
+                  });
+                }}
+              />
+            </div>
+          </BottomDrawer>
+          {tab === "board" && (
+            <a
+              className="mobile-card-jump"
+              href="#your-card"
+              aria-label={`Review your card: ${count} of 4 picks${dirty ? ", unsaved" : ""}`}
             >
-              <span className="avatar">{user.name.slice(0, 1)}</span>
-              <span>{user.name}</span>
-            </CustomButton>
-            <CustomButton
-              variant="unstyled"
-              className="icon-button"
-              title="Sign out"
-              aria-label="Sign out"
-              onClick={() =>
-                act(async () => {
-                  if (dirty && !(await ask("Sign out and discard unsaved picks?")))
-                    return;
-                  await api("logout", {});
-                  window.dispatchEvent(new Event("account-changed"));
-                  setDirty(false);
-                  await load(week);
-                })
-              }
-            >
-              <LogOut size={18} />
-            </CustomButton>
-          </div>
-        ) : (
-          <span className="private-label">
-            <LockKeyhole size={14} /> JACK’S LEAGUE
-          </span>
-        )}
-      </header>
+              <span>{count} / 4</span>
+              Your card
+              <ArrowRight size={16} />
+            </a>
+          )}
+        </div>
+      )}
       {(error || notice) && (
         <div
           className={`toast ${error ? "error" : "success"}`}
@@ -305,170 +392,13 @@ export default function League() {
         </div>
       )}
       {!user ? (
-        <main id="main-content" className="welcome">
-          <section className="welcome-copy">
-            <div className="eyebrow">
-              <span />
-              THE 2026 NFL SEASON
-            </div>
-            <h1>
-              Four picks.
-              <br />
-              One <em>perfect</em>
-              <br />
-              week.
-            </h1>
-            <p>
-              A favorite. An underdog. An over. An under.
-              <br />
-              Back your instincts. Make every game count.
-            </p>
-            <div className="welcome-stat">
-              <span>
-                <strong>18</strong>weeks
-              </span>
-              <span>
-                <strong>4</strong>picks
-              </span>
-              <span>
-                <strong>1</strong>league
-              </span>
-            </div>
-            <div className="kickoff-note">
-              <Flag size={18} />
-              <span>
-                Season kickoff
-                <br />
-                <b>September 9 · 5:20 PM PT</b>
-              </span>
-            </div>
-          </section>
-          <section className="login-card">
-            <span className="eyebrow">JACK’S PICK 4 LEAGUE</span>
-            <h2>Get in the game.</h2>
-            <p>
-              Sign in with Google to join the league, make your picks, and follow the
-              season.
-            </p>
-            <SocialLoginButton
-              provider="google"
-              className="w-full my-6"
-              size="lg"
-              disabled={!data.authentication.ready}
-              label={
-                data.authentication.ready
-                  ? "Continue with Google"
-                  : "Google sign-in is being connected"
-              }
-              onClick={() => {
-                location.href = "/api/auth/google?returnTo=/pick4";
-              }}
-            />
-            <div className="login-foot">
-              <ShieldCheck size={17} />
-              <span>
-                Your account automatically joins Jack’s league. Choose your league display
-                name after signing in.
-              </span>
-            </div>
-            <a className="text-button" href="/privacy">
-              Privacy
-            </a>
-          </section>
-          <footer>
-            FAVORITE · UNDERDOG · OVER · UNDER<span>2026 / PICK 4</span>
-          </footer>
-        </main>
+        <SignInPage returnTo="/pick4" ready={data.authentication.ready} />
       ) : (
         <>
-          <nav className="main-nav" aria-label="League navigation">
-            <SegmentedControl
-              value={tab}
-              onChange={setTab}
-              className="league-tabs"
-              mobileView="bottom-drawer"
-              drawerTitle="League pages"
-              options={[
-                { value: "board", label: "Game board", icon: Grid2X2 },
-                { value: "standings", label: "Standings", icon: Trophy },
-                { value: "history", label: "My season", icon: History },
-                { value: "rules", label: "How to play", icon: Flag },
-                ...(user.role === "admin"
-                  ? [
-                      {
-                        value: "admin",
-                        label: "Commissioner",
-                        icon: ShieldCheck,
-                      },
-                    ]
-                  : []),
-              ]}
-            />
-          </nav>
           <main id="main-content" className="app-shell">
-            {tab === "board" && (
-              <a className="mobile-card-jump" href="#your-card">
-                <span>
-                  {count} / 4 picks {dirty ? "· Unsaved" : own ? "· Saved" : ""}
-                </span>
-                Review your card
-                <ArrowRight size={16} />
-              </a>
-            )}
-            <section className="page-heading">
-              <div>
-                <div className="eyebrow">THE LEAGUE / 2026</div>
-                <h1>
-                  {tab === "board"
-                    ? "Trust your picks."
-                    : tab === "standings"
-                      ? "The race is on."
-                      : tab === "history"
-                        ? "Your season, so far."
-                        : tab === "admin"
-                          ? "Commissioner’s desk."
-                          : "Four picks. That’s it."}
-                </h1>
-                <p>
-                  {tab === "board"
-                    ? "Four different games. A whole week on the line."
-                    : tab === "standings"
-                      ? "Every half point counts."
-                      : tab === "history"
-                        ? "Every pick, every result, all season long."
-                        : tab === "admin"
-                          ? "Keep the league running smoothly."
-                          : "A little strategy. A little conviction. A lot of football."}
-                </p>
-              </div>
-              <div className="heading-stat">
-                <span>
-                  {tab === "board"
-                    ? "YOUR WEEK"
-                    : tab === "standings"
-                      ? "LEAGUE MEMBERS"
-                      : "REGULAR SEASON"}
-                </span>
-                <strong>
-                  {tab === "board"
-                    ? `${count} / 4`
-                    : tab === "standings"
-                      ? data.standings.length
-                      : 18}
-                </strong>
-                <small>
-                  {tab === "board"
-                    ? dirty
-                      ? "Unsaved changes"
-                      : own
-                        ? "Picks submitted"
-                        : "Picks to make"
-                    : tab === "standings"
-                      ? "players competing"
-                      : "weeks of football"}
-                </small>
-              </div>
-            </section>
+            <div className="board-toolbar">
+              <h1>{activePage.label}</h1>
+            </div>
             {["board", "standings", "admin"].includes(tab) && (
               <div className="week-selector">
                 <CustomButton
@@ -516,11 +446,11 @@ export default function League() {
                           ? late
                             ? "Late picks are open"
                             : "Picks are open"
-                          : "Preview the week"}
+                          : "Preview"}
                     </strong>
                     <span>
                       {locked
-                        ? "Follow your picks as the games finish."
+                        ? "Results update as games finish."
                         : late
                           ? "−1 point · No powerups · Unstarted games only"
                           : w.publishedAt
@@ -531,6 +461,8 @@ export default function League() {
                   <CustomButton
                     variant="unstyled"
                     className="text-button"
+                    aria-label="Refresh games"
+                    title="Refresh games"
                     disabled={busy}
                     onClick={() =>
                       act(async () => {
@@ -540,8 +472,7 @@ export default function League() {
                       })
                     }
                   >
-                    <RefreshCw size={14} />
-                    Refresh
+                    <RefreshCw size={16} />
                   </CustomButton>
                 </div>
                 {(w.error || stale) && (
@@ -552,22 +483,9 @@ export default function League() {
                 )}
                 <div className="board-layout">
                   <section>
-                    <div className="section-heading">
-                      <h2>
-                        Week {week} matchups <span>{w.games.length}</span>
-                      </h2>
-                      <SegmentedControl
-                        className="board-filter"
-                        value={filter}
-                        onChange={(value) => setFilter(value as typeof filter)}
-                        options={(["all", ...PICK_TYPES] as const).map((value) => ({
-                          value,
-                          label: value === "all" ? "All" : labels[value],
-                        }))}
-                      />
-                    </div>
-                    <div className="game-grid">
-                      {games.map((g, i) => {
+                    <h2 className="sr-only">Week {week} matchups</h2>
+                    <div className="game-grid" id="game-board">
+                      {w.games.map((g) => {
                         const odds = w.publishedAt
                           ? w.lines[g.id]
                           : { homeSpread: g.homeSpread, total: g.total };
@@ -680,19 +598,6 @@ export default function League() {
                                 );
                               })}
                             </div>
-                            <div className="game-footer">
-                              <span>{g.venue}</span>
-                              {closed ? (
-                                <span>
-                                  <LockKeyhole size={11} />
-                                  Locked
-                                </span>
-                              ) : (
-                                <span>
-                                  {w.publishedAt ? "Frozen line" : "Preview line"}
-                                </span>
-                              )}
-                            </div>
                           </article>
                         );
                       })}
@@ -710,8 +615,11 @@ export default function League() {
                     <section className="pick-slip">
                       <div className="slip-heading">
                         <div>
-                          <span className="eyebrow">YOUR WEEK {week} CARD</span>
-                          <h2>Make your four.</h2>
+                          <span className="eyebrow">
+                            WEEK {week}
+                            {dirty ? " · Unsaved" : own ? " · Saved" : ""}
+                          </span>
+                          <h2>Your picks</h2>
                         </div>
                         <span className="slip-count">
                           {count}
@@ -721,9 +629,9 @@ export default function League() {
                       <div className="progress">
                         <span style={{ width: `${count * 25}%` }} />
                       </div>
-                      {PICK_TYPES.map((t, i) => {
+                      {PICK_TYPES.map((t) => {
                         const g = w.games.find((g) => g.id === draft.picks[t]);
-                        let text = "Choose a game from the board";
+                        let text = "Choose a game";
                         if (g) {
                           const odds = w.lines[g.id];
                           const spread = odds?.homeSpread ?? g.homeSpread ?? 0;
@@ -761,11 +669,22 @@ export default function League() {
                           </div>
                         );
                       })}
-                      <div className="powerups">
-                        <div className="section-heading">
-                          <h3>Season powerups</h3>
-                          <span>ONE USE EACH</span>
-                        </div>
+                      <details
+                        className="powerups"
+                        key={`${week}-${own?.revision ?? "draft"}`}
+                        open={activePowerups > 0 || undefined}
+                      >
+                        <summary>
+                          <Zap size={16} />
+                          <span>Powerups</span>
+                          <small>
+                            {activePowerups ? `${activePowerups} active` : "Optional"}
+                          </small>
+                          <ChevronDown size={16} />
+                        </summary>
+                        <p className="powerups-note">
+                          Optional · Editable with your picks until the weekly deadline.
+                        </p>
                         <label className="power-row">
                           <span>
                             <Zap size={16} />
@@ -798,7 +717,7 @@ export default function League() {
                                 : "5 points in your favor"}
                             </small>
                           </span>
-                          <LeagueSelect
+                          <select
                             aria-label="Total Helper target"
                             value={draft.totalHelper ?? ""}
                             disabled={!canPick || late || used("totalHelper")}
@@ -814,7 +733,7 @@ export default function League() {
                             <option value="">Off</option>
                             <option value="over">Over</option>
                             <option value="under">Under</option>
-                          </LeagueSelect>
+                          </select>
                         </label>
                         <label className="power-row">
                           <span>
@@ -838,61 +757,40 @@ export default function League() {
                             }}
                           />
                         </label>
-                      </div>
+                      </details>
                       <CustomButton
                         variant="unstyled"
                         className="primary save-button"
-                        disabled={
-                          busy || count !== 4 || !canPick || (!dirty && Boolean(own))
-                        }
-                        onClick={save}
+                        disabled={busy || count !== 4 || !canPick}
+                        onClick={submit}
                       >
                         {busy
                           ? "Saving…"
                           : locked
                             ? "Picks locked"
                             : own && !dirty
-                              ? "Picks saved"
+                              ? "Edit picks"
                               : own
-                                ? "Update picks"
+                                ? buyInPending
+                                  ? "Update pending picks"
+                                  : "Update picks"
                                 : late
                                   ? "Submit late picks (−1)"
                                   : "Submit picks"}
                         {locked ? <LockKeyhole size={17} /> : <ArrowRight size={17} />}
                       </CustomButton>
                       <p className="slip-foot">
-                        {locked
-                          ? "Your card is final for this week."
-                          : own
-                            ? `Saved ${date(own.updatedAt, true)} PT`
-                            : w.publishedAt
-                              ? "Your picks stay private until the weekly deadline."
-                              : "Picks open when the weekly lines are published."}
+                        {buyInPending
+                          ? `Payment is pending · You can edit until ${date(w.deadline, true)} PT`
+                          : locked
+                            ? "Your card is final for this week."
+                            : own
+                              ? `Saved ${date(own.updatedAt, true)} PT · Editable until ${date(w.deadline, true)} PT`
+                              : w.publishedAt
+                                ? "Your picks stay private until the weekly deadline."
+                                : "Picks open when the weekly lines are published."}
                       </p>
                     </section>
-                    <div className="rail-note">
-                      <Trophy size={24} />
-                      <div>
-                        <strong>
-                          {leagueLeader && leagueLeader.points > 0
-                            ? `${leagueLeader.name} leads with ${leagueLeader.points}`
-                            : "A clean slate. A new season."}
-                        </strong>
-                        <p>
-                          {leagueLeader && leagueLeader.points > 0
-                            ? "See how the whole league stacks up."
-                            : "The leaderboard is waiting for its first points."}
-                        </p>
-                        <CustomButton
-                          variant="unstyled"
-                          className="text-button"
-                          onClick={() => setTab("standings")}
-                        >
-                          View standings
-                          <ArrowUpRight size={14} />
-                        </CustomButton>
-                      </div>
-                    </div>
                   </aside>
                 </div>
               </>
@@ -931,8 +829,12 @@ export default function League() {
                                     p.wins === s.wins,
                                 ) + 1}
                           </td>
-                          <td>
-                            <span className="avatar">{s.name[0]}</span>
+                          <td className="player-cell">
+                            <PlayerAvatar
+                              name={s.name}
+                              userId={s.id}
+                              revision={s.avatarRevision}
+                            />
                             <b>{s.name}</b>
                             {s.id === user.id && <small className="you-label">YOU</small>}
                           </td>
@@ -961,7 +863,18 @@ export default function League() {
                     data.entries.map((e) => (
                       <div className="entry-card" key={e.id}>
                         <div className="section-heading">
-                          <strong>
+                          <strong className="player-cell">
+                            <PlayerAvatar
+                              name={
+                                data.standings.find((s) => s.id === e.userId)?.name ??
+                                "Player"
+                              }
+                              userId={e.userId}
+                              revision={
+                                data.standings.find((s) => s.id === e.userId)
+                                  ?.avatarRevision ?? 0
+                              }
+                            />
                             {data.standings.find((s) => s.id === e.userId)?.name}
                           </strong>
                           <b>{e.score.points} pts</b>
@@ -994,6 +907,14 @@ export default function League() {
                   )}
                 </div>
               </section>
+            )}
+            {tab === "chat" && (
+              <LeagueChat
+                userId={user.id}
+                busy={busy}
+                onBusy={setBusy}
+                onError={setError}
+              />
             )}
             {tab === "history" && (
               <section className="panel">
@@ -1049,8 +970,8 @@ export default function League() {
                 ) : (
                   <div className="empty-state">
                     <History size={36} />
-                    <h3>Your story starts with four picks.</h3>
-                    <p>Once you submit a card, your picks and results will be here.</p>
+                    <h3>No picks yet</h3>
+                    <p>Your submitted cards and results will appear here.</p>
                     <CustomButton
                       variant="unstyled"
                       className="primary"
@@ -1087,6 +1008,44 @@ export default function League() {
                   >
                     <Clipboard size={17} /> Copy league link
                   </CustomButton>
+                </section>
+                <section className="panel">
+                  <div className="section-heading">
+                    <h2>Week 1 buy-ins</h2>
+                    <span>$75 EACH</span>
+                  </div>
+                  {data.admin.pendingBuyIns.length ? (
+                    <div className="buy-in-list">
+                      {data.admin.pendingBuyIns.map((payment) => (
+                        <div className="buy-in-row" key={payment.userId}>
+                          <span>
+                            <b>{payment.name}</b>
+                            <small>Requested {date(payment.requestedAt, true)} PT</small>
+                          </span>
+                          <CustomButton
+                            variant="unstyled"
+                            className="secondary"
+                            disabled={busy}
+                            onClick={() =>
+                              void act(async () => {
+                                await api("admin/buy-ins/confirm", {
+                                  userId: payment.userId,
+                                });
+                                await load(week);
+                                setNotice(`${payment.name}'s $75 buy-in is confirmed.`);
+                              })
+                            }
+                          >
+                            <Check size={16} /> Confirm
+                          </CustomButton>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="buy-in-empty">
+                      No Week 1 payments are waiting to be confirmed.
+                    </p>
+                  )}
                 </section>
                 <section className="panel">
                   <h2>Week {week} operations</h2>
@@ -1150,11 +1109,18 @@ export default function League() {
                   <h2>League members</h2>
                   {data.admin.members.map((m) => (
                     <div className="admin-row" key={m.id}>
-                      <span>
-                        <b>{m.name}</b>
-                        <small>
-                          {m.email} · {m.role === "admin" ? "Commissioner" : "Player"}
-                        </small>
+                      <span className="player-cell">
+                        <PlayerAvatar
+                          name={m.name}
+                          userId={m.id}
+                          revision={m.avatarRevision}
+                        />
+                        <span>
+                          <b>{m.name}</b>
+                          <small>
+                            {m.email} · {m.role === "admin" ? "Commissioner" : "Player"}
+                          </small>
+                        </span>
                       </span>
                     </div>
                   ))}
@@ -1347,22 +1313,63 @@ export default function League() {
                 </section>
               </div>
             )}
-            <footer className="app-footer">
-              <span>
-                PICK 4 <b>·</b> THE 2026 LEAGUE
-              </span>
-              <span>Four picks. Every week.</span>
-              <CustomButton
-                variant="unstyled"
-                className="text-button"
-                onClick={() => setTab("rules")}
-              >
-                League rules
-                <ArrowUpRight size={13} />
-              </CustomButton>
-            </footer>
           </main>
         </>
+      )}
+      {user && (
+        <ResponsiveDialog
+          open={buyInOpen}
+          onOpenChange={setBuyInOpen}
+          title="Week 1 buy-in"
+          size="sm"
+        >
+          <div className="buy-in-dialog">
+            <p>
+              Send your $75 season buy-in to Jack on Venmo, then mark this card as paid.
+            </p>
+            <div className="buy-in-amount">
+              <span>Season buy-in</span>
+              <strong>$75</strong>
+            </div>
+            <div className="venmo-code">
+              <Image
+                src="/nfl/venmo-jrocca.png"
+                alt="Venmo QR code for Jack Rocca, @jrocca"
+                width={1179}
+                height={2556}
+                sizes="280px"
+              />
+            </div>
+            <p className="venmo-handle">
+              <strong>@jrocca</strong>
+              <span>Use the note “Pick 4 · {user.name}”.</span>
+            </p>
+            <a
+              className="secondary venmo-link"
+              href="https://venmo.com/u/jrocca"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open Venmo <ArrowUpRight size={16} />
+            </a>
+            <CustomButton
+              variant="unstyled"
+              className="primary buy-in-confirm"
+              disabled={busy}
+              onClick={() => {
+                void save().then((saved) => {
+                  if (saved) setBuyInOpen(false);
+                });
+              }}
+            >
+              I sent $75 <ArrowRight size={17} />
+            </CustomButton>
+            <p className="buy-in-disclaimer">
+              Your card stays private and payment pending until Jack confirms the Venmo
+              transfer.
+            </p>
+          </div>
+        </ResponsiveDialog>
       )}
       {user && (
         <ResponsiveDialog
@@ -1373,6 +1380,15 @@ export default function League() {
         >
           <div className="account-form">
             <p>Connected with Google · {user.email}</p>
+            <ProfilePhotoField
+              name={user.name}
+              userId={user.id}
+              revision={user.avatarRevision}
+              disabled={busy}
+              onRevision={() => void load(week)}
+              onNotice={setNotice}
+              onError={setError}
+            />
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1440,9 +1456,11 @@ function Rules() {
           commissioner publishes them. Everyone uses those same lines.
         </p>
         <p>
-          The weekly deadline is the first scheduled kickoff. In Week 1, that is
-          Wednesday, September 9 at 5:20 PM Pacific. You can edit your submitted card
-          until that deadline.
+          The weekly deadline is usually the first scheduled kickoff. For Week 1, the
+          Wednesday night Seahawks–Patriots opener and Thursday’s Australia game do not
+          lock the board. You can submit or edit a card, punishment-free, until Sunday,
+          September 13 at 10:00 AM Pacific, when the Sunday slate starts. Started games
+          cannot be selected.
         </p>
         <p>
           Missed it? You may submit one late card using four games that have not started.

@@ -65,6 +65,13 @@ route no longer exposes them. No destructive bucket garbage collection runs impl
 
 ## Browsing and scope
 
+The home page is a photo-only welcome with a 4–5-star slideshow. It crossfades every
+3.5 seconds once the next image is ready, keeps only two previews mounted, pauses
+in hidden tabs, and starts still for reduced-motion preferences. Images sit in a
+compact, centered frame (up to 720 × 480px) with their full composition visible;
+there are no playback controls. The full gallery at `/photography` is preserved for
+later and is absent from the site navigation; it no longer appears on the home page.
+
 All photo grids default to capture time, newest first, with undated photos last.
 People and Places collections use their newest visible photograph as the cover and
 follow that same order. Ratings select visibility and filters, not ordering.
