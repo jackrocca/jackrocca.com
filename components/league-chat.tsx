@@ -25,11 +25,13 @@ export function LeagueChat({
   busy,
   onBusy,
   onError,
+  onSent,
 }: {
   userId: string;
   busy: boolean;
   onBusy: (busy: boolean) => void;
   onError: (message: string) => void;
+  onSent?: () => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -107,6 +109,7 @@ export function LeagueChat({
           ? current
           : [...current, result.message],
       );
+      onSent?.();
     } catch (e) {
       onError((e as Error).message);
     } finally {

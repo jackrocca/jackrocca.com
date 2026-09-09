@@ -54,6 +54,10 @@ export type User = {
   sessionVersion: number;
   createdAt: string;
   avatarRevision?: number;
+  // First-season milestones drive the welcome tour and the Week 1 checklist.
+  // Absent values mean the player has not reached that milestone yet.
+  onboardedAt?: string;
+  firstChatAt?: string;
 };
 export type ChatMessage = {
   id: string;

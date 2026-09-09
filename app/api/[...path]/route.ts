@@ -15,6 +15,7 @@ import { view } from "@/lib/view";
 import { startGoogle, finishGoogle, googleConfigured } from "@/lib/google-auth";
 import { chatView, postChatMessage } from "@/lib/chat";
 import { mutateChat, readChat } from "@/lib/chat-store";
+import { markFirstChat, markOnboarded } from "@/lib/onboarding";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -213,7 +214,16 @@ export async function POST(
       const message = await mutateChat((chat) =>
         postChatMessage(chat, member.id, input.body),
       );
+      if (!member.firstChatAt) {
+        // Best effort: the message is already posted, so a milestone write
+        // failure must not surface as a failed send.
+        await mutate((s) => markFirstChat(s, member.id)).catch(() => undefined);
+      }
       return json({ ok: true, message });
+    }
+    if (route === "onboarding") {
+      await mutate((s) => markOnboarded(s, member.id));
+      return json({ ok: true });
     }
     if (route === "refresh") {
       const input = z.object({ week: weekSchema }).parse(await body(req));

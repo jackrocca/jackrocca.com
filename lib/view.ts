@@ -1,3 +1,4 @@
+import { onboardingFlags } from "./onboarding";
 import { buyInStatus, currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
 import { State, User } from "./types";
 export function view(
@@ -52,6 +53,7 @@ export function view(
           name: user.name,
           role: user.role,
           avatarRevision: user.avatarRevision ?? 0,
+          ...onboardingFlags(user),
         }
       : null,
     authentication: { provider: "google", ready: googleReady },

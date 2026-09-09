@@ -1,17 +1,13 @@
 "use client";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ArrowDown,
   ArrowRight,
-  ArrowUp,
   ArrowUpRight,
   Check,
   ChevronLeft,
   ChevronRight,
   Clipboard,
-  Clock3,
-  Crown,
   Flag,
   Grid2X2,
   History,
@@ -20,7 +16,6 @@ import {
   ChevronUp,
   ChevronDown,
   RefreshCw,
-  Shield,
   ShieldCheck,
   Trophy,
   X,
@@ -47,21 +42,17 @@ import {
   AccordionContent,
 } from "@/ui/primitives/accordion";
 import { LeagueSelect, useConfirmation } from "@/components/league-controls";
+import { TeamMark } from "@/components/team-mark";
+import { buyIn, labels, slotIcons } from "@/components/league-meta";
+import { Rules } from "@/components/league-rules";
+import {
+  StartChecklist,
+  WelcomeTour,
+  checklistComplete,
+} from "@/components/league-onboarding";
 import type { AppView } from "@/lib/view";
-import { PICK_TYPES, PickInput, PickType, Game } from "@/lib/types";
+import { PICK_TYPES, PickInput, PickType } from "@/lib/types";
 import { signed } from "@/lib/rules";
-const labels = {
-  favorite: "Favorite",
-  underdog: "Underdog",
-  over: "Over",
-  under: "Under",
-};
-const slotIcons = {
-  favorite: Crown,
-  underdog: Shield,
-  over: ArrowUp,
-  under: ArrowDown,
-};
 const blank = (): PickInput => ({
   week: 1,
   picks: { favorite: "", underdog: "", over: "", under: "" },
@@ -90,26 +81,6 @@ const date = (value: string | number, full = false) =>
     day: "numeric",
     ...(full ? { hour: "numeric", minute: "2-digit" } : {}),
   });
-function TeamMark({ game, side }: { game: Game; side: "home" | "away" }) {
-  const team = game[side];
-  const [failedTeamId, setFailedTeamId] = useState<string | null>(null);
-  return (
-    <span className="team-mark" aria-hidden="true">
-      {failedTeamId === team.id ? (
-        <span className="team-mark-fallback">{team.abbreviation}</span>
-      ) : (
-        <Image
-          src={`/nfl/${encodeURIComponent(team.id)}.png`}
-          alt=""
-          width={500}
-          height={500}
-          sizes="48px"
-          onError={() => setFailedTeamId(team.id)}
-        />
-      )}
-    </span>
-  );
-}
 export default function League() {
   const { ask, dialog: confirmationDialog } = useConfirmation();
   const [data, setData] = useState<AppView | null>(null),
@@ -123,7 +94,14 @@ export default function League() {
     [tick, setTick] = useState(Date.now()),
     [navigationOpen, setNavigationOpen] = useState(false),
     [accountOpen, setAccountOpen] = useState(false),
-    [buyInOpen, setBuyInOpen] = useState(false);
+    [buyInOpen, setBuyInOpen] = useState(false),
+    // "save" submits the card from the dialog; "info" only shows the Venmo details.
+    [buyInIntent, setBuyInIntent] = useState<"save" | "info">("save"),
+    [touring, setTouring] = useState(false),
+    // Milestones reached in this session, ahead of the next server refresh.
+    [reached, setReached] = useState<{ onboarded?: boolean; chatted?: boolean }>({});
+  const tourReturn = useRef("board");
+  const tourChecked = useRef<string | null>(null);
   const load = useCallback(async (number: number | null) => {
     try {
       const result = (await api(`state${number ? `?week=${number}` : ""}`)) as AppView;
@@ -191,6 +169,32 @@ export default function League() {
     window.addEventListener("beforeunload", before);
     return () => window.removeEventListener("beforeunload", before);
   }, [dirty]);
+  useEffect(() => {
+    // First sign-in opens the tour once per account, not once per page load.
+    const account = data?.user;
+    if (!account || tourChecked.current === account.id) return;
+    tourChecked.current = account.id;
+    if (!account.onboarded) {
+      tourReturn.current = "board";
+      setTouring(true);
+    }
+  }, [data?.user]);
+  function openTour(from: string) {
+    tourReturn.current = from;
+    setTouring(true);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
+  function closeTour(destination: string) {
+    setTouring(false);
+    setTab(destination);
+    window.scrollTo({ top: 0, behavior: "instant" });
+    if (data?.user && !data.user.onboarded && !reached.onboarded) {
+      setReached((r) => ({ ...r, onboarded: true }));
+      void api("onboarding", {}).catch(() => {
+        /* The tour is re-offered from the rules page; a lost flag is harmless. */
+      });
+    }
+  }
   async function act(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -240,17 +244,50 @@ export default function League() {
     canPick = Boolean(user && w.publishedAt && !locked),
     count = PICK_TYPES.filter((t) => draft.picks[t]).length,
     buyInPending = week === 1 && own?.buyIn?.status === "pending";
+  // Week 1 progress, independent of which week is being viewed.
+  const opener = data.history.find((e) => e.week === 1),
+    openerBuyIn: "none" | "pending" | "confirmed" = !opener
+      ? "none"
+      : (opener.buyIn?.status ?? "confirmed"),
+    checklist = {
+      hasEntry: Boolean(opener),
+      buyInStatus: openerBuyIn,
+      hasPhoto: (user?.avatarRevision ?? 0) > 0,
+      chatted: Boolean(user?.chatted || reached.chatted),
+    },
+    showChecklist =
+      Boolean(user) && data.currentWeek === 1 && !checklistComplete(checklist);
+  const deadlineText = date(w.deadline, true);
+  const sampleGame = (() => {
+    for (const g of w.games) {
+      const odds = w.publishedAt
+        ? w.lines[g.id]
+        : { homeSpread: g.homeSpread, total: g.total };
+      if (
+        odds &&
+        odds.homeSpread !== null &&
+        odds.homeSpread !== 0 &&
+        odds.total !== null
+      )
+        return { game: g, homeSpread: odds.homeSpread, total: odds.total };
+    }
+    return null;
+  })();
+  function focusBoard() {
+    const board = document.getElementById("game-board");
+    board?.scrollIntoView({ block: "start" });
+    board?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({
+      preventScroll: true,
+    });
+  }
   function submit() {
     if (own && !dirty) {
-      const board = document.getElementById("game-board");
-      board?.scrollIntoView({ block: "start" });
-      board?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus({
-        preventScroll: true,
-      });
+      focusBoard();
       setNotice("Choose a new pick, then save your updated card.");
       return;
     }
     if (week === 1 && !own) {
+      setBuyInIntent("save");
       setBuyInOpen(true);
       return;
     }
@@ -287,7 +324,7 @@ export default function League() {
   return (
     <div className="league-app">
       {confirmationDialog}
-      {user && (
+      {user && !touring && (
         <div className="league-dock">
           <BottomDrawer
             title="Pick 4"
@@ -393,6 +430,18 @@ export default function League() {
       )}
       {!user ? (
         <SignInPage returnTo="/pick4" ready={data.authentication.ready} />
+      ) : touring ? (
+        <WelcomeTour
+          user={user}
+          sampleGame={sampleGame}
+          deadlineText={deadlineText}
+          busy={busy}
+          onFinish={() => closeTour("board")}
+          onSkip={() => closeTour(tourReturn.current)}
+          onRevision={() => void load(week)}
+          onNotice={setNotice}
+          onError={setError}
+        />
       ) : (
         <>
           <main id="main-content" className="app-shell">
@@ -480,6 +529,26 @@ export default function League() {
                     {w.error ?? "The board needs a fresh score update."} Last successful
                     sync: {updated} PT.
                   </p>
+                )}
+                {showChecklist && (
+                  <StartChecklist
+                    picksChosen={week === 1 ? count : 0}
+                    {...checklist}
+                    onPicks={() => {
+                      if (week !== 1) void changeWeek(1);
+                      else focusBoard();
+                    }}
+                    onBuyIn={() => {
+                      setBuyInIntent("info");
+                      setBuyInOpen(true);
+                    }}
+                    onPhoto={() => setAccountOpen(true)}
+                    onChat={() => {
+                      setTab("chat");
+                      window.scrollTo({ top: 0, behavior: "instant" });
+                    }}
+                    onTour={() => openTour("board")}
+                  />
                 )}
                 <div className="board-layout">
                   <section>
@@ -914,6 +983,7 @@ export default function League() {
                 busy={busy}
                 onBusy={setBusy}
                 onError={setError}
+                onSent={() => setReached((r) => ({ ...r, chatted: true }))}
               />
             )}
             {tab === "history" && (
@@ -984,7 +1054,13 @@ export default function League() {
                 )}
               </section>
             )}
-            {tab === "rules" && <Rules />}
+            {tab === "rules" && (
+              <Rules
+                deadlineText={deadlineText}
+                weekNumber={w.number}
+                onTour={() => openTour("rules")}
+              />
+            )}
             {tab === "admin" && data.admin && (
               <div className="admin-grid">
                 <section className="panel">
@@ -1325,45 +1401,61 @@ export default function League() {
         >
           <div className="buy-in-dialog">
             <p>
-              Send your $75 season buy-in to Jack on Venmo, then mark this card as paid.
+              {buyInIntent === "save"
+                ? `Send your ${buyIn.amount} season buy-in to Jack on Venmo, then mark this card as paid.`
+                : openerBuyIn === "pending"
+                  ? "Your Week 1 card is saved. It goes live once Jack confirms your Venmo transfer."
+                  : openerBuyIn === "confirmed"
+                    ? "Your buy-in is confirmed. Good luck this season."
+                    : `Send your ${buyIn.amount} season buy-in to Jack on Venmo. Saving your Week 1 card marks it as paid.`}
             </p>
             <div className="buy-in-amount">
               <span>Season buy-in</span>
-              <strong>$75</strong>
+              <strong>{buyIn.amount}</strong>
             </div>
             <div className="venmo-code">
               <Image
-                src="/nfl/venmo-jrocca.png"
-                alt="Venmo QR code for Jack Rocca, @jrocca"
+                src={buyIn.qr}
+                alt={`Venmo QR code for Jack Rocca, ${buyIn.handle}`}
                 width={1179}
                 height={2556}
                 sizes="280px"
               />
             </div>
             <p className="venmo-handle">
-              <strong>@jrocca</strong>
+              <strong>{buyIn.handle}</strong>
               <span>Use the note “Pick 4 · {user.name}”.</span>
             </p>
             <a
               className="secondary venmo-link"
-              href="https://venmo.com/u/jrocca"
+              href={buyIn.url}
               target="_blank"
               rel="noreferrer"
             >
               Open Venmo <ArrowUpRight size={16} />
             </a>
-            <CustomButton
-              variant="unstyled"
-              className="primary buy-in-confirm"
-              disabled={busy}
-              onClick={() => {
-                void save().then((saved) => {
-                  if (saved) setBuyInOpen(false);
-                });
-              }}
-            >
-              I sent $75 <ArrowRight size={17} />
-            </CustomButton>
+            {buyInIntent === "save" ? (
+              <CustomButton
+                variant="unstyled"
+                className="primary buy-in-confirm"
+                disabled={busy}
+                onClick={() => {
+                  void save().then((saved) => {
+                    if (saved) setBuyInOpen(false);
+                  });
+                }}
+              >
+                I sent {buyIn.amount} <ArrowRight size={17} />
+              </CustomButton>
+            ) : (
+              <CustomButton
+                variant="unstyled"
+                className="primary buy-in-confirm"
+                onClick={() => setBuyInOpen(false)}
+              >
+                Done <Check size={17} />
+              </CustomButton>
+            )}
             <p className="buy-in-disclaimer">
               Your card stays private and payment pending until Jack confirms the Venmo
               transfer.
@@ -1420,113 +1512,6 @@ export default function League() {
           </div>
         </ResponsiveDialog>
       )}
-    </div>
-  );
-}
-function Rules() {
-  return (
-    <div className="rules-grid">
-      <section className="panel rules-intro">
-        <span className="eyebrow">THE WEEKLY CARD</span>
-        <h2>
-          Four games.
-          <br />
-          Four ways to call it.
-        </h2>
-        <p>
-          Each week, choose exactly one favorite against the spread, one underdog against
-          the spread, one over, and one under. Every pick must be from a different game.
-        </p>
-        <div className="scoring-strip">
-          <span>
-            <strong>1</strong>win
-          </span>
-          <span>
-            <strong>½</strong>push
-          </span>
-          <span>
-            <strong>5</strong>perfect week
-          </span>
-        </div>
-      </section>
-      <section className="panel">
-        <h2>The clock matters.</h2>
-        <p>
-          DraftKings lines freeze on Wednesday at 9 AM Pacific, or earlier if the
-          commissioner publishes them. Everyone uses those same lines.
-        </p>
-        <p>
-          The weekly deadline is usually the first scheduled kickoff. For Week 1, the
-          Wednesday night Seahawks–Patriots opener and Thursday’s Australia game do not
-          lock the board. You can submit or edit a card, punishment-free, until Sunday,
-          September 13 at 10:00 AM Pacific, when the Sunday slate starts. Started games
-          cannot be selected.
-        </p>
-        <p>
-          Missed it? You may submit one late card using four games that have not started.
-          Late cards lose one point (minimum zero), cannot use powerups, and lock
-          immediately.
-        </p>
-        <p>
-          Games with unconfirmed kickoff times or unavailable lines cannot be selected.
-          Opponents’ cards reveal at the weekly deadline.
-        </p>
-      </section>
-      <section className="panel">
-        <Zap className="rule-icon" />
-        <h2>Super Spread</h2>
-        <p>
-          Once per season, take a favorite of −5 or greater and double the spread. A −6
-          favorite must cover −12.
-        </p>
-        <p>
-          Beat the doubled line for 2.5 points. Push it for 1 point. Miss it for 0. The
-          ordinary perfect-week bonus does not apply when Super Spread is active.
-        </p>
-      </section>
-      <section className="panel">
-        <Target className="rule-icon" />
-        <h2>Total Helper</h2>
-        <p>
-          Once per season, give your over or under a five-point advantage. Over 45 becomes
-          over 40; under 45 becomes under 50.
-        </p>
-        <p>
-          Choose one total to help. It scores normally and can still contribute to a
-          perfect week.
-        </p>
-      </section>
-      <section className="panel">
-        <Sparkles className="rule-icon" />
-        <h2>Perfect Prediction</h2>
-        <p>
-          Once per season, call your shot. If all four picks win, your card scores 8
-          points instead of the usual 5.
-        </p>
-        <p>
-          Otherwise, normal scoring applies. You can combine powerups. If combined with
-          Super Spread, the favorite must beat the doubled spread; a perfect card totals 8
-          points.
-        </p>
-      </section>
-      <section className="panel">
-        <Trophy className="rule-icon" />
-        <h2>The standings</h2>
-        <p>
-          Season points come first, followed by perfect weeks and winning picks. Matching
-          records share a rank.
-        </p>
-        <p>
-          Only final scores settle picks. Pushes earn half a point and do not count as
-          wins. A canceled game is void and earns half a point; it cannot complete a
-          perfect week. Postponed games remain pending.
-        </p>
-        <p>
-          Results refresh automatically. Commissioner corrections are logged and
-          recalculate the standings. Powerups can be changed before the weekly deadline;
-          each is available once during the season.
-        </p>
-      </section>
     </div>
   );
 }

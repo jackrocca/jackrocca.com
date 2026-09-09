@@ -9,6 +9,8 @@
     --orange: #dd7044;
     --font-body: var(--font-geist), Arial, sans-serif;
     --font-display: var(--font-geist), Arial, sans-serif;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
   * {
     box-sizing: border-box;
@@ -2701,5 +2703,689 @@
 @media (prefers-reduced-motion: reduce) {
   .league-app .chat-message {
     box-shadow: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Welcome tour: one idea per step, seen once.                          */
+/* ------------------------------------------------------------------ */
+.league-app .league-tour {
+  display: grid;
+  place-items: start center;
+  min-height: calc(100svh - 89px);
+  padding: 36px 20px 72px;
+}
+.league-app .tour-card {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+}
+.league-app .tour-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin-bottom: 12px;
+}
+.league-app .tour-top .eyebrow {
+  font-variant-numeric: tabular-nums;
+}
+.league-app .tour-skip {
+  color: var(--league-muted);
+  padding: 0 4px;
+}
+.league-app .tour-step {
+  display: flex;
+  flex-direction: column;
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+.league-app .tour-step[data-direction="back"] {
+  @starting-style {
+    transform: translateX(-16px);
+  }
+}
+.league-app .tour-stage {
+  display: grid;
+  place-items: center;
+  /* Fixed on wide screens so the heading and controls never jump between steps. */
+  height: 272px;
+  padding: 24px;
+  border-radius: 18px;
+  background: var(--muted);
+}
+.league-app .tour-step h1 {
+  margin: 26px 0 10px;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.7px;
+  outline: none;
+}
+.league-app .tour-step > p {
+  margin: 0;
+  max-width: 460px;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.league-app .tour-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+.league-app .tour-back {
+  width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+.league-app .tour-dots {
+  display: flex;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+.league-app .tour-dots li {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d6d6d6;
+  transition:
+    background 200ms ease,
+    transform 200ms var(--ease-out);
+}
+.league-app .tour-dots li[data-active] {
+  background: var(--league-teal);
+  transform: scale(1.3);
+}
+.league-app .tour-next {
+  width: auto;
+  min-width: 150px;
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+/* Step visuals sit on the muted stage as small white cards. */
+.league-app .tour-slots,
+.league-app .tour-powerups,
+.league-app .tour-buyin,
+.league-app .tour-you {
+  width: 100%;
+}
+.league-app .tour-slot,
+.league-app .tour-powerups li,
+.league-app .tour-buyin-amount,
+.league-app .tour-you .photo-field {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 4%),
+    0 0 0 1px rgb(0 0 0 / 5%);
+}
+.league-app .tour-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.league-app .tour-slot {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 1px 12px;
+  align-items: center;
+  padding: 12px 14px;
+  animation: tour-rise 320ms var(--ease-out) both;
+}
+.league-app .tour-slot .slot-icon {
+  grid-row: 1 / 3;
+  background: var(--league-teal-soft);
+}
+.league-app .tour-slot b {
+  font-size: 13px;
+  font-weight: 600;
+}
+.league-app .tour-slot small,
+.league-app .tour-powerups small {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--league-muted);
+}
+.league-app .tour-powerups {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.league-app .tour-powerups li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  animation: tour-rise 320ms var(--ease-out) both;
+}
+.league-app .tour-powerups li > svg {
+  color: var(--league-teal);
+}
+.league-app .tour-powerups b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.league-app .tour-powerups em,
+.league-app .rules-powerup em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+  white-space: nowrap;
+}
+.league-app .tour-slot:nth-child(2),
+.league-app .tour-powerups li:nth-child(2) {
+  animation-delay: 50ms;
+}
+.league-app .tour-slot:nth-child(3),
+.league-app .tour-powerups li:nth-child(3) {
+  animation-delay: 100ms;
+}
+.league-app .tour-slot:nth-child(4) {
+  animation-delay: 150ms;
+}
+@keyframes tour-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The sample card is a real game card, frozen mid-pick. */
+.league-app .tour-sample {
+  width: 100%;
+  max-width: 340px;
+  pointer-events: none;
+}
+.league-app .tour-sample .matchup {
+  min-height: 0;
+  padding: 18px 16px 16px;
+}
+.league-app .tour-sample .game-options > span {
+  min-height: 48px;
+  border: 1px solid #e6e6e6;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f9faf6;
+  padding: 6px 1px;
+}
+.league-app .tour-sample .game-options > span small {
+  font-size: 8px;
+  color: #929292;
+  margin-bottom: 4px;
+}
+.league-app .tour-sample .game-options > span strong {
+  font-size: 10px;
+  font-weight: 650;
+}
+.league-app .tour-sample .game-options > span.chosen {
+  background: var(--league-teal-soft);
+  border-color: var(--league-teal);
+  color: var(--league-teal);
+}
+.league-app .tour-sample .game-options > span.chosen small {
+  color: var(--league-teal);
+}
+.league-app .tour-sample .game-options > span.chosen svg {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 9px;
+}
+.league-app .tour-sample-empty {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  max-width: 260px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--league-muted);
+}
+.league-app .tour-sample-empty svg {
+  color: var(--league-teal);
+}
+
+.league-app .tour-buyin {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.league-app .tour-buyin-amount {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 200px;
+  padding: 22px 36px 18px;
+  border-radius: 14px;
+}
+.league-app .tour-buyin-amount small {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .tour-buyin-amount strong {
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+}
+.league-app .tour-buyin-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--league-teal);
+}
+.league-app .tour-you .photo-field {
+  margin: 0;
+  padding: 18px 20px;
+  border-radius: 14px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Week 1 checklist: four things, then it leaves.                       */
+/* ------------------------------------------------------------------ */
+.league-app .start-panel {
+  margin: 0 0 25px;
+  padding: 18px 20px 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.league-app .start-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.league-app .start-heading h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.league-app .start-heading span {
+  font-size: 11px;
+  color: var(--league-muted);
+  font-variant-numeric: tabular-nums;
+}
+.league-app .start-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.league-app .start-item {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 0;
+  border-radius: 0;
+  text-align: left;
+}
+.league-app .start-list li:nth-child(-n + 2) .start-item {
+  border-bottom: 1px solid var(--border);
+}
+.league-app .start-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--muted);
+  color: var(--league-muted);
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+}
+.league-app .start-mark svg {
+  position: absolute;
+  transition:
+    opacity 300ms cubic-bezier(0.2, 0, 0, 1),
+    transform 300ms cubic-bezier(0.2, 0, 0, 1),
+    filter 300ms cubic-bezier(0.2, 0, 0, 1);
+}
+.league-app .start-mark-check,
+.league-app .start-item[data-done] .start-mark-icon {
+  opacity: 0;
+  transform: scale(0.25);
+  filter: blur(4px);
+}
+.league-app .start-item[data-done] .start-mark-check {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+.league-app .start-item[data-done] .start-mark {
+  background: var(--league-teal);
+  color: #fff;
+}
+.league-app .start-label {
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 160ms ease;
+}
+.league-app .start-item[data-done] .start-label {
+  color: var(--league-muted);
+}
+.league-app .start-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--league-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .start-item[data-done] .start-meta {
+  color: var(--league-teal);
+}
+@media (hover: hover) and (pointer: fine) {
+  .league-app .start-item:not([data-done]):hover .start-label,
+  .league-app .start-item:not([data-done]):hover .start-meta {
+    color: var(--league-teal);
+  }
+}
+.league-app .start-item:active:not(:disabled) {
+  transform: none;
+}
+.league-app .start-tour {
+  min-height: 36px;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--league-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Rules: scan first, read second.                                      */
+/* ------------------------------------------------------------------ */
+.league-app .rules-powerups,
+.league-app .rules-fine {
+  grid-column: 1 / -1;
+}
+.league-app .rules-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.league-app .rules-slots li {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: center;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 8%);
+}
+.league-app .rules-slots svg {
+  grid-row: 1 / 3;
+  color: var(--lime);
+}
+.league-app .rules-slots b {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+.league-app .rules-slots small {
+  font-size: 10px;
+  color: #bebebe;
+}
+.league-app .rules-timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.league-app .rules-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 2px 14px;
+  padding: 12px 0;
+}
+.league-app .rules-timeline li::before {
+  counter-increment: step;
+  content: counter(step);
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .rules-timeline li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 13.5px;
+  top: 44px;
+  bottom: -8px;
+  width: 1px;
+  background: var(--border);
+}
+.league-app .rules-timeline b {
+  font-size: 13px;
+  font-weight: 600;
+  align-self: center;
+}
+.league-app .rules-timeline span {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--league-muted);
+}
+.league-app .rules-scoring {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.league-app .rules-scoring > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--muted);
+}
+.league-app .rules-scoring dt {
+  font-size: 12px;
+  color: var(--league-muted);
+}
+.league-app .rules-scoring dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .rules-scoring > .rules-scoring-highlight {
+  background: var(--league-teal-soft);
+}
+.league-app .rules-scoring-highlight dt,
+.league-app .rules-scoring-highlight dd {
+  color: var(--league-teal);
+}
+.league-app .rules-note {
+  margin: 0;
+  font-size: 12px;
+}
+.league-app .rules-grid .venmo-link {
+  display: inline-flex;
+  width: auto;
+  margin: 4px 0 0;
+  padding: 0 16px;
+}
+.league-app .rules-powerup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 6px;
+}
+.league-app .rules-powerup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.league-app .rules-powerup .rule-icon {
+  margin: 0 0 4px;
+}
+.league-app .rules-powerup h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+.league-app .rules-powerup p {
+  flex: 1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.league-app .rules-powerup em {
+  align-self: flex-start;
+  font-size: 11px;
+}
+.league-app .rules-fine ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+.league-app .rules-fine li {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--league-muted);
+}
+.league-app .rules-tour {
+  width: auto;
+  gap: 8px;
+  margin-top: 22px;
+  padding: 0 16px;
+}
+
+@media (max-width: 850px) {
+  .league-app .rules-powerup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .league-app .league-tour {
+    padding: 20px 18px 56px;
+  }
+  .league-app .tour-stage {
+    height: auto;
+    min-height: 240px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .league-app .tour-step h1 {
+    margin-top: 22px;
+    font-size: 24px;
+  }
+  .league-app .tour-next {
+    flex: 1;
+  }
+  .league-app .tour-slots {
+    gap: 8px;
+  }
+  .league-app .tour-slot {
+    padding: 10px 12px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 1px 10px;
+  }
+  .league-app .tour-slot .slot-icon {
+    width: 30px;
+    height: 30px;
+  }
+  .league-app .tour-slot small {
+    font-size: 10px;
+  }
+  .league-app .tour-powerups em {
+    display: none;
+  }
+  .league-app .tour-powerups li {
+    grid-template-columns: 16px minmax(0, 1fr);
+  }
+  .league-app .start-panel {
+    margin-bottom: 20px;
+    padding: 16px 16px 8px;
+  }
+  .league-app .start-list {
+    grid-template-columns: 1fr;
+  }
+  .league-app .start-list li:not(:last-child) .start-item {
+    border-bottom: 1px solid var(--border);
+  }
+  .league-app .rules-slots {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 400px) {
+  .league-app .tour-slots {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-app .tour-step {
+    @starting-style {
+      transform: none;
+    }
+  }
+  .league-app .tour-slot,
+  .league-app .tour-powerups li {
+    animation: none;
   }
 }
