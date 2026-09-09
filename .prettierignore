@@ -4,6 +4,7 @@ node_modules/
 work/
 legacy/
 vendor/
+.agents/
 assets/
 public/*.svg
 data/

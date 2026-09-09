@@ -1175,46 +1175,15 @@
     max-width: 225px;
     margin: 25px auto 0;
   }
-  .rules-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 23px;
+  .rules-article {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 48px 56px 44px;
   }
-  .rules-grid .panel {
-    padding: 35px;
-  }
-  .rules-grid p {
-    font-size: 12px;
-    line-height: 1.9;
-  }
-  .rules-intro {
-    background: var(--green);
-    color: #fff;
-  }
-  .rules-intro .eyebrow {
-    color: #bebebe;
-  }
-  .rules-intro h2 {
-    font: 600 44px/0.99 var(--font-display);
-    margin: 20px 0;
-  }
-  .rules-intro p {
-    color: #bebebe;
-  }
-  .scoring-strip {
-    display: flex;
-    gap: 40px;
-    margin-top: 35px;
-  }
-  .scoring-strip span {
-    font-size: 9px;
-    color: #bcbcbc;
-  }
-  .scoring-strip strong {
-    display: block;
-    font: 500 34px var(--font-display);
-    color: var(--lime);
-    margin-bottom: 4px;
+  .rules-article p,
+  .rules-article li {
+    font-size: 15px;
+    line-height: 1.75;
   }
   .rule-icon {
     color: #989898;
@@ -1542,8 +1511,8 @@
     .week-banner {
       padding: 10px 13px;
     }
-    .rules-grid .panel {
-      padding: 25px;
+    .rules-article {
+      padding: 36px 32px;
     }
     .main-nav {
       gap: 20px;
@@ -1841,19 +1810,22 @@
     .panel {
       padding: 22px 18px;
     }
-    .rules-grid,
     .admin-grid {
       grid-template-columns: 1fr;
       gap: 17px;
     }
-    .rules-grid .panel {
-      padding: 28px;
+    .rules-article {
+      padding: 28px 20px 32px;
     }
-    .rules-grid p {
-      font-size: 12px;
+    .rules-article p,
+    .rules-article li {
+      font-size: 14px;
     }
-    .rules-intro h2 {
-      font-size: 44px;
+    .rules-article .rules-header .rules-title {
+      font-size: 30px;
+    }
+    .rules-article .rules-header .rules-lede {
+      font-size: 16px;
     }
     .section-heading > span {
       font-size: 7px;
@@ -3482,41 +3454,92 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Rules: scan first, read second.                                      */
+/* Rules: one column, read top to bottom like an article.               */
 /* ------------------------------------------------------------------ */
-.league-app .rules-powerups,
-.league-app .rules-fine {
-  grid-column: 1 / -1;
+.league-app .rules-header {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+.league-app .rules-article .rules-title {
+  margin: 0 0 16px;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+  text-wrap: balance;
+}
+.league-app .rules-article .rules-lede {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--league-muted);
+}
+.league-app .rules-article section,
+.league-app .rules-footer {
+  padding-top: 32px;
+}
+.league-app .rules-article section + section,
+.league-app .rules-footer {
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+}
+.league-app .rules-article h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+.league-app .rules-article h3 {
+  margin: 24px 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.league-app .rules-article p {
+  margin: 0 0 14px;
+  color: var(--ink);
+}
+.league-app .rules-article p:last-child {
+  margin-bottom: 0;
+}
+.league-app .rules-article section > ul:not([class]) {
+  margin: 0 0 14px;
+  padding-left: 22px;
+  list-style: disc;
+}
+.league-app .rules-article section > ul:not([class]) li + li {
+  margin-top: 6px;
+}
+.league-app .rules-article strong {
+  font-weight: 600;
+  color: var(--ink);
 }
 .league-app .rules-slots {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 24px 0 0;
+  gap: 10px;
+  margin: 4px 0 18px;
   padding: 0;
   list-style: none;
 }
 .league-app .rules-slots li {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr);
-  gap: 0 10px;
+  gap: 2px 12px;
   align-items: center;
-  padding: 11px 12px;
+  padding: 14px 16px;
   border-radius: 8px;
-  background: rgb(255 255 255 / 8%);
+  background: var(--muted);
 }
 .league-app .rules-slots svg {
   grid-row: 1 / 3;
-  color: var(--lime);
+  color: var(--league-teal);
 }
 .league-app .rules-slots b {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: #fff;
 }
 .league-app .rules-slots small {
-  font-size: 10px;
-  color: #bebebe;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--league-muted);
 }
 .league-app .rules-timeline {
   margin: 0;
@@ -3528,8 +3551,8 @@
   position: relative;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
-  gap: 2px 14px;
-  padding: 12px 0;
+  gap: 4px 16px;
+  padding: 14px 0;
 }
 .league-app .rules-timeline li::before {
   counter-increment: step;
@@ -3550,43 +3573,43 @@
   content: "";
   position: absolute;
   left: 13.5px;
-  top: 44px;
-  bottom: -8px;
+  top: 48px;
+  bottom: -10px;
   width: 1px;
   background: var(--border);
 }
 .league-app .rules-timeline b {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   align-self: center;
 }
 .league-app .rules-timeline span {
-  font-size: 12px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
   color: var(--league-muted);
 }
 .league-app .rules-scoring {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0 0 16px;
+  gap: 10px;
+  margin: 4px 0 18px;
 }
 .league-app .rules-scoring > div {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 8px;
   background: var(--muted);
 }
 .league-app .rules-scoring dt {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--league-muted);
 }
 .league-app .rules-scoring dd {
   margin: 0;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
@@ -3598,70 +3621,64 @@
 .league-app .rules-scoring-highlight dd {
   color: var(--league-teal);
 }
-.league-app .rules-note {
-  margin: 0;
-  font-size: 12px;
-}
-.league-app .rules-grid .venmo-link {
+.league-app .rules-article .venmo-link {
   display: inline-flex;
   width: auto;
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   padding: 0 16px;
 }
 .league-app .rules-powerup-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
   margin-top: 6px;
 }
 .league-app .rules-powerup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 20px;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 18px 20px;
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 .league-app .rules-powerup .rule-icon {
-  margin: 0 0 4px;
+  grid-row: 1 / 4;
+  margin: 2px 0 0;
+  color: var(--league-teal);
 }
-.league-app .rules-powerup h3 {
+.league-app .rules-article .rules-powerup h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
 }
-.league-app .rules-powerup p {
-  flex: 1;
+.league-app .rules-article .rules-powerup p {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.7;
 }
 .league-app .rules-powerup em {
-  align-self: flex-start;
+  justify-self: start;
+  margin-top: 4px;
   font-size: 11px;
 }
-.league-app .rules-fine ul {
+.league-app .rules-fine {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
+  list-style: disc;
 }
 .league-app .rules-fine li {
-  font-size: 12px;
-  line-height: 1.8;
   color: var(--league-muted);
+}
+.league-app .rules-fine b {
+  font-weight: 600;
+  color: var(--ink);
 }
 .league-app .rules-tour {
   width: auto;
   gap: 8px;
-  margin-top: 22px;
+  margin-top: 20px;
   padding: 0 16px;
-}
-
-@media (max-width: 850px) {
-  .league-app .rules-powerup-grid {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 640px) {
   .league-app .league-tour {
