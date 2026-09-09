@@ -35,6 +35,27 @@ It is public and requires no session. Verify the initial HTML and image response
 with messaging-crawler user agents after deployment. Existing shared messages may
 retain the preview cached by the messaging app.
 
+## Private Atlas paid-capacity release — September 9, 2026
+
+Production is `dpl_9Wwz6NfH4FTw7Gtp8NSdFptxZbT3`, promoted from the tested
+production candidate. Canonical alias inspection resolves to this deployment.
+All 16 signed-out canonical HTTP checks passed: health, private entry/API/bundle
+restrictions with no-store headers, public home/gallery/Pick 4 and its OG image,
+and `/dev/ui` denial. The complete website check and 69-file private bundle passed
+before candidate deployment. Retain `dpl_2jRWBpJHjTZK9NKvN1CiWgeMFWr8` for rollback.
+
+The private Cloudflare catalog now contains all 44,285 photo families and verified
+previews at revision `c877ab57954c4d67bbb9d9ca76c5bad9`. Six live preview samples
+matched the Mac's bytes. Jack confirmed owner login and Workers Paid; personal
+Worker `4cf2c650-3e8d-47d2-b47d-89543929bea4` includes migrations 0005–0009.
+The managed Mac API and worker are online. Private views include 163 people,
+195 albums and 36,917 groups. A read-only production pipeline-status command
+completed with HTTP 200 and its same-ID replay returned the saved result. See the private Atlas repository's `docs/private-release.md` for its
+connection and operation acceptance. No public gallery publication or league data
+write was performed during these checks. No source commit or push was made.
+
+The dated September 8 checkpoints below are historical.
+
 ## Private Atlas release — September 8, 2026
 
 The current source checkout is `/Users/jack/jack-os/apps/jackrocca.com`. The older

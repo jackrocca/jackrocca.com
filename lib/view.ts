@@ -1,6 +1,6 @@
 import { onboardingFlags } from "./onboarding";
 import { buyInStatus, currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
-import { State, User } from "./types";
+import { BUY_IN_DOLLARS, State, User } from "./types";
 export function view(
   state: State,
   user: User | null,
@@ -14,6 +14,15 @@ export function view(
     score: scoreEntry(e, allGames),
   }));
   const scores = allScores.filter((entry) => buyInStatus(entry) === "confirmed");
+  // Week 2+ cards omit buyIn (treated as confirmed); the pot follows Week 1.
+  const paidPlayers = new Set(
+    allScores
+      .filter((entry) => {
+        const week1 = allScores.find((e) => e.userId === entry.userId && e.week === 1);
+        return buyInStatus(week1 ?? entry) === "confirmed";
+      })
+      .map((entry) => entry.userId),
+  ).size;
   const visibleScores = user
     ? allScores.filter(
         (entry) => entry.userId === user.id || buyInStatus(entry) === "confirmed",
@@ -64,6 +73,10 @@ export function view(
         : null,
       deadline: deadline(week),
       freezeAt: freezeTime(week),
+    },
+    pot: {
+      players: paidPlayers,
+      dollars: paidPlayers * BUY_IN_DOLLARS,
     },
     standings,
     entries: user

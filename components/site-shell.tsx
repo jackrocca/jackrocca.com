@@ -32,8 +32,8 @@ export function SiteHeader() {
           key={pathname}
           height={88}
           classNames={{
-            root: "px-0 sm:px-2",
-            container: "mx-auto max-w-none",
+            root: "px-0",
+            container: "site-header-bar mx-auto max-w-none px-0",
             leftSide: "flex-1",
             rightSide: "flex-1 items-center gap-0 sm:gap-3",
             menuButton: "size-10 p-0",
@@ -81,7 +81,7 @@ export function SiteFooter() {
           ? { paddingBottom: "calc(112px + env(safe-area-inset-bottom))" }
           : undefined
       }
-      className="mx-auto flex w-full max-w-[1024px] flex-wrap items-center justify-between gap-4 border-t px-6 py-8 text-xs text-muted-foreground sm:px-10"
+      className="site-container flex flex-wrap items-center justify-between gap-4 border-t py-8 text-xs text-muted-foreground"
     >
       <span>© {new Date().getFullYear()} Jack Rocca</span>
       <div className="flex items-center gap-6">

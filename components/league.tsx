@@ -81,6 +81,61 @@ const date = (value: string | number, full = false) =>
     day: "numeric",
     ...(full ? { hour: "numeric", minute: "2-digit" } : {}),
   });
+const money = (value: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value);
+const toastMotion = 400;
+function LeagueToast({
+  message,
+  tone,
+  onDismiss,
+}: {
+  message: string;
+  tone: "error" | "success";
+  onDismiss: () => void;
+}) {
+  const [shown, setShown] = useState(message);
+  const [shownTone, setShownTone] = useState(tone);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (message) {
+      setShown(message);
+      setShownTone(tone);
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setOpen(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setOpen(false);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const hide = window.setTimeout(() => setShown(""), reduce ? 200 : toastMotion);
+    return () => window.clearTimeout(hide);
+  }, [message, tone]);
+  if (!shown) return null;
+  return (
+    <div
+      className={`toast ${shownTone}`}
+      data-open={open}
+      role={shownTone === "error" ? "alert" : "status"}
+    >
+      <p>{shown}</p>
+      <CustomButton
+        variant="unstyled"
+        aria-label="Dismiss notification"
+        onClick={onDismiss}
+      >
+        <X size={16} />
+      </CustomButton>
+    </div>
+  );
+}
 export default function League() {
   const { ask, dialog: confirmationDialog } = useConfirmation();
   const [data, setData] = useState<AppView | null>(null),
@@ -321,82 +376,86 @@ export default function League() {
     Number(draft.superSpread) +
     Number(Boolean(draft.totalHelper)) +
     Number(draft.perfectPrediction);
-  return (
-    <div className="league-app">
-      {confirmationDialog}
-      {user && !touring && (
-        <div className="league-dock">
-          <BottomDrawer
-            title="Pick 4"
-            open={navigationOpen}
-            onOpenChange={setNavigationOpen}
-            classNames={{ content: "league-navigation" }}
-            trigger={
-              <CustomButton
-                variant="unstyled"
-                className="league-menu-trigger"
-                aria-label={`League menu: ${activePage.label}`}
-              >
-                <Image
-                  src="/nfl/league.png"
-                  alt=""
-                  width={24}
-                  height={28}
-                  className="league-menu-logo"
-                />
-                <span>{activePage.label}</span>
-                <ChevronUp size={16} />
-              </CustomButton>
-            }
+  // Chat keeps its composer on the bottom edge, so the league menu moves up beside the title there.
+  const chatting = tab === "chat";
+  const navigation = user && !touring && (
+    <BottomDrawer
+      title="Pick 4"
+      open={navigationOpen}
+      onOpenChange={setNavigationOpen}
+      classNames={{ content: "league-navigation" }}
+      trigger={
+        <CustomButton
+          variant="unstyled"
+          className="league-menu-trigger"
+          aria-label={`League menu: ${activePage.label}`}
+        >
+          <Image
+            src="/nfl/league.png"
+            alt=""
+            width={24}
+            height={28}
+            className="league-menu-logo"
+          />
+          {!chatting && <span>{activePage.label}</span>}
+          {chatting ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+        </CustomButton>
+      }
+    >
+      <nav aria-label="League navigation" className="league-menu-items">
+        {pages.map(({ value, label, icon: Icon }) => (
+          <CustomButton
+            key={value}
+            variant="unstyled"
+            aria-current={tab === value ? "page" : undefined}
+            onClick={() => {
+              setTab(value);
+              setNavigationOpen(false);
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
           >
-            <nav aria-label="League navigation" className="league-menu-items">
-              {pages.map(({ value, label, icon: Icon }) => (
-                <CustomButton
-                  key={value}
-                  variant="unstyled"
-                  aria-current={tab === value ? "page" : undefined}
-                  onClick={() => {
-                    setTab(value);
-                    setNavigationOpen(false);
-                    window.scrollTo({ top: 0, behavior: "instant" });
-                  }}
-                >
-                  <Icon size={19} />
-                  <span>{label}</span>
-                  {tab === value && <Check size={16} />}
-                </CustomButton>
-              ))}
-            </nav>
-            <div className="league-menu-account">
-              <CustomButton
-                variant="ghost"
-                leftIcon={UserRound}
-                onClick={() => {
-                  setNavigationOpen(false);
-                  setAccountOpen(true);
-                }}
-              >
-                Account settings
-              </CustomButton>
-              <CustomButton
-                variant="ghost"
-                aria-label="Sign out"
-                icon={LogOut}
-                disabled={busy}
-                onClick={() => {
-                  setNavigationOpen(false);
-                  void act(async () => {
-                    if (dirty && !(await ask("Sign out and discard unsaved picks?")))
-                      return;
-                    await api("logout", {});
-                    window.dispatchEvent(new Event("account-changed"));
-                    setDirty(false);
-                    await load(week);
-                  });
-                }}
-              />
-            </div>
-          </BottomDrawer>
+            <Icon size={19} />
+            <span>{label}</span>
+            {tab === value && <Check size={16} />}
+          </CustomButton>
+        ))}
+      </nav>
+      <div className="league-menu-account">
+        <CustomButton
+          variant="ghost"
+          leftIcon={UserRound}
+          onClick={() => {
+            setNavigationOpen(false);
+            setAccountOpen(true);
+          }}
+        >
+          Account settings
+        </CustomButton>
+        <CustomButton
+          variant="ghost"
+          aria-label="Sign out"
+          icon={LogOut}
+          disabled={busy}
+          onClick={() => {
+            setNavigationOpen(false);
+            void act(async () => {
+              if (dirty && !(await ask("Sign out and discard unsaved picks?"))) return;
+              await api("logout", {});
+              window.dispatchEvent(new Event("account-changed"));
+              setDirty(false);
+              await load(week);
+            });
+          }}
+        />
+      </div>
+    </BottomDrawer>
+  );
+  return (
+    <div className="league-app" data-tab={tab}>
+      {confirmationDialog}
+      {navigation && !chatting && (
+        <div className="league-dock">
+          {navigation}
           {tab === "board" && (
             <a
               className="mobile-card-jump"
@@ -410,24 +469,14 @@ export default function League() {
           )}
         </div>
       )}
-      {(error || notice) && (
-        <div
-          className={`toast ${error ? "error" : "success"}`}
-          role={error ? "alert" : "status"}
-        >
-          {error || notice}
-          <CustomButton
-            variant="unstyled"
-            aria-label="Dismiss notification"
-            onClick={() => {
-              setError("");
-              setNotice("");
-            }}
-          >
-            <X size={16} />
-          </CustomButton>
-        </div>
-      )}
+      <LeagueToast
+        message={error || notice}
+        tone={error ? "error" : "success"}
+        onDismiss={() => {
+          setError("");
+          setNotice("");
+        }}
+      />
       {!user ? (
         <SignInPage returnTo="/pick4" ready={data.authentication.ready} />
       ) : touring ? (
@@ -444,10 +493,31 @@ export default function League() {
         />
       ) : (
         <>
-          <main id="main-content" className="app-shell">
+          <main id="main-content" className="app-shell" data-page={tab}>
             <div className="board-toolbar">
               <h1>{activePage.label}</h1>
+              {chatting && <div className="league-dock inline">{navigation}</div>}
             </div>
+            {tab === "standings" && (
+              <section className="league-pot" aria-label="League pot">
+                <article className="league-pot-ticket">
+                  <header className="league-pot-stub">
+                    <span>Season {data.season}</span>
+                    <span>Pick 4</span>
+                  </header>
+                  <p className="league-pot-amount">{money(data.pot.dollars)}</p>
+                  <p className="league-pot-rule">Winner take all</p>
+                  <footer className="league-pot-stub">
+                    <span>
+                      {data.pot.players === 0
+                        ? "Buy-ins still coming in"
+                        : `${data.pot.players} ${data.pot.players === 1 ? "player" : "players"}`}
+                    </span>
+                    <span>{buyIn.amount} each</span>
+                  </footer>
+                </article>
+              </section>
+            )}
             {["board", "standings", "admin"].includes(tab) && (
               <div className="week-selector">
                 <CustomButton
@@ -1088,7 +1158,7 @@ export default function League() {
                 <section className="panel">
                   <div className="section-heading">
                     <h2>Week 1 buy-ins</h2>
-                    <span>$75 EACH</span>
+                    <span>{buyIn.amount} EACH</span>
                   </div>
                   {data.admin.pendingBuyIns.length ? (
                     <div className="buy-in-list">
@@ -1108,7 +1178,9 @@ export default function League() {
                                   userId: payment.userId,
                                 });
                                 await load(week);
-                                setNotice(`${payment.name}'s $75 buy-in is confirmed.`);
+                                setNotice(
+                                  `${payment.name}'s ${buyIn.amount} buy-in is confirmed.`,
+                                );
                               })
                             }
                           >

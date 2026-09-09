@@ -13,7 +13,8 @@ import {
   scoreEntry,
 } from "../lib/rules";
 import { parseFeed } from "../lib/feed";
-import { PICK_TYPES, Entry, Game, PickInput } from "../lib/types";
+import { PICK_TYPES, BUY_IN_DOLLARS, Entry, Game, PickInput, User } from "../lib/types";
+import { view } from "../lib/view";
 import { readFileSync } from "node:fs";
 const now = Date.parse("2026-09-08T20:00:00Z");
 function fixture() {
@@ -79,7 +80,10 @@ test("opening kickoff is Wednesday September 9 at 5:20 PM Pacific", () => {
 test("Week 1 pick deadline is the Sunday slate, not the Wednesday opener", () => {
   const week = initialState().weeks[0];
   assert.equal(deadline(week), Date.parse("2026-09-13T17:00:00Z"));
-  assert.equal(deadline(initialState().weeks[1]), openingKickoff(initialState().weeks[1]));
+  assert.equal(
+    deadline(initialState().weeks[1]),
+    openingKickoff(initialState().weeks[1]),
+  );
 });
 test("freeze is Wednesday 9 AM Pacific; winter DST handled", () => {
   const s = initialState();
@@ -129,6 +133,75 @@ test("a commissioner cannot confirm a nonexistent or already confirmed buy-in", 
   saveEntry(s, "one", input, now);
   confirmBuyIn(s, "one", now);
   assert.throws(() => confirmBuyIn(s, "one", now), /no pending/);
+});
+test("the league pot is winner-take-all from confirmed players", () => {
+  const { s, input } = fixture();
+  const one: User = {
+    id: "one",
+    name: "Ada",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  };
+  s.users.push(one);
+  saveEntry(s, "one", input, now);
+  assert.deepEqual(view(s, one, 1).pot, { players: 0, dollars: 0 });
+  confirmBuyIn(s, "one", now);
+  assert.deepEqual(view(s, one, 1).pot, { players: 1, dollars: BUY_IN_DOLLARS });
+  s.users.push({
+    id: "two",
+    name: "Bea",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  });
+  saveEntry(s, "two", input, now);
+  confirmBuyIn(s, "two", now);
+  assert.deepEqual(view(s, one, 1).pot, { players: 2, dollars: BUY_IN_DOLLARS * 2 });
+});
+test("a legacy card without a buy-in still counts toward the pot", () => {
+  const { s, input } = fixture();
+  const one: User = {
+    id: "one",
+    name: "Ada",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  };
+  s.users.push(one);
+  const entry = saveEntry(s, "one", input, now);
+  delete entry.buyIn;
+  assert.equal(buyInStatus(entry), "confirmed");
+  assert.deepEqual(view(s, one, 1).pot, { players: 1, dollars: BUY_IN_DOLLARS });
+});
+test("a pending Week 1 buy-in does not count toward the pot after a later card", () => {
+  const { s, input } = fixture();
+  const one: User = {
+    id: "one",
+    name: "Ada",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  };
+  s.users.push(one);
+  const week1 = saveEntry(s, "one", input, now);
+  s.entries.push({ ...week1, id: "later", week: 2, buyIn: undefined });
+  assert.equal(buyInStatus(s.entries.find((e) => e.week === 2)!), "confirmed");
+  assert.deepEqual(view(s, one, 2).pot, { players: 0, dollars: 0 });
+});
+test("a later-week card with no Week 1 entry still counts toward the pot", () => {
+  const { s, input } = fixture();
+  const one: User = {
+    id: "one",
+    name: "Ada",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  };
+  s.users.push(one);
+  const week1 = saveEntry(s, "one", input, now);
+  s.entries = [{ ...week1, id: "later", week: 2, buyIn: undefined }];
+  assert.deepEqual(view(s, one, 2).pot, { players: 1, dollars: BUY_IN_DOLLARS });
 });
 test("revision rejects an overwrite from a stale tab", () => {
   const { s, input } = fixture();

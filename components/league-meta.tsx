@@ -8,7 +8,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import type { PickType } from "@/lib/types";
+import { BUY_IN_DOLLARS, type PickType } from "@/lib/types";
 
 export const labels: Record<PickType, string> = {
   favorite: "Favorite",
@@ -72,7 +72,8 @@ export const powerups: {
 ];
 
 export const buyIn = {
-  amount: "$75",
+  dollars: BUY_IN_DOLLARS,
+  amount: `$${BUY_IN_DOLLARS}`,
   handle: "@jrocca",
   url: "https://venmo.com/u/jrocca",
   qr: "/nfl/venmo-jrocca.png",

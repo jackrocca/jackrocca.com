@@ -1,4 +1,5 @@
 export const SEASON = 2026;
+export const BUY_IN_DOLLARS = 75;
 export const PICK_TYPES = ["favorite", "underdog", "over", "under"] as const;
 export type PickType = (typeof PICK_TYPES)[number];
 export type Team = {

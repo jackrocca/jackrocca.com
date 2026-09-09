@@ -4,7 +4,7 @@ export default function Privacy() {
   return (
     <main
       id="main-content"
-      className="mx-auto max-w-3xl px-6 py-16 [&_h2]:mb-3 [&_h2]:mt-9 [&_h2]:text-xl [&_h2]:font-medium [&_p]:text-sm [&_p]:leading-7 [&_p]:text-muted-foreground"
+      className="site-container py-16 [&_h2]:mb-3 [&_h2]:mt-9 [&_h2]:text-xl [&_h2]:font-medium [&_p]:max-w-3xl [&_p]:text-sm [&_p]:leading-7 [&_p]:text-muted-foreground"
     >
       <Link href="/" className="text-sm">
         ← Jack Rocca

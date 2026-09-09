@@ -122,16 +122,27 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-.site-container {
-  width: 100%;
-  max-width: 1024px;
-  margin-inline: auto;
-  padding-inline: 24px;
+/* One page frame: header, footer, personal pages and the league shell share
+   the same outer width and edge inset so their content edges line up. */
+:root {
+  --page-max: 1280px;
+  --page-edge: 20px;
 }
 @media (min-width: 640px) {
-  .site-container {
-    padding-inline: 40px;
+  :root {
+    --page-edge: 32px;
   }
+}
+@media (min-width: 1024px) {
+  :root {
+    --page-edge: 40px;
+  }
+}
+.site-container {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--page-edge);
 }
 body {
   min-height: 100svh;
@@ -395,12 +406,20 @@ body {
   --signature-width: 112px;
   --signature-scale: 0.84;
   --signature-height: 66px;
-  --header-edge: 16px;
+  /* The artwork's ink starts ~2.5% into its box; offset it so the ink, not the
+     transparent box, sits on the content edge. */
+  --signature-ink: calc(var(--signature-width) * 0.025 * var(--signature-scale));
+  --header-edge: calc(var(--page-edge) - var(--signature-ink));
   position: relative;
   container-type: inline-size;
   width: 100%;
-  max-width: 1800px;
+  max-width: var(--page-max);
   margin-inline: auto;
+}
+/* The 40px menu button holds a 20px glyph; pull the bar in so the glyph's
+   edge lands on the content edge. */
+.site-header-bar {
+  padding-inline: calc(var(--page-edge) - 10px);
 }
 .site-signature {
   position: absolute;
@@ -456,7 +475,6 @@ body {
     --signature-width: 208px;
     --signature-scale: 0.86;
     --signature-height: 76px;
-    --header-edge: 24px;
   }
   .site-project-mark {
     width: 64px;
