@@ -8,8 +8,9 @@ import {
   normalizeChatBody,
   postChatMessage,
 } from "../lib/chat";
+import { chatTimeline, dividerLabel } from "../lib/chat-timeline";
 import { initialState } from "../lib/store";
-import type { User } from "../lib/types";
+import type { ChatMessage, User } from "../lib/types";
 
 function user(id: string, name: string): User {
   return {
@@ -50,4 +51,35 @@ test("chat keeps a bounded history and pages from a cursor", () => {
   const missing = chatView(state, chat, first.id);
   assert.equal(missing.reset, true);
   assert.ok(!JSON.stringify(page).includes("email"));
+});
+
+test("chat timeline groups a run of messages and marks quiet spells", () => {
+  const base = Date.parse("2026-09-09T19:00:00Z");
+  const at = (offsetMinutes: number, userId: string, id: string): ChatMessage => ({
+    id,
+    userId,
+    body: id,
+    createdAt: new Date(base + offsetMinutes * 60_000).toISOString(),
+  });
+  const items = chatTimeline([
+    at(0, "ada", "a1"),
+    at(1, "ada", "a2"),
+    at(2, "jack", "j1"),
+    at(30, "jack", "j2"),
+    at(31, "jack", "j3"),
+  ]);
+  assert.deepEqual(
+    items.map((item) =>
+      item.kind === "divider"
+        ? "divider"
+        : `${item.message.id}${item.first ? " first" : ""}${item.last ? " last" : ""}`,
+    ),
+    ["divider", "a1 first", "a2 last", "j1 first last", "divider", "j2 first", "j3 last"],
+  );
+  assert.deepEqual(chatTimeline([]), []);
+  const noon = Date.parse("2026-09-09T19:00:00Z");
+  assert.equal(dividerLabel(noon, noon + 60_000), "Today 12:00 PM");
+  assert.equal(dividerLabel(noon, noon + 86_400_000), "Yesterday 12:00 PM");
+  assert.equal(dividerLabel(noon, noon + 3 * 86_400_000), "Wednesday 12:00 PM");
+  assert.equal(dividerLabel(noon, noon + 30 * 86_400_000), "Sep 9, 12:00 PM");
 });

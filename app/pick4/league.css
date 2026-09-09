@@ -2588,121 +2588,330 @@
 .league-app .photo-field-button {
   min-height: 40px;
 }
+/* ------------------------------------------------------------------ */
+/* Chat: the pane fills the viewport, only the thread scrolls, and the   */
+/* composer never moves. Runs from one voice share flat inner corners.  */
+/* ------------------------------------------------------------------ */
 .league-app .chat-page {
+  --chat-radius: 18px;
+  --chat-nub: 5px;
+  --chat-other: color-mix(in srgb, var(--foreground) 5.5%, white);
+  --chat-ring: color-mix(in srgb, var(--league-teal) 18%, transparent);
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  min-height: calc(100dvh - 280px);
+  height: var(--chat-height, calc(100dvh - 280px));
+  min-height: 360px;
+  max-width: 760px;
 }
 .league-app .chat-thread {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  padding: 6px 6px 10px 2px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 14%) transparent;
+  /* Messages slip under the edges instead of clipping against them. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 18px,
+    black calc(100% - 10px),
+    transparent
+  );
+}
+.league-app .chat-thread-inner {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  transition: opacity 180ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+  }
+}
+.league-app .chat-thread-inner.empty {
+  margin: auto;
+}
+.league-app .chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 300px;
+  padding: 32px 24px;
+  text-align: center;
+}
+.league-app .chat-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+}
+.league-app .chat-empty h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 550;
+  letter-spacing: -0.2px;
+}
+.league-app .chat-empty p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.league-app .chat-divider {
+  align-self: center;
+  margin: 20px 0 10px;
+  color: var(--league-muted);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.league-app .chat-divider:first-child {
+  margin-top: 6px;
 }
 .league-app .chat-message {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 10px;
-  max-width: min(100%, 640px);
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: #fff;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 6%);
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: end;
+  margin-top: 2px;
+  transform-origin: bottom left;
+}
+.league-app .chat-message.first {
+  margin-top: 10px;
+}
+.league-app .chat-divider + .chat-message {
+  margin-top: 0;
 }
 .league-app .chat-message.own {
-  background: var(--league-teal-soft);
-  margin-left: auto;
-  grid-template-columns: minmax(0, 1fr) 30px;
+  grid-template-columns: minmax(0, 1fr);
+  transform-origin: bottom right;
 }
-.league-app .chat-message.own .avatar {
-  grid-column: 2;
-  grid-row: 1;
+/* Only arrivals after the thread opened animate; the backlog is simply there. */
+.league-app .chat-message.fresh {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
 }
-.league-app .chat-message.own > div {
-  grid-column: 1;
-  grid-row: 1;
-}
-.league-app .chat-message header {
+.league-app .chat-gutter {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 4px;
+  width: 28px;
+  height: 28px;
 }
-.league-app .chat-message strong {
-  font-size: 12px;
-  font-weight: 650;
+.league-app .chat-message .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
 }
-.league-app .chat-message time {
+.league-app .chat-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.league-app .chat-message.own .chat-body {
+  align-items: flex-end;
+}
+.league-app .chat-author {
+  margin: 0 0 3px 12px;
   color: var(--league-muted);
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
 }
-.league-app .chat-message p {
-  margin: 0;
+.league-app .chat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(82%, 540px);
+}
+.league-app .chat-message.own .chat-row {
+  flex-direction: row-reverse;
+}
+.league-app .chat-bubble {
+  min-width: 0;
+  padding: 8px 12px 9px;
+  border-radius: var(--chat-radius);
+  background: var(--chat-other);
   color: var(--ink);
+}
+.league-app .chat-bubble p {
+  margin: 0;
+  color: inherit;
   font-size: 14px;
   line-height: 1.45;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.league-app .chat-message.own .chat-bubble {
+  background: var(--league-teal);
+  color: #fff;
+}
+.league-app .chat-message:not(.own):not(.first) .chat-bubble {
+  border-top-left-radius: var(--chat-nub);
+}
+.league-app .chat-message:not(.own):not(.last) .chat-bubble {
+  border-bottom-left-radius: var(--chat-nub);
+}
+.league-app .chat-message.own:not(.first) .chat-bubble {
+  border-top-right-radius: var(--chat-nub);
+}
+.league-app .chat-message.own:not(.last) .chat-bubble {
+  border-bottom-right-radius: var(--chat-nub);
+}
+.league-app .chat-time {
+  flex-shrink: 0;
+  color: var(--league-muted);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .league-app .chat-message:hover .chat-time {
+    opacity: 1;
+  }
+}
+.league-app .chat-jump {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 62px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px 0 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 16%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 6px) scale(0.96);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out),
+    visibility 0s linear 160ms;
+}
+.league-app .chat-jump[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+.league-app .chat-jump:active:not(:disabled) {
+  transform: translate(-50%, 0) scale(0.96);
+}
 .league-app .chat-composer {
-  position: sticky;
-  z-index: 20;
-  bottom: calc(88px + env(safe-area-inset-bottom));
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 22px;
-  background: rgb(255 255 255 / 94%);
+  gap: 6px;
+  margin-top: 6px;
+  padding: 5px 5px 5px 6px;
+  border-radius: 24px;
+  background: var(--paper);
   box-shadow:
-    0 8px 28px rgb(0 0 0 / 8%),
-    0 0 0 1px rgb(0 0 0 / 6%);
-  backdrop-filter: blur(16px);
+    0 0 0 1px rgb(0 0 0 / 9%),
+    0 1px 2px rgb(0 0 0 / 4%);
+  transition: box-shadow 160ms ease;
 }
-.league-app .chat-composer-field {
-  flex: 1;
-  margin: 0;
+.league-app .chat-composer:focus-within {
+  box-shadow:
+    0 0 0 1px var(--league-teal),
+    0 0 0 4px var(--chat-ring);
 }
 .league-app .chat-composer textarea {
+  flex: 1;
   display: block;
   width: 100%;
-  min-height: 44px;
-  max-height: 140px;
-  resize: none;
+  min-height: 38px;
+  max-height: 160px;
   margin: 0;
-  padding: 11px 14px;
+  padding: 9px 8px 9px 12px;
   border: 0;
-  border-radius: 14px;
-  background: var(--muted);
+  border-radius: 19px;
+  background: transparent;
   color: var(--ink);
+  font: inherit;
+  font-size: 14px;
   line-height: 1.4;
+  resize: none;
+  outline: none;
   field-sizing: content;
+  scrollbar-width: thin;
 }
-.league-app .chat-composer textarea:focus {
-  outline: 2px solid var(--league-teal);
-  outline-offset: 2px;
-  box-shadow: none;
+.league-app .chat-composer textarea::placeholder {
+  color: #9c9c9c;
+}
+.league-app .chat-count {
+  align-self: center;
+  padding: 0 2px;
+  color: var(--league-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 .league-app .chat-send {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--league-teal);
   color: #fff;
-  flex-shrink: 0;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms var(--ease-out);
 }
 .league-app .chat-send:hover:not(:disabled) {
   background: color-mix(in srgb, var(--league-teal) 86%, black);
 }
-.league-app .chat-send:disabled {
-  opacity: 0.35;
+.league-app .chat-send:active:not(:disabled) {
+  transform: scale(0.92);
 }
-@media (prefers-reduced-motion: reduce) {
-  .league-app .chat-message {
-    box-shadow: none;
+.league-app .chat-send:disabled {
+  background: #e9e9e9;
+  color: #a3a3a3;
+  opacity: 1;
+  cursor: default;
+}
+@media (max-width: 640px) {
+  .league-app .chat-page {
+    max-width: none;
+    min-height: 320px;
+  }
+  .league-app .chat-thread {
+    padding-inline: 0;
+  }
+  .league-app .chat-row {
+    max-width: min(86%, 540px);
+  }
+  .league-app .chat-bubble p {
+    font-size: 15px;
+  }
+  .league-app .chat-composer textarea {
+    /* 16px keeps iOS Safari from zooming the page when the field takes focus. */
+    font-size: 16px;
+    min-height: 40px;
+    border-radius: 20px;
+  }
+  .league-app .chat-send {
+    width: 40px;
+    height: 40px;
   }
 }
 
