@@ -256,6 +256,48 @@ test("Week 1 stays punishment-free after the Wednesday opener", () => {
   assert.equal(updated.late, false);
   assert.equal(updated.picks.under.gameId, replacement);
 });
+test("a started game already on a card stays locked while other picks stay editable", () => {
+  const { s, w, input } = fixture();
+  saveEntry(s, "one", input, now);
+  const afterOpener = openingKickoff(w) + 1;
+  const replacement = w.games[4].id;
+  assert.throws(
+    () =>
+      saveEntry(
+        s,
+        "one",
+        { ...input, picks: { ...input.picks, favorite: replacement }, revision: 1 },
+        afterOpener,
+      ),
+    /started game on your card is locked/,
+  );
+  const updated = saveEntry(
+    s,
+    "one",
+    { ...input, picks: { ...input.picks, under: replacement }, revision: 1 },
+    afterOpener,
+  );
+  assert.equal(updated.picks.favorite.gameId, input.picks.favorite);
+  assert.equal(updated.picks.under.gameId, replacement);
+  assert.equal(updated.late, false);
+});
+test("a card that missed the opener cannot add it after kickoff", () => {
+  const { s, w, input } = fixture();
+  input.picks = Object.fromEntries(
+    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+  ) as PickInput["picks"];
+  saveEntry(s, "one", input, now);
+  assert.throws(
+    () =>
+      saveEntry(
+        s,
+        "one",
+        { ...input, picks: { ...input.picks, favorite: w.games[0].id }, revision: 1 },
+        openingKickoff(w) + 1,
+      ),
+    /started/,
+  );
+});
 test("late entry may only choose unstarted games, locks immediately", () => {
   const { s, w, input } = fixture();
   const time = deadline(w) + 1;

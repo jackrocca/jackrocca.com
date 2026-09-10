@@ -32,7 +32,6 @@ import { Checkbox } from "@/ui/primitives/checkbox";
 import { SignInPage } from "@/components/sign-in-page";
 import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
 import { BottomDrawer } from "@/ui/components/BottomDrawer";
-import { Spinner } from "@/ui/components/Spinner";
 import { LeagueChat } from "@/components/league-chat";
 import { PlayerAvatar, ProfilePhotoField } from "@/components/player-avatar";
 import {
@@ -52,7 +51,7 @@ import {
 } from "@/components/league-onboarding";
 import type { AppView } from "@/lib/view";
 import { PICK_TYPES, PickInput, PickType } from "@/lib/types";
-import { signed } from "@/lib/rules";
+import { gameOpen, signed } from "@/lib/rules";
 const blank = (): PickInput => ({
   week: 1,
   picks: { favorite: "", underdog: "", over: "", under: "" },
@@ -277,19 +276,24 @@ export default function League() {
       setNotice("Your four picks are saved.");
     });
   }
-  if (!data)
+  if (!data?.user)
     return (
-      <main id="main-content" className="league-app loading" aria-busy="true">
-        <Spinner size="lg" />
-        <div className="brand-mark">4</div>
-        <h1>Pick 4</h1>
-        <p>{error || "Getting the league ready…"}</p>
-        {error && (
-          <CustomButton variant="unstyled" onClick={() => load(null)}>
-            Try again
-          </CustomButton>
-        )}
-      </main>
+      <div className="league-app">
+        <SignInPage
+          returnTo="/pick4"
+          ready={data?.authentication.ready ?? false}
+          loading={!data && !error}
+          error={error}
+          onRetry={
+            !data && error
+              ? () => {
+                  setError("");
+                  void load(null);
+                }
+              : undefined
+          }
+        />
+      </div>
     );
   const w = data.week,
     user = data.user,
@@ -297,6 +301,12 @@ export default function League() {
     locked = tick >= w.deadline && Boolean(own),
     late = tick >= w.deadline && !own,
     canPick = Boolean(user && w.publishedAt && !locked),
+    slotLocked = (type: PickType) => {
+      const savedId = own?.picks?.[type]?.gameId;
+      if (!savedId) return false;
+      const game = w.games.find((item) => item.id === savedId);
+      return Boolean(game && !gameOpen(game, tick));
+    },
     count = PICK_TYPES.filter((t) => draft.picks[t]).length,
     buyInPending = week === 1 && own?.buyIn?.status === "pending";
   // Week 1 progress, independent of which week is being viewed.
@@ -353,7 +363,7 @@ export default function League() {
   const updated = w.fetchedAt ? date(w.fetchedAt, true) : "Not yet synced";
   const stale = !w.fetchedAt || tick - Date.parse(w.fetchedAt) > 5 * 60_000;
   function choose(type: PickType, gameId: string) {
-    if (!canPick) return;
+    if (!canPick || slotLocked(type)) return;
     setDirty(true);
     setDraft((d) => ({
       ...d,
@@ -477,9 +487,7 @@ export default function League() {
           setNotice("");
         }}
       />
-      {!user ? (
-        <SignInPage returnTo="/pick4" ready={data.authentication.ready} />
-      ) : touring ? (
+      {touring ? (
         <WelcomeTour
           user={user}
           sampleGame={sampleGame}
@@ -717,16 +725,22 @@ export default function League() {
                                     aria-pressed={selectedThis}
                                     aria-label={`${labels[t]}: ${unavailable ? "line unavailable" : line}, ${g.away.short} at ${g.home.short}`}
                                     title={
-                                      conflict
-                                        ? "One pick per game"
-                                        : closed
-                                          ? "Game locked"
-                                          : !w.publishedAt
-                                            ? "Preview — lines not yet published"
-                                            : labels[t]
+                                      slotLocked(t) && !selectedThis
+                                        ? "A started game on your card is locked"
+                                        : conflict
+                                          ? "One pick per game"
+                                          : closed
+                                            ? "Game locked"
+                                            : !w.publishedAt
+                                              ? "Preview — lines not yet published"
+                                              : labels[t]
                                     }
                                     disabled={
-                                      !canPick || closed || conflict || unavailable
+                                      !canPick ||
+                                      closed ||
+                                      conflict ||
+                                      unavailable ||
+                                      (slotLocked(t) && !selectedThis)
                                     }
                                     onClick={() => choose(t, g.id)}
                                   >
@@ -766,7 +780,7 @@ export default function League() {
                         </span>
                       </div>
                       <div className="progress">
-                        <span style={{ width: `${count * 25}%` }} />
+                        <span style={{ transform: `scaleX(${count / 4})` }} />
                       </div>
                       {PICK_TYPES.map((t) => {
                         const g = w.games.find((g) => g.id === draft.picks[t]);
@@ -795,15 +809,26 @@ export default function League() {
                                 </span>
                               )}
                             </div>
-                            {g && !locked && (
-                              <CustomButton
-                                variant="unstyled"
-                                className="icon-button"
-                                aria-label={`Remove ${labels[t]} pick`}
-                                onClick={() => choose(t, "")}
+                            {g && slotLocked(t) ? (
+                              <span
+                                className="icon-button locked-pick"
+                                title="Game locked"
+                                aria-label={`${labels[t]} pick locked`}
                               >
-                                <X size={14} />
-                              </CustomButton>
+                                <LockKeyhole size={14} />
+                              </span>
+                            ) : (
+                              g &&
+                              !locked && (
+                                <CustomButton
+                                  variant="unstyled"
+                                  className="icon-button"
+                                  aria-label={`Remove ${labels[t]} pick`}
+                                  onClick={() => choose(t, "")}
+                                >
+                                  <X size={14} />
+                                </CustomButton>
+                              )
                             )}
                           </div>
                         );
@@ -968,14 +993,18 @@ export default function League() {
                                     p.wins === s.wins,
                                 ) + 1}
                           </td>
-                          <td className="player-cell">
-                            <PlayerAvatar
-                              name={s.name}
-                              userId={s.id}
-                              revision={s.avatarRevision}
-                            />
-                            <b>{s.name}</b>
-                            {s.id === user.id && <small className="you-label">YOU</small>}
+                          <td>
+                            <div className="player-cell">
+                              <PlayerAvatar
+                                name={s.name}
+                                userId={s.id}
+                                revision={s.avatarRevision}
+                              />
+                              <b>{s.name}</b>
+                              {s.id === user.id && (
+                                <small className="you-label">YOU</small>
+                              )}
+                            </div>
                           </td>
                           <td className="points">{s.points}</td>
                           <td>

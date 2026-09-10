@@ -2,6 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import logoArtwork from "@/assets/brand/jack-rocca-logo-teal.original.png";
+import monogramArtwork from "@/assets/brand/jr-monogram-teal-transparent.png";
 import { site } from "@/lib/site";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, UserRound, ChevronRight } from "lucide-react";
@@ -11,14 +12,31 @@ export function SiteHeader() {
   const pathname = usePathname();
   const isPick4 = pathname === "/pick4" || pathname.startsWith("/pick4/");
   const logo = (
-    <Link href="/" aria-label="Jack Rocca home" className="site-signature">
-      <Image
-        src={logoArtwork}
-        alt="Jack Rocca"
-        sizes="(min-width: 640px) 208px, (min-width: 375px) 156px, 112px"
-        preload
-        className="h-full w-full object-cover"
-      />
+    <Link
+      href={isPick4 ? "/projects" : "/"}
+      aria-label={isPick4 ? "Projects" : "Jack Rocca home"}
+      className="site-signature"
+    >
+      <span className="site-signature-stack">
+        <span className="site-signature-wordmark">
+          <Image
+            src={logoArtwork}
+            alt=""
+            sizes="(min-width: 640px) 208px, (min-width: 375px) 156px, 112px"
+            preload
+            className="h-full w-full object-cover"
+          />
+        </span>
+        <span className="site-signature-monogram" aria-hidden="true">
+          <Image
+            src={monogramArtwork}
+            alt=""
+            sizes="56px"
+            preload
+            className="h-full w-full object-contain"
+          />
+        </span>
+      </span>
     </Link>
   );
   return (
@@ -29,7 +47,6 @@ export function SiteHeader() {
           <Image src="/nfl/league.png" alt="NFL" width={64} height={64} loading="eager" />
         </div>
         <PageHeader
-          key={pathname}
           height={88}
           classNames={{
             root: "px-0",

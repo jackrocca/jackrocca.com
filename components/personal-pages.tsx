@@ -7,7 +7,7 @@ export function Projects() {
       <h1 className="sr-only">Projects</h1>
       <Link
         href="/pick4"
-        className="group flex max-w-sm items-center gap-5 rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.06)] transition-[background-color,box-shadow] duration-200 hover:bg-muted/40 hover:shadow-[0_4px_20px_rgba(0,0,0,0.07),0_0_0_1px_rgba(0,0,0,0.08)]"
+        className="group flex max-w-sm items-center gap-5 rounded-2xl bg-card p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04),0_0_0_1px_rgba(0,0,0,0.06)] transition-colors duration-200 [@media(hover:hover)_and_(pointer:fine)]:hover:bg-muted/40"
       >
         <Image
           src="/nfl/league.png"

@@ -15,7 +15,10 @@ export const metadata: Metadata = {
   },
   description: "Photographs and projects by Jack Rocca.",
   robots: { index: false, follow: false },
-  icons: { icon: "/icon.svg" },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "192x192" }],
+    apple: [{ url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" }],
+  },
   openGraph: {
     title: "Jack Rocca",
     description: "Photographs and projects by Jack Rocca.",

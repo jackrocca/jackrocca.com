@@ -108,7 +108,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
             data-slot="bottom-drawer-backdrop"
             style={{ width: viewportWidth }}
             className={cn(
-              "fixed inset-y-0 left-0 z-[9999] w-screen bg-black/40 opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0 motion-reduce:transition-none dark:bg-black/60",
+              "fixed inset-y-0 left-0 z-[9999] w-screen bg-black/40 opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity duration-[250ms] ease-[cubic-bezier(0.32,0.72,0,1)] data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0 motion-reduce:transition-none dark:bg-black/60",
               classNames?.overlay,
             )}
           />
@@ -121,7 +121,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
               className={cn(
                 "relative flex w-[95%] min-w-0 flex-col rounded-t-[10px] bg-white dark:bg-zinc-900",
                 "dark:border-t dark:border-zinc-800",
-                "pointer-events-auto max-h-[90dvh] max-w-[500px] transform-[translateY(var(--drawer-swipe-movement-y,0px))] transition-transform duration-300 ease-out outline-none data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:duration-0 motion-reduce:transition-none",
+                "pointer-events-auto max-h-[90dvh] max-w-[500px] transform-[translateY(var(--drawer-swipe-movement-y,0px))] transition-transform duration-[250ms] ease-[cubic-bezier(0.32,0.72,0,1)] outline-none data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:duration-0 motion-reduce:transition-none",
                 classNames?.content,
                 {
                   "pt-6": !noHeader,
