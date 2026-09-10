@@ -386,7 +386,7 @@ export default function League() {
     Number(draft.superSpread) +
     Number(Boolean(draft.totalHelper)) +
     Number(draft.perfectPrediction);
-  // Chat keeps its composer on the bottom edge, so the league menu moves up beside the title there.
+  // Chat keeps its composer on the bottom edge, so the league menu sits beside it.
   const chatting = tab === "chat";
   const navigation = user && !touring && (
     <BottomDrawer
@@ -407,8 +407,12 @@ export default function League() {
             height={28}
             className="league-menu-logo"
           />
-          {!chatting && <span>{activePage.label}</span>}
-          {chatting ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          {!chatting && (
+            <>
+              <span>{activePage.label}</span>
+              <ChevronUp size={16} />
+            </>
+          )}
         </CustomButton>
       }
     >
@@ -502,10 +506,7 @@ export default function League() {
       ) : (
         <>
           <main id="main-content" className="app-shell" data-page={tab}>
-            <div className="board-toolbar">
-              <h1>{activePage.label}</h1>
-              {chatting && <div className="league-dock inline">{navigation}</div>}
-            </div>
+            <h1 className="sr-only">{activePage.label}</h1>
             {tab === "standings" && (
               <section className="league-pot" aria-label="League pot">
                 <article className="league-pot-ticket">
@@ -1083,6 +1084,7 @@ export default function League() {
                 onBusy={setBusy}
                 onError={setError}
                 onSent={() => setReached((r) => ({ ...r, chatted: true }))}
+                dock={<div className="league-dock inline">{navigation}</div>}
               />
             )}
             {tab === "history" && (

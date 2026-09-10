@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, MessagesSquare } from "lucide-react";
 import { CustomButton } from "@/ui/components/CustomButton";
 import { PlayerAvatar } from "@/components/player-avatar";
@@ -27,12 +27,14 @@ export function LeagueChat({
   onBusy,
   onError,
   onSent,
+  dock,
 }: {
   userId: string;
   busy: boolean;
   onBusy: (busy: boolean) => void;
   onError: (message: string) => void;
   onSent?: () => void;
+  dock?: ReactNode;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -268,48 +270,51 @@ export function LeagueChat({
         {unseen === 1 ? "1 new message" : `${unseen} new messages`}
         <ArrowDown size={14} strokeWidth={2.25} />
       </CustomButton>
-      <form
-        className="chat-composer"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void send();
-        }}
-      >
-        <textarea
-          ref={input}
-          name="body"
-          rows={1}
-          maxLength={MAX_BODY}
-          value={draft}
-          placeholder="Message the league"
-          aria-label="Message the league"
-          autoComplete="off"
-          enterKeyHint="send"
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-              e.preventDefault();
-              void send();
-            }
+      <div className="chat-bar">
+        {dock}
+        <form
+          className="chat-composer"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void send();
           }}
-        />
-        {draft.length >= COUNTER_AT && (
-          <span className="chat-count" aria-live="polite">
-            {remaining}
-          </span>
-        )}
-        <CustomButton
-          type="submit"
-          variant="unstyled"
-          className="chat-send"
-          disabled={busy || !draft.trim()}
-          aria-label="Send message"
-          // Keep focus (and the mobile keyboard) in the textarea when tapping send.
-          onPointerDown={(e) => e.preventDefault()}
         >
-          <ArrowUp size={16} strokeWidth={2.5} />
-        </CustomButton>
-      </form>
+          <textarea
+            ref={input}
+            name="body"
+            rows={1}
+            maxLength={MAX_BODY}
+            value={draft}
+            placeholder="Message the league"
+            aria-label="Message the league"
+            autoComplete="off"
+            enterKeyHint="send"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                void send();
+              }
+            }}
+          />
+          {draft.length >= COUNTER_AT && (
+            <span className="chat-count" aria-live="polite">
+              {remaining}
+            </span>
+          )}
+          <CustomButton
+            type="submit"
+            variant="unstyled"
+            className="chat-send"
+            disabled={busy || !draft.trim()}
+            aria-label="Send message"
+            // Keep focus (and the mobile keyboard) in the textarea when tapping send.
+            onPointerDown={(e) => e.preventDefault()}
+          >
+            <ArrowUp size={16} strokeWidth={2.5} />
+          </CustomButton>
+        </form>
+      </div>
     </section>
   );
 }
