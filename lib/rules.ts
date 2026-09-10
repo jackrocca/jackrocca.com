@@ -35,7 +35,8 @@ function weekdayInLosAngeles(time: number) {
 export function deadline(week: Week) {
   const times = kickoffs(week);
   // Week 1 2026: waive the Wednesday/Thursday openers. Cards stay unlocked and
-  // punishment-free until the Sunday slate, while started games remain unpickable.
+  // punishment-free until the Sunday slate. Started games stay unpickable, and
+  // a started game already on a saved card stays locked in that slot.
   if (week.number === 1) {
     const sunday = times.filter((time) => weekdayInLosAngeles(time) === "Sun");
     if (sunday.length) return Math.min(...sunday);
@@ -125,8 +126,20 @@ export function saveEntry(
   if (new Set(PICK_TYPES.map((t) => input.picks[t])).size !== 4)
     throw new AppError("Choose four different games.");
   for (const type of PICK_TYPES) {
-    const g = week.games.find((g) => g.id === input.picks[type]);
-    if (!g || !gameOpen(g, now))
+    const gameId = input.picks[type];
+    const previousId = old?.picks[type].gameId;
+    const previous = previousId
+      ? week.games.find((game) => game.id === previousId)
+      : undefined;
+    // A started game already on the card stays in that slot; every other pick
+    // must still be an unstarted game so Week 1 cards can edit around the opener.
+    if (previous && !gameOpen(previous, now)) {
+      if (gameId !== previousId)
+        throw new AppError("A started game on your card is locked.");
+      continue;
+    }
+    const selected = week.games.find((game) => game.id === gameId);
+    if (!selected || !gameOpen(selected, now))
       throw new AppError(
         "A selected game has started or is unavailable. Choose another game.",
       );

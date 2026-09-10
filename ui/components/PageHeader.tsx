@@ -75,7 +75,7 @@ export const PageHeader: ReactFC<PageHeaderProps> = ({
       }}
       className={cn(
         "z-30 flex w-full items-center justify-between",
-        "backdrop-blur-xl transition-[background-color,color,border-color,box-shadow,opacity,transform] duration-200",
+        "backdrop-blur-xl",
         "text-foreground/80",
         {
           "r-0 dark:bg-background/80 fixed top-0 left-0 shadow-sm": applyFixed,

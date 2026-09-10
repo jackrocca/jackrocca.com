@@ -235,7 +235,7 @@ export function Rules({
               deadline is the first kickoff of the week. For Week {weekNumber}, that’s{" "}
               {deadlineText} PT.
               {weekNumber === 1 &&
-                " Week 1 is the one exception: the Wednesday and Thursday opening games don’t lock your card, so you have until the Sunday games. You still can’t pick a game that has already started."}
+                " Week 1 is the one exception: the Wednesday and Thursday opening games don’t lock your card, so you have until the Sunday games. You still can’t pick a game that has already started, and a started game already on your card stays locked."}
             </span>
           </li>
           <li>

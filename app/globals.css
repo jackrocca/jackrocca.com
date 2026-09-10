@@ -75,7 +75,6 @@
   *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
   }
 }
 
@@ -284,10 +283,15 @@ body {
 .site-menu-link > svg:last-child {
   color: var(--muted-foreground);
 }
-.site-menu-link:hover,
 .site-menu-link[aria-current="page"] {
   background: color-mix(in srgb, var(--brand-teal) 6%, white);
   color: var(--brand-teal);
+}
+@media (hover: hover) and (pointer: fine) {
+  .site-menu-link:hover {
+    background: color-mix(in srgb, var(--brand-teal) 6%, white);
+    color: var(--brand-teal);
+  }
 }
 .sign-in-screen {
   display: grid;
@@ -406,6 +410,9 @@ body {
   --signature-width: 112px;
   --signature-scale: 0.84;
   --signature-height: 66px;
+  --monogram-size: 52px;
+  --monogram-ink: calc(var(--monogram-size) * 0.12);
+  --header-ease: cubic-bezier(0.23, 1, 0.32, 1);
   /* The artwork's ink starts ~2.5% into its box; offset it so the ink, not the
      transparent box, sits on the content edge. */
   --signature-ink: calc(var(--signature-width) * 0.025 * var(--signature-scale));
@@ -430,12 +437,71 @@ body {
   align-items: center;
   width: var(--signature-width);
   height: var(--signature-height);
+  clip-path: inset(0 0 0 0);
   transform: translateX(calc(50cqw - 50%)) scale(1);
   transform-origin: left center;
-  transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition:
+    transform 220ms var(--header-ease),
+    clip-path 220ms var(--header-ease);
+}
+.site-signature-stack {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.site-signature-wordmark,
+.site-signature-monogram {
+  display: block;
+  pointer-events: none;
+}
+.site-signature-wordmark {
+  position: absolute;
+  inset: 0;
+  transform: scale(1);
+  transform-origin: left center;
+  transition:
+    opacity 220ms var(--header-ease),
+    transform 220ms var(--header-ease);
+}
+.site-signature-monogram {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--monogram-size);
+  height: var(--monogram-size);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.92);
+  transform-origin: left center;
+  transition:
+    opacity 220ms var(--header-ease),
+    transform 220ms var(--header-ease);
 }
 .site-header-frame[data-project="pick4"] .site-signature {
   transform: translateX(var(--header-edge)) scale(var(--signature-scale));
+}
+@media (max-width: 639px) {
+  .site-header-frame[data-project="pick4"] {
+    --header-edge: calc(var(--page-edge) - var(--monogram-ink));
+  }
+  .site-header-frame[data-project="pick4"] .site-signature {
+    transform: translateX(var(--header-edge)) scale(1);
+    clip-path: inset(0 calc(100% - var(--monogram-size)) 0 0);
+  }
+  .site-header-frame[data-project="pick4"] .site-signature-wordmark,
+  .site-header-frame[data-project="pick4"] .site-signature-monogram {
+    transition:
+      opacity 220ms var(--header-ease),
+      transform 220ms var(--header-ease);
+  }
+  .site-header-frame[data-project="pick4"] .site-signature-wordmark {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  .site-header-frame[data-project="pick4"] .site-signature-monogram {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
 }
 .site-project-mark {
   position: absolute;
@@ -446,10 +512,10 @@ body {
   height: 52px;
   pointer-events: none;
   opacity: 0;
-  transform: translate(calc(-50% + 20px), -50%) scale(0.9);
+  transform: translate(calc(-50% + 20px), -50%) scale(0.95);
   transition:
-    opacity 180ms ease-out,
-    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 220ms var(--header-ease),
+    transform 220ms var(--header-ease);
 }
 .site-project-mark img {
   display: block;
@@ -460,9 +526,6 @@ body {
 .site-header-frame[data-project="pick4"] .site-project-mark {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
-  transition:
-    opacity 380ms ease-out 140ms,
-    transform 520ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
 }
 @media (min-width: 375px) {
   .site-header-frame {
@@ -482,10 +545,16 @@ body {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .site-header-frame .site-signature,
+  .site-header-frame .site-signature {
+    transition: none;
+  }
+  .site-header-frame .site-signature-wordmark,
+  .site-header-frame .site-signature-monogram,
+  .site-header-frame[data-project="pick4"] .site-signature-wordmark,
+  .site-header-frame[data-project="pick4"] .site-signature-monogram,
   .site-header-frame .site-project-mark,
   .site-header-frame[data-project="pick4"] .site-project-mark {
-    transition: none;
+    transition: opacity 200ms ease;
   }
 }
 

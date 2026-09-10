@@ -50,11 +50,16 @@
     transition:
       background 0.16s,
       color 0.16s,
-      box-shadow 0.16s,
-      transform 0.16s;
+      box-shadow 0.16s;
   }
-  button:active:not(:disabled) {
-    transform: scale(0.96);
+  .primary:active:not(:disabled),
+  .save-button:active:not(:disabled) {
+    transform: scale(0.97);
+    transition:
+      background 0.16s,
+      color 0.16s,
+      box-shadow 0.16s,
+      transform 160ms var(--ease-out);
   }
   button:focus-visible,
   a:focus-visible,
@@ -860,9 +865,12 @@
   }
   .progress span {
     height: 100%;
+    width: 100%;
     display: block;
     background: #969696;
-    transition: width 0.2s;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 200ms var(--ease-out);
   }
   .slip-slot {
     padding: 16px 0;
@@ -913,6 +921,13 @@
     width: 25px;
     min-width: 25px;
     color: #b0b0b0;
+  }
+  .slip-slot .locked-pick {
+    cursor: default;
+    opacity: 0.45;
+  }
+  .slip-slot .locked-pick:hover {
+    background: transparent;
   }
   .powerups {
     margin: 22px 0;
@@ -1879,15 +1894,29 @@
     *,
     *:before,
     *:after {
-      transition: none !important;
+      animation-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+    .primary:active:not(:disabled),
+    .save-button:active:not(:disabled),
     button:active:not(:disabled) {
       transform: none;
     }
     .toast {
       transform: none !important;
       transition: opacity 200ms ease !important;
+    }
+    .chat-message.fresh,
+    .tour-step {
+      transition-property: opacity !important;
+      transform: none !important;
+    }
+    .chat-jump,
+    .chat-jump[data-visible="true"] {
+      transition-property: opacity !important;
+    }
+    .progress span {
+      transition: none !important;
     }
   }
 
@@ -2418,8 +2447,10 @@
   gap: 10px;
 }
 
-.league-menu-items button:hover {
-  background: var(--muted);
+@media (hover: hover) and (pointer: fine) {
+  .league-menu-items button:hover {
+    background: var(--muted);
+  }
 }
 .league-menu-items button:focus-visible {
   outline: 2px solid var(--league-teal);
@@ -2983,7 +3014,7 @@
   background: color-mix(in srgb, var(--league-teal) 86%, black);
 }
 .league-app .chat-send:active:not(:disabled) {
-  transform: scale(0.92);
+  transform: scale(0.97);
 }
 .league-app .chat-send:disabled {
   background: #e9e9e9;
@@ -3394,20 +3425,17 @@
 .league-app .start-mark svg {
   position: absolute;
   transition:
-    opacity 300ms cubic-bezier(0.2, 0, 0, 1),
-    transform 300ms cubic-bezier(0.2, 0, 0, 1),
-    filter 300ms cubic-bezier(0.2, 0, 0, 1);
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
 }
 .league-app .start-mark-check,
 .league-app .start-item[data-done] .start-mark-icon {
   opacity: 0;
-  transform: scale(0.25);
-  filter: blur(4px);
+  transform: scale(0.92);
 }
 .league-app .start-item[data-done] .start-mark-check {
   opacity: 1;
   transform: scale(1);
-  filter: blur(0);
 }
 .league-app .start-item[data-done] .start-mark {
   background: var(--league-teal);

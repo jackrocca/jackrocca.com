@@ -41,7 +41,7 @@ export const defaultIconSizes: Record<Size, number> = {
 export const borderVariantKey = "shape";
 
 export const buttonVariants = tv({
-  base: "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,opacity,transform] motion-reduce:transition-none motion-reduce:transform-none focus-visible:ring-1 focus-visible:outline-hidden active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50",
+  base: "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[background-color,color,border-color,transform] duration-150 ease-out motion-reduce:transition-none motion-reduce:transform-none focus-visible:ring-1 focus-visible:outline-hidden active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50",
   compoundVariants: [
     {
       class: "text-red-500!",
