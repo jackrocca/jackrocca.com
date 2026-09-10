@@ -1,8 +1,30 @@
 "use client";
+import { useState } from "react";
+import Image from "next/image";
 import { ArrowUpRight, Play } from "lucide-react";
 import { CustomButton } from "@/ui/components/CustomButton";
 import { buyIn, labels, powerups, slotIcons } from "@/components/league-meta";
 import { PICK_TYPES, type PickType } from "@/lib/types";
+
+function ExampleLogo({ id, abbr }: { id: string; abbr: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <span className="team-mark" aria-hidden="true">
+      {failed ? (
+        <span className="team-mark-fallback">{abbr}</span>
+      ) : (
+        <Image
+          src={`/nfl/${id}.png`}
+          alt=""
+          width={500}
+          height={500}
+          sizes="40px"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </span>
+  );
+}
 
 /** Plain-English version of each slot, written for someone who has never bet a game. */
 const slotStories: Record<PickType, string> = {
@@ -28,70 +50,112 @@ export function Rules({
       <header className="rules-header">
         <h2 className="rules-title">Four picks a week. That’s the whole game.</h2>
         <p className="rules-lede">
-          Pick 4 is a season-long game you play with friends during the NFL season. Every
-          week you make four picks. Get them right and you earn points. The most points at
-          the end of the season wins. This page explains everything from the start, so you
-          don’t need to know anything about betting to follow along.
+          Every week you make four picks. Beat the number, earn points. Most points at the
+          end of the season wins.
         </p>
       </header>
 
       <section>
         <h2>Start here: the two numbers</h2>
         <p>
-          Before every NFL game, sportsbooks publish two numbers for it. Pick 4 uses the
-          numbers from DraftKings. We call them <strong>lines</strong>. Once you
-          understand these two lines, you understand the game.
+          Every NFL game has two numbers, called <strong>lines</strong>. Pick 4 uses
+          DraftKings. Read these two and you can play.
         </p>
 
-        <h3>The spread</h3>
-        <p>
-          In most games, one team is expected to win. The spread evens things out by
-          giving the weaker team a head start, on paper.
-        </p>
-        <p>
-          Say the Eagles play the Giants and the spread is <strong>Eagles −6.5</strong>.
-          The minus sign marks the team expected to win. That’s the{" "}
-          <strong>favorite</strong>. The Giants are the <strong>underdog</strong>, and
-          they get the same number the other way: <strong>Giants +6.5</strong>.
-        </p>
-        <ul>
-          <li>
-            Pick the Eagles and they have to win by 7 or more. That’s called{" "}
-            <strong>covering</strong> the spread.
-          </li>
-          <li>
-            Pick the Giants and they can lose by 6 or fewer, or win the game, and your
-            pick still wins.
-          </li>
-        </ul>
-        <p>
-          If the Eagles win 24–20, a Giants pick wins, even though the Giants lost the
-          game. Pick 4 is about beating the number, not about who wins.
-        </p>
+        <figure className="rules-figure">
+          <figcaption>The spread</figcaption>
+          <p>
+            One team is expected to win. The spread gives the other team a head start, on
+            paper.
+          </p>
+          <div className="rules-matchup">
+            <div>
+              <ExampleLogo id="21" abbr="PHI" />
+              <strong>Eagles</strong>
+              <em>−6.5</em>
+              <small>Favorite</small>
+            </div>
+            <span>vs</span>
+            <div>
+              <ExampleLogo id="19" abbr="NYG" />
+              <strong>Giants</strong>
+              <em>+6.5</em>
+              <small>Underdog</small>
+            </div>
+          </div>
+          <div className="rules-outcomes">
+            <div>
+              <b>Pick the Eagles</b>
+              <span>They have to win by 7 or more. That’s covering the spread.</span>
+            </div>
+            <div>
+              <b>Pick the Giants</b>
+              <span>
+                They can lose by 6 or fewer, or win the game. Either way, you win.
+              </span>
+            </div>
+          </div>
+          <p className="rules-result">
+            <span>Final</span>
+            <strong>Eagles 24 · Giants 20</strong>
+            <em>Giants cover</em>
+          </p>
+          <p>
+            The Eagles won the game, but only by 4. A Giants pick still wins. Pick 4 is
+            about beating the number, not about who wins.
+          </p>
+        </figure>
 
-        <h3>The total</h3>
-        <p>
-          The second line is the total: how many points both teams together are expected
-          to score. Say the total is <strong>44.5</strong>.
-        </p>
-        <ul>
-          <li>
-            Pick the <strong>over</strong> and you need the two teams to score 45 or more
-            between them.
-          </li>
-          <li>
-            Pick the <strong>under</strong> and you need 44 or fewer.
-          </li>
-        </ul>
-        <p>Who wins the game doesn’t matter here. Only the two scores added together.</p>
+        <figure className="rules-figure">
+          <figcaption>The total</figcaption>
+          <p>
+            The second line is how many points both teams together are expected to score.
+            This one is <strong>44.5</strong>. Who wins doesn’t matter. Only the two
+            scores added together.
+          </p>
+          <div
+            className="rules-total"
+            role="img"
+            aria-label="The two teams scored 44 points. The line was 44.5, so the under wins."
+          >
+            <div className="rules-total-scores">
+              <span>
+                <ExampleLogo id="21" abbr="PHI" />
+                Eagles 24
+              </span>
+              <span>
+                <ExampleLogo id="19" abbr="NYG" />
+                Giants 20
+              </span>
+              <b>44</b>
+            </div>
+            <div className="rules-total-track">
+              <span className="rules-total-under">Under</span>
+              <span className="rules-total-over">Over</span>
+              <i className="rules-total-line" />
+              <i className="rules-total-dot" />
+            </div>
+            <div className="rules-total-legend">
+              <span>44 or fewer</span>
+              <strong>44.5</strong>
+              <span>45 or more</span>
+            </div>
+          </div>
+          <p className="rules-result">
+            <span>This game</span>
+            <strong>44 points</strong>
+            <em>Under wins</em>
+          </p>
+        </figure>
 
-        <h3>When it lands right on the number</h3>
-        <p>
-          Most lines end in .5 so there is always a winner. Some don’t. If a spread is −7
-          and the favorite wins by exactly 7, that’s a <strong>push</strong>. Same if the
-          total is 44 and the game ends 24–20. Nobody wins and nobody loses. You get half
-          a point.
-        </p>
+        <aside className="rules-aside">
+          <b>When it lands right on the number</b>
+          <p>
+            Most lines end in .5 so someone always wins. If a spread is −7 and the
+            favorite wins by exactly 7, that’s a <strong>push</strong>. Nobody wins,
+            nobody loses. You get half a point.
+          </p>
+        </aside>
       </section>
 
       <section>
