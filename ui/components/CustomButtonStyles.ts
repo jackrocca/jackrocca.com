@@ -37,14 +37,13 @@ export const defaultIconSizes: Record<Size, number> = {
   xl: 24,
   xs: 14,
 };
-// Preserve the published variant key while naming the local value for its role.
 export const borderVariantKey = "shape";
 
 export const buttonVariants = tv({
-  base: "focus-visible:ring-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,opacity,transform] motion-reduce:transition-none motion-reduce:transform-none focus-visible:ring-1 focus-visible:outline-hidden active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50",
+  base: "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow,transform] duration-150 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.97] motion-reduce:transform-none disabled:pointer-events-none disabled:opacity-50",
   compoundVariants: [
     {
-      class: "text-red-500!",
+      class: "text-destructive!",
       color: "secondary",
       variant: "light",
     },
@@ -114,15 +113,14 @@ export const buttonVariants = tv({
       xs: "text-xs",
     },
     variant: {
-      filled:
-        "bg-[var(--button-color)] text-white hover:opacity-90 dark:bg-[var(--button-dark-color)] dark:text-black",
+      filled: "bg-[var(--button-color)] text-white hover:opacity-90",
       ghost:
-        "bg-transparent text-[var(--button-color)] hover:bg-[var(--button-color)]/10 dark:text-[var(--button-dark-color)] dark:hover:bg-[var(--button-dark-color)]/10",
+        "bg-transparent text-[var(--button-color)] hover:bg-[var(--button-color)]/10",
       light:
-        "bg-[var(--button-color)]/10 text-[var(--button-color)] hover:bg-[var(--button-color)]/20 dark:bg-[var(--button-dark-color)]/10 dark:text-[var(--button-dark-color)] dark:hover:bg-[var(--button-dark-color)]/20",
-      link: "text-[var(--button-color)] underline-offset-4 hover:underline dark:text-[var(--button-dark-color)]",
+        "bg-[var(--button-color)]/10 text-[var(--button-color)] hover:bg-[var(--button-color)]/20",
+      link: "text-[var(--button-color)] underline-offset-4 hover:underline",
       outline:
-        "border border-[var(--button-color)]/50 bg-transparent text-[var(--button-color)] hover:bg-[var(--button-color)]/10 dark:border-[var(--button-dark-color)]/50 dark:text-[var(--button-dark-color)] dark:hover:bg-[var(--button-dark-color)]/10",
+        "border border-[var(--button-color)]/50 bg-transparent text-[var(--button-color)] hover:bg-[var(--button-color)]/10",
       unstyled: "",
     },
   },

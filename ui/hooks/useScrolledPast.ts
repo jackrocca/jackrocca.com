@@ -6,7 +6,7 @@ export const useScrolledPast = (threshold = 0) => {
     const handleScroll = () => {
       setIsScrolledPast(window.scrollY > threshold);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [threshold]);
   return isScrolledPast;

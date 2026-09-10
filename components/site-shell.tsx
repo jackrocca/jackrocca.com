@@ -7,8 +7,11 @@ import { usePathname } from "next/navigation";
 import { LayoutGrid, UserRound, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/ui/components/PageHeader";
 import { useDrawer } from "@/ui/components/DrawerContext";
+const isDocs = (pathname: string) => pathname === "/ui" || pathname.startsWith("/ui/");
+
 export function SiteHeader() {
   const pathname = usePathname();
+  if (isDocs(pathname)) return null;
   const isPick4 = pathname === "/pick4" || pathname.startsWith("/pick4/");
   const logo = (
     <Link href="/" aria-label="Jack Rocca home" className="site-signature">
@@ -73,7 +76,7 @@ function SiteNavigation({ pathname }: { pathname: string }) {
 
 export function SiteFooter() {
   const pathname = usePathname();
-  if (pathname === "/" || pathname === "/photography") return null;
+  if (pathname === "/" || pathname === "/photography" || isDocs(pathname)) return null;
   return (
     <footer
       style={

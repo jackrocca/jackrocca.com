@@ -59,7 +59,7 @@ export const SocialLoginButton = ({
       aria-busy={loading || undefined}
       disabled={disabled}
       className={cn(
-        "focus-visible:ring-ring focus-visible:ring-offset-background min-w-0 gap-3 rounded-lg border leading-none shadow-none transition-[background-color,color,border-color,transform] duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 enabled:active:scale-[0.96] disabled:pointer-events-auto disabled:cursor-not-allowed motion-reduce:transform-none motion-reduce:transition-none [&_svg]:size-5 motion-reduce:[&_svg]:animate-none",
+        "min-w-0 gap-3 rounded-lg border leading-none shadow-none disabled:pointer-events-auto disabled:cursor-not-allowed [&_svg]:size-5 motion-reduce:[&_svg]:animate-none",
         sizes[size],
         variant === "outline"
           ? "border-input bg-background text-foreground enabled:hover:bg-accent"

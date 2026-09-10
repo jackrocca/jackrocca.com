@@ -16,7 +16,7 @@ import {
 
 const surface = "border-input bg-background text-foreground enabled:hover:bg-accent";
 const monochrome =
-  "border-transparent bg-zinc-950 text-white enabled:hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:enabled:hover:bg-zinc-200";
+  "border-transparent bg-foreground text-background enabled:hover:bg-foreground/80";
 
 export const socialLoginProviders = {
   apple: { brandClassName: monochrome, icon: SiApple, name: "Apple" },

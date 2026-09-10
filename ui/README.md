@@ -1,4 +1,4 @@
-# Rocca UI
+# RockUI
 
 Our local source fork of Kitze UI: small prop APIs, accessible Base UI behavior, and shared Tailwind tokens. Application imports come from `@/ui/…`. This is part of the website repository rather than a separately published npm package.
 

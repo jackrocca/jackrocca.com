@@ -31,7 +31,7 @@ const AccordionContent = ({
   ...props
 }: AccordionPrimitive.Panel.Props) => (
   <AccordionPrimitive.Panel
-    className="h-(--accordion-panel-height) overflow-hidden text-sm transition-[height] duration-200 ease-out data-ending-style:h-0 data-starting-style:h-0 motion-reduce:transition-none"
+    className="h-(--accordion-panel-height) overflow-hidden text-sm transition-[height,opacity] duration-200 data-ending-style:h-0 data-ending-style:opacity-0 data-starting-style:h-0 data-starting-style:opacity-0 motion-reduce:transition-none"
     {...props}
   >
     <div className={cn("pb-4", className)}>{children}</div>

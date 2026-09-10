@@ -62,15 +62,15 @@ export const SimpleSelectPopover = ({
               >
                 <Check
                   className={cn(
-                    "mr-2 h-4 w-4",
+                    "size-4",
                     value === option.value ? "opacity-100" : "opacity-0",
                   )}
                 />
                 {option.icon &&
                   React.createElement(option.icon, {
-                    className: "mr-2 h-4 w-4",
+                    className: "size-4",
                   })}
-                {option.emoji && <span className="mr-2">{option.emoji}</span>}
+                {option.emoji && <span>{option.emoji}</span>}
                 {option.label}
               </CommandItem>
             ))}

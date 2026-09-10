@@ -9,11 +9,13 @@ Current checkpoint: private Atlas is now served at `/atlas` in the existing pers
 Vercel project. The current checkout is `/Users/jack/jack-os/apps/jackrocca.com`;
 do not deploy the stale Documents/Codex checkout. The private gateway, R2 gallery
 adapter and owner-only UI have been integrated while preserving the latest website
-design and artwork. See `docs/operations.md` for the deployed version, trace fix
-and release verification. Full private preview synchronization is paused at the
-Cloudflare D1 free-plan daily write limit; a Workers Paid choice is pending. The
-existing upload journal retains 15,122 verified previews. Real owner login and
-production Mac pairing remain outstanding. Older roadmap entries
+design and artwork. Production `dpl_DvhorMFySLVFFP5HKDcLgaWKLGym` includes the
+complete generated private bundle; `.vercelignore` explicitly allows the
+Git-ignored bundle into CLI deployments. See `docs/operations.md` for the deployed
+version, packaging fix and release verification. All 44,285 private previews,
+163 people, 195 albums and 36,917 face groups are active. The managed Mac API and
+worker are online, and a read-only cloud-to-Mac command completed with HTTP 200.
+Jack confirmed owner login and Workers Paid. Older roadmap entries
 below describe the staged design and do not supersede this release checkpoint.
 
 Local gateway source now also supports owner-only offline People lists,

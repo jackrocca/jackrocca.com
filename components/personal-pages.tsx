@@ -31,7 +31,7 @@ export function Projects() {
             <Blocks className="size-6 text-[var(--brand-teal)]" />
           </div>
           <div>
-            <h2 className="text-lg font-medium tracking-tight">Rocca UI</h2>
+            <h2 className="text-lg font-medium tracking-tight">RockUI</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Components I actually use.
             </p>

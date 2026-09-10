@@ -60,6 +60,20 @@ export const SegmentedControl = ({
   disabled,
 }: SegmentedControlProps) => {
   const { isMobile } = useKitzeUI();
+  const listRef = React.useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = React.useState<{ x: number; w: number } | null>(null);
+  React.useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const sync = () => {
+      const btn = el.querySelector<HTMLButtonElement>('button[aria-selected="true"]');
+      if (btn) setThumb({ x: btn.offsetLeft, w: btn.offsetWidth });
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [value]);
 
   if (isMobile && mobileView !== "keep") {
     const selectOptions: SelectOption[] = options.map((option) => ({
@@ -85,6 +99,7 @@ export const SegmentedControl = ({
 
   return (
     <div
+      ref={listRef}
       className={segmentedControl({
         className,
         size,
@@ -92,6 +107,13 @@ export const SegmentedControl = ({
       role="tablist"
       aria-orientation="horizontal"
     >
+      {thumb ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute top-1 bottom-1 left-0 rounded-sm bg-background shadow-sm transition-[transform,width] duration-200 motion-reduce:transition-none"
+          style={{ transform: `translateX(${thumb.x}px)`, width: thumb.w }}
+        />
+      ) : null}
       {options.map((option) => {
         const isActive = option.value === value;
         const LeftIcon = option.icon ?? option.leftIcon;
@@ -116,7 +138,7 @@ export const SegmentedControl = ({
                   active: isActive,
                   size,
                 }),
-                "gap-2",
+                "relative gap-2",
                 hideLabel && "aspect-square px-2",
                 tabClassName,
                 isActive && activeTabClassName,

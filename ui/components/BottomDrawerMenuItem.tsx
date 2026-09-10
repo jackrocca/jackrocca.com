@@ -72,12 +72,11 @@ export const BottomDrawerMenuItem: ReactFC<BottomDrawerMenuItemProps> = ({
   );
   const itemClasses = cn(
     "flex w-full min-w-0 cursor-pointer items-center gap-3 px-4 py-3 text-base",
-    "transition-colors active:bg-zinc-50 dark:active:bg-zinc-800/50",
-    "focus-visible:outline-ring justify-start text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px]",
+    "justify-start text-left transition-colors outline-none active:bg-muted",
+    "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
     disabled && "pointer-events-none opacity-50",
-    destructive && "text-red-600 dark:text-red-400",
-    !isLast &&
-      "border-zinc-100 dark:border-zinc-800 [&:has(+[data-slot=bottom-drawer-menu-item])]:border-b",
+    destructive && "text-destructive",
+    !isLast && "border-border [&:has(+[data-slot=bottom-drawer-menu-item])]:border-b",
     className,
   );
   const content = (

@@ -1,6 +1,6 @@
 ---
-name: rocca-ui-adopt-upstream
-description: Bring a component from the upstream Kitze UI registry snapshot (vendor/kitze-ui) into the Rocca UI fork (ui/), or refresh the snapshot and merge upstream changes into already-adopted components. Covers npm run ui:prepare, import rewriting, primitive and npm dependency review, preserving local adaptations, and registering the result in the /ui catalog. Use when asked to add a Kitze UI component (advanced select, dropdown menu, icon picker, form fields, tab panels, theme switch, etc.), update from upstream, or compare the fork with upstream.
+name: rockui-adopt-upstream
+description: Bring a component from the upstream Kitze UI registry snapshot (vendor/kitze-ui) into the RockUI fork (ui/), or refresh the snapshot and merge upstream changes into already-adopted components. Covers npm run ui:prepare, import rewriting, primitive and npm dependency review, preserving local adaptations, and registering the result in the /ui catalog. Use when asked to add a Kitze UI component (advanced select, dropdown menu, icon picker, form fields, tab panels, theme switch, etc.), update from upstream, or compare the fork with upstream.
 ---
 
 # Adopting from upstream Kitze UI
@@ -13,7 +13,7 @@ description: Bring a component from the upstream Kitze UI registry snapshot (ven
 
 ## Adopt a new component
 
-1. **Confirm the need** with `rocca-ui-build-component` Step 0. Adoption still adds bundle weight and maintenance.
+1. **Confirm the need** with `rockui-build-component` Step 0. Adoption still adds bundle weight and maintenance.
 2. **Stage it**:
    ```bash
    npm run ui:prepare -- <registry-name>
@@ -33,7 +33,7 @@ description: Bring a component from the upstream Kitze UI registry snapshot (ven
    - disabled options stay disabled in mobile drawers
    - element triggers rendered via Base UI `render`, never nested buttons
    Record every deliberate divergence in the catalog entry's `localNotes`.
-6. **Register**: catalog entry in `lib/ui-catalog.ts` + demo in `components/ui-library/demos/<slug>.tsx` + `demos/index.ts` (see `rocca-ui-document-component`). Add the slug to `related` on neighbours.
+6. **Register**: catalog entry in `lib/ui-catalog.ts` + demo in `components/ui-library/demos/<slug>.tsx` + `demos/index.ts` (see `rockui-document-component`). Add the slug to `related` on neighbours.
 7. **Verify**: `npm run check:boundaries` (nothing may import `vendor/`), `npm run typecheck`, `npm test`, then exercise `/ui/<slug>` at desktop and 390px with the Desktop/Mobile toggle. Delete `work/ui-candidates/<name>/` when done (`work/` is ignored but keep it clean).
 
 ## Refresh the snapshot / merge upstream changes

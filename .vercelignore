@@ -10,4 +10,9 @@ tests
 docs
 *.md
 
+# Atlas is generated locally and intentionally ignored by Git, but production
+# CLI deployments must upload it so Next can trace it into the owner-only route.
+!private-atlas-build
+!private-atlas-build/**
+
 .DS_Store

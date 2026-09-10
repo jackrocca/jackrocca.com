@@ -22,7 +22,7 @@ const Checkbox = ({
     <CheckboxPrimitive.Indicator
       data-slot="checkbox-indicator"
       keepMounted
-      className="flex items-center justify-center text-current transition-[opacity,scale] duration-150 data-unchecked:scale-50 data-unchecked:opacity-0 motion-reduce:transition-none"
+      className="flex items-center justify-center text-current transition-[opacity,scale] duration-150 data-unchecked:scale-75 data-unchecked:opacity-0 motion-reduce:transition-none"
     >
       {indeterminate ? (
         <MinusIcon className="size-3.5" strokeWidth={3} />

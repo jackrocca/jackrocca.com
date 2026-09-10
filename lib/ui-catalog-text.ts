@@ -1,5 +1,5 @@
 /**
- * Plain-text renderers for the Rocca UI catalog: the "Copy for agents" button on every
+ * Plain-text renderers for the RockUI catalog: the "Copy for agents" button on every
  * component page and the /ui/llms.txt index share these so agents read one consistent story.
  */
 import {
@@ -10,7 +10,11 @@ import {
   uiLibrary,
   uiSourceUrl,
   type UIEntry,
+  type UIProp,
 } from "@/lib/ui-catalog";
+
+const formatAgentProp = ([name, type, description, defaultValue]: UIProp) =>
+  `  ${name}: ${type}${defaultValue === undefined ? "" : ` = ${defaultValue}`} — ${description}`;
 
 const absolute = (origin: string, path: string) => `${origin.replace(/\/$/, "")}${path}`;
 
@@ -28,6 +32,9 @@ export const renderAgentCopy = (entry: UIEntry, origin: string): string => {
     "Source:",
     ...entry.files.map((file) => `  ${uiSourceUrl(file)}`),
   ];
+  if (entry.props?.length) {
+    lines.push("", "Props:", ...entry.props.map(formatAgentProp));
+  }
   if (entry.localNotes) lines.push("", `Local notes: ${entry.localNotes}`);
   if (entry.related?.length) {
     lines.push(
@@ -76,8 +83,11 @@ export const renderLlmsTxt = (origin: string): string => {
   for (const { group, entries } of uiEntriesByGroup()) {
     sections.push("", `## ${group}`, "", uiGroupDescriptions[group], "");
     for (const entry of entries) {
+      const props = entry.props?.length
+        ? ` Props: ${entry.props.map(([name, type]) => `${name} (${type})`).join(", ")}`
+        : "";
       sections.push(
-        `- [${entry.title}](${absolute(origin, uiEntryPath(entry.slug))}): ${entry.description} Import: ${entry.imports[0]} Source: ${uiSourceUrl(entry.files[0])}`,
+        `- [${entry.title}](${absolute(origin, uiEntryPath(entry.slug))}): ${entry.description} Import: ${entry.imports[0]} Source: ${uiSourceUrl(entry.files[0])}${props}`,
       );
     }
   }

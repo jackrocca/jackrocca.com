@@ -2,7 +2,7 @@ import type React from "react";
 import { tv } from "tailwind-variants";
 
 export const segmentedControl = tv({
-  base: "bg-muted inline-flex items-center justify-start rounded-md p-1",
+  base: "bg-muted relative inline-flex items-center justify-start rounded-md p-1",
   defaultVariants: {
     size: "md",
   },
@@ -15,7 +15,7 @@ export const segmentedControl = tv({
   },
 });
 export const segmentedItem = tv({
-  base: "ring-offset-background focus-visible:ring-ring hover:bg-background/50 inline-flex cursor-pointer items-center justify-center rounded-sm whitespace-nowrap transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none",
+  base: "hover:bg-background/50 inline-flex cursor-pointer items-center justify-center rounded-sm whitespace-nowrap text-muted-foreground outline-none transition-colors duration-150 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 motion-reduce:transition-none",
   defaultVariants: {
     active: false,
     size: "md",
@@ -23,7 +23,7 @@ export const segmentedItem = tv({
   variants: {
     active: {
       false: "",
-      true: "bg-background text-foreground hover:bg-background shadow-sm",
+      true: "text-foreground",
     },
     size: {
       lg: "px-4 py-2 text-base",

@@ -1,5 +1,5 @@
 /**
- * Rocca UI catalog: the single source of truth for the public component library at /ui.
+ * RockUI catalog: the single source of truth for the public component library at /ui.
  *
  * Pure data. No React here: the llms.txt route, the site pages and tests all read it.
  * Interactive demos live in components/ui-library/demos/<slug>.tsx and are keyed by slug.
@@ -8,7 +8,7 @@
  */
 
 export const uiLibrary = {
-  name: "Rocca UI",
+  name: "RockUI",
   tagline: "Fewer lines of UI. Consistent on desktop and mobile.",
   basePath: "/ui",
   repo: "https://github.com/jackrocca/jackrocca.com",
@@ -47,6 +47,13 @@ export const uiGroupDescriptions: Record<UIGroup, string> = {
 
 export type UIEntryKind = "component" | "primitive" | "infrastructure";
 
+export type UIProp = readonly [
+  name: string,
+  type: string,
+  description: string,
+  defaultValue?: string,
+];
+
 export interface UIEntry {
   /** URL segment under /ui and the demo file name. */
   slug: string;
@@ -59,6 +66,7 @@ export interface UIEntry {
   imports: readonly string[];
   /** Repository-relative source files, primary file first. */
   files: readonly string[];
+  props?: readonly UIProp[];
   /** Slugs of components that pair with, or replace, this one. */
   related?: readonly string[];
   /** Differences from upstream Kitze UI worth knowing when comparing or updating. */
@@ -83,6 +91,29 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/hooks/useLinkableComponent.ts",
       "ui/lib/process-color.ts",
     ],
+    props: [
+      ["size", '"xs" | "sm" | "md" | "lg" | "xl"', "Control height and padding", '"md"'],
+      [
+        "variant",
+        '"filled" | "light" | "outline" | "ghost" | "unstyled" | "link"',
+        "Visual style",
+        '"filled"',
+      ],
+      ["color", "string", "Accent color token"],
+      ["circle", "boolean", "Round icon-only button", "false"],
+      ["icon", "React.ElementType", "Centered icon"],
+      ["iconSize", "number", "Icon pixel size"],
+      ["leftIcon", "React.ElementType", "Leading icon"],
+      ["rightIcon", "React.ElementType", "Trailing icon"],
+      ["leftSide", "React.ReactNode", "Leading slot"],
+      ["rightSide", "React.ReactNode", "Trailing slot"],
+      ["loading", "boolean", "Spinner replaces content"],
+      ["href", "string", "Render as a link"],
+      ["external", "boolean", "Open href in a new tab"],
+      ["as", "React.ElementType", "Underlying element", '"button"'],
+      ["tooltip", "React.ReactNode", "Hover and focus hint"],
+      ["classNames", "{ icon?, tooltip? }", "Slot class names"],
+    ],
     related: ["button", "spinner", "conditional-tooltip", "social-login-button"],
     localNotes:
       'variant="unstyled" renders structured children directly so callers can supply their own layout. Transitions are property-specific and respect reduced motion.',
@@ -96,6 +127,18 @@ export const uiCatalog: readonly UIEntry[] = [
       "A styled badge with shared size, color and default/outline/ghost variants plus optional icons and side content. Use it for statuses, tags and counts so the same semantic color and spacing choices are reused across screens instead of one-off pill markup.",
     imports: ['import { CustomBadge } from "@/ui/components/CustomBadge";'],
     files: ["ui/components/CustomBadge.tsx", "ui/lib/process-color.ts"],
+    props: [
+      ["color", "string", "Accent color token"],
+      ["variant", '"default" | "outline" | "ghost"', "Visual style", '"default"'],
+      ["size", '"xs" | "sm" | "md" | "lg" | "xl"', "Padding and type size", '"sm"'],
+      ["icon", "React.ElementType", "Centered icon"],
+      ["iconSize", "number", "Icon pixel size"],
+      ["leftIcon", "React.ElementType", "Leading icon"],
+      ["rightIcon", "React.ElementType", "Trailing icon"],
+      ["leftSide", "React.ReactNode", "Leading slot"],
+      ["rightSide", "React.ReactNode", "Trailing slot"],
+      ["classNames", "{ root?, icon? }", "Slot class names"],
+    ],
     related: ["custom-button"],
   },
   {
@@ -107,6 +150,20 @@ export const uiCatalog: readonly UIEntry[] = [
       "An enhanced text input with left/right icons or content slots and an integrated loading state. Use it to avoid repeating adornment spacing, loading indicators and disabled styling around a vanilla input. It remains a normal input for forms; use the base input primitive for a plain field without these additions.",
     imports: ['import { Input } from "@/ui/components/Input";'],
     files: ["ui/components/Input.tsx", "ui/components/InputAffix.tsx"],
+    props: [
+      ["leftIcon", "ElementType", "Leading icon"],
+      ["rightIcon", "ElementType", "Trailing icon"],
+      ["leftItem", "ReactNode", "Leading slot"],
+      ["rightItem", "ReactNode", "Trailing slot"],
+      ["iconClassName", "string", "Shared icon class"],
+      ["isLoading", "boolean", "Shows spinner and disables", "false"],
+      ["spinnerSize", '"xs" | "sm" | "md" | "lg" | "xl"', "Loading spinner size", '"sm"'],
+      [
+        "classNames",
+        "{ container?, input?, leftIcon?, rightIcon?, leftItem?, rightItem? }",
+        "Slot class names",
+      ],
+    ],
     related: ["base-input", "input-group", "search-bar", "spinner"],
   },
   {
@@ -121,6 +178,18 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/components/SocialLoginButton.tsx",
       "ui/components/SocialLoginBrandIcons.tsx",
       "ui/components/social-login-providers.ts",
+    ],
+    props: [
+      [
+        "provider",
+        '"apple" | "discord" | "facebook" | "github" | "gitlab" | "google" | "linkedin" | "microsoft" | "slack" | "spotify" | "twitch" | "x"',
+        "Brand mark and default label",
+      ],
+      ["label", "string", "Button text; defaults to Continue with {name}"],
+      ["variant", '"outline" | "brand"', "Neutral or brand colors", '"outline"'],
+      ["size", '"sm" | "md" | "lg"', "Height and padding", '"md"'],
+      ["iconOnly", "boolean", "Icon without visible label", "false"],
+      ["loading", "boolean", "Spinner and busy state", "false"],
     ],
     related: ["custom-button"],
     localNotes:
@@ -139,9 +208,34 @@ export const uiCatalog: readonly UIEntry[] = [
     files: [
       "ui/components/SimpleDialog.tsx",
       "ui/components/SimpleDialogActions.tsx",
-      "ui/components/SimpleDialogParts.tsx",
       "ui/components/SimpleDialogTypes.ts",
       "ui/hooks/useControlledOpen.ts",
+    ],
+    props: [
+      ["trigger", "React.ReactNode", "Opens when uncontrolled", '"Open"'],
+      ["title", "string", "Header text"],
+      ["open", "boolean", "Controlled open"],
+      ["onOpenChange", "(open: boolean) => void", "Open state change"],
+      ["onOpenChangeComplete", "(open: boolean) => void", "After open animation"],
+      [
+        "size",
+        '"sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full"',
+        "Max width",
+        '"sm"',
+      ],
+      ["mobileView", '"keep" | "bottom-drawer"', "Mobile presentation", '"keep"'],
+      ["drawerTitle", "string", "Drawer header override"],
+      ["showCancel", "boolean", "Shows the cancel action", "Boolean(onSubmit)"],
+      ["showCloseButton", "boolean", "Header close control", "true"],
+      ["onCancel", "() => void", "Cancel handler"],
+      ["onSubmit", "() => void", "Submit handler; closes after"],
+      ["submitText", "string", "Submit label", '"Submit"'],
+      ["cancelText", "string", "Cancel label", '"Cancel"'],
+      [
+        "classNames",
+        "{ root?, content?, header?, title?, body?, footer?, submitButton?, cancelButton?, drawerRoot?, drawerContent?, drawerHeader?, drawerFooter? }",
+        "Slot class names",
+      ],
     ],
     related: ["responsive-dialog", "dialog", "dialog-manager", "bottom-drawer"],
   },
@@ -160,6 +254,26 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/components/SimpleSelectNative.tsx",
       "ui/components/SimpleSelectTypes.ts",
     ],
+    props: [
+      ["id", "string", "Trigger id for labels"],
+      ["aria-label", "string", "Accessible name"],
+      ["options", "SelectOption[]", "Value, label, icon, disabled"],
+      ["value", "string", "Selected value"],
+      ["onValueChange", "(value: string) => void", "Selection change"],
+      ["placeholder", "string", "Empty trigger text", '"Select an option"'],
+      ["triggerClassName", "string", "Trigger class"],
+      ["disabled", "boolean", "Blocks opening"],
+      ["withSearch", "boolean", "Desktop search field", "false"],
+      ["searchPlaceholder", "string", "Search field text", '"Search options..."'],
+      [
+        "mobileView",
+        '"keep" | "native" | "bottom-drawer"',
+        "Mobile presentation",
+        '"keep"',
+      ],
+      ["mobileViewSearch", "boolean", "Search in mobile drawer", "false"],
+      ["drawerTitle", "string", "Drawer header", '"Select an option"'],
+    ],
     related: ["responsive-select-bottom-drawer-menu", "segmented-control", "command"],
     localNotes:
       "Accepts id and aria-label so a visible <label> can own it. Disabled options stay disabled in the mobile drawer, and reselecting the current value is stable.",
@@ -173,6 +287,17 @@ export const uiCatalog: readonly UIEntry[] = [
       "A content prop wrapped around the existing trigger, with optional popover or bottom-drawer presentation on mobile. It removes tooltip provider, trigger, portal and content markup while retaining hover and focus behavior. Use it for short explanations; choose a popover or drawer when touch users need to inspect richer content.",
     imports: ['import { SimpleTooltip } from "@/ui/components/SimpleTooltip";'],
     files: ["ui/components/SimpleTooltip.tsx"],
+    props: [
+      ["content", "string | React.ReactNode", "Tooltip body"],
+      ["tooltipClassName", "string", "Content class"],
+      [
+        "mobileView",
+        '"keep" | "popover" | "bottom-drawer"',
+        "Mobile presentation",
+        '"keep"',
+      ],
+      ["drawerTitle", "string", "Drawer header when used"],
+    ],
     related: ["conditional-tooltip", "help-info-circle", "tooltip"],
   },
   {
@@ -184,6 +309,14 @@ export const uiCatalog: readonly UIEntry[] = [
       "An accordion built from an items array rather than repeated item, trigger and content primitives. Use it for FAQs and expandable settings with standard layout and behavior; choose the accordion primitive when individual items need substantially different composition.",
     imports: ['import { SimpleAccordion } from "@/ui/components/SimpleAccordion";'],
     files: ["ui/components/SimpleAccordion.tsx"],
+    props: [
+      ["items", "{ title, content }[]", "Panels in order"],
+      [
+        "classNames",
+        "{ root?, item?, button?, title?, icon?, panel?, content? }",
+        "Slot class names",
+      ],
+    ],
     related: ["accordion"],
   },
 
@@ -197,6 +330,37 @@ export const uiCatalog: readonly UIEntry[] = [
       'The standard dialog wrapper with bottom-drawer behavior enabled on mobile through the UI provider. It delegates content and actions to SimpleDialog so callers share one API across desktop and touch layouts. Use mobileView="keep" when a centered dialog is deliberately needed on both.',
     imports: ['import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";'],
     files: ["ui/components/ResponsiveDialog.tsx", "ui/components/SimpleDialog.tsx"],
+    props: [
+      ["trigger", "React.ReactNode", "Opens when uncontrolled", '"Open"'],
+      ["title", "string", "Header text"],
+      ["open", "boolean", "Controlled open"],
+      ["onOpenChange", "(open: boolean) => void", "Open state change"],
+      ["onOpenChangeComplete", "(open: boolean) => void", "After open animation"],
+      [
+        "size",
+        '"sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full"',
+        "Max width",
+        '"sm"',
+      ],
+      [
+        "mobileView",
+        '"keep" | "bottom-drawer"',
+        "Mobile presentation",
+        '"bottom-drawer"',
+      ],
+      ["drawerTitle", "string", "Drawer header override"],
+      ["showCancel", "boolean", "Shows the cancel action", "Boolean(onSubmit)"],
+      ["showCloseButton", "boolean", "Header close control", "true"],
+      ["onCancel", "() => void", "Cancel handler"],
+      ["onSubmit", "() => void", "Submit handler; closes after"],
+      ["submitText", "string", "Submit label", '"Submit"'],
+      ["cancelText", "string", "Cancel label", '"Cancel"'],
+      [
+        "classNames",
+        "{ root?, content?, header?, title?, body?, footer?, submitButton?, cancelButton?, drawerRoot?, drawerContent?, drawerHeader?, drawerFooter? }",
+        "Slot class names",
+      ],
+    ],
     related: ["simple-dialog", "bottom-drawer", "ui-context"],
   },
   {
@@ -218,6 +382,31 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/components/BottomDrawerMenuComponents.tsx",
       "ui/components/DrawerContext.tsx",
     ],
+    props: [
+      ["title", "string", "Header text"],
+      ["open", "boolean", "Controlled open"],
+      ["onOpenChange", "(open: boolean) => void", "Open state change"],
+      ["onOpenChangeComplete", "(open: boolean) => void", "After open animation"],
+      ["trigger", "React.ReactNode", "Opens the drawer"],
+      [
+        "renderHeader",
+        "(({ handle, close }) => React.ReactNode) | null",
+        "Custom or hidden header",
+      ],
+      [
+        "classNames",
+        "{ overlay?, content?, handle?, title?, headerWrapper?, childrenWrapper? }",
+        "Slot class names",
+      ],
+      [
+        "items",
+        '(Omit<BottomDrawerMenuItemProps, "children"> & { label: string })[]',
+        "BottomDrawerMenu labeled items",
+      ],
+      ["content", "React.ReactNode", "BottomDrawerMenu custom body"],
+      ["closeOnClick", "boolean", "Close menu on item select", "true"],
+      ["useDrawer", "{ close: () => void }", "Close the open drawer"],
+    ],
     related: ["responsive-dialog", "page-header", "menu-context"],
     localNotes:
       "Backdrop and viewport measure window.innerWidth while open so scroll-locking gutters never leave an uncovered strip. Element triggers keep native button semantics.",
@@ -233,6 +422,19 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { ResponsiveSelectBottomDrawerMenu } from "@/ui/components/ResponsiveSelectBottomDrawerMenu";',
     ],
     files: ["ui/components/ResponsiveSelectBottomDrawerMenu.tsx"],
+    props: [
+      ["options", "SelectOption[]", "Value, label, icon, disabled"],
+      ["value", "string", "Selected value"],
+      ["onValueChange", "(value: string) => void", "Selection change"],
+      ["placeholder", "string", "Default trigger text", '"Select an option"'],
+      ["drawerTitle", "string", "Drawer header", '"Select an option"'],
+      ["open", "boolean", "Controlled open"],
+      ["onOpenChange", "(open: boolean) => void", "Open state change"],
+      ["searchPlaceholder", "string", "Search field text", '"Search options..."'],
+      ["showSearch", "boolean", "Filter field", "false"],
+      ["triggerClassName", "string", "Default trigger class"],
+      ["disabled", "boolean", "Blocks the default trigger"],
+    ],
     related: ["simple-select", "bottom-drawer", "search-bar"],
   },
 
@@ -258,6 +460,22 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/components/AlertContextStore.ts",
       "ui/components/AlertContextTypes.ts",
     ],
+    props: [
+      ["title", "string", "Heading; delete default Confirm Delete", '"Confirm"'],
+      ["description", "string", "Body copy"],
+      [
+        "variant",
+        '"default" | "destructive" | "success"',
+        "Tone; delete is destructive",
+        '"default"',
+      ],
+      ["confirmLabel", "string", "Confirm button; delete default Delete", '"Confirm"'],
+      ["cancelLabel", "string", "Cancel button", '"Cancel"'],
+      ["onConfirm", "() => void", "Confirm callback"],
+      ["confirmationText", "string", "Phrase required to enable confirm"],
+      ["itemName", "string", "Delete copy target"],
+      ["onOpenChangeComplete", "(open: boolean) => void", "After close animation"],
+    ],
     related: ["alert-dialog", "dialog-manager"],
   },
   {
@@ -271,6 +489,18 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { useDialog, DialogManager } from "@/ui/components/DialogManager";',
     ],
     files: ["ui/components/DialogManager.tsx", "ui/components/DialogList.tsx"],
+    props: [
+      [
+        "mobileView",
+        '"keep" | "bottom-drawer"',
+        "Default mobile presentation",
+        '"bottom-drawer"',
+      ],
+      ["classNames", "{ root? }", "Overlay wrapper class"],
+      ["openDialog", "(config: OpenDialogProps) => string", "Open a managed dialog"],
+      ["closeDialog", "(id: string) => void", "Dismiss one dialog"],
+      ["closeAllDialogs", "() => void", "Dismiss every dialog"],
+    ],
     related: ["simple-dialog", "responsive-dialog", "ui-alert"],
   },
   {
@@ -282,6 +512,10 @@ export const uiCatalog: readonly UIEntry[] = [
       "The shared loading indicator with size and default/circle/pinwheel variants. Use it in buttons and pending content so loading visuals stay consistent instead of choosing a different animated icon in every component.",
     imports: ['import { Spinner } from "@/ui/components/Spinner";'],
     files: ["ui/components/Spinner.tsx"],
+    props: [
+      ["variant", '"default" | "circle" | "pinwheel"', "Icon shape", '"default"'],
+      ["size", '"xs" | "sm" | "md" | "lg" | "xl"', "Pixel size", '"md"'],
+    ],
     related: ["custom-button", "input"],
   },
 
@@ -298,6 +532,25 @@ export const uiCatalog: readonly UIEntry[] = [
       "ui/components/SegmentedControl.tsx",
       "ui/components/SegmentedControlStyles.ts",
     ],
+    props: [
+      ["options", "SegmentedControlOption[]", "Value, label, icons, tooltip, disabled"],
+      ["iconOnly", "boolean", "Hide labels; keep accessible names", "false"],
+      ["value", "string", "Selected value"],
+      ["onChange", "(value: string) => void", "Selection change"],
+      ["tabClassName", "string", "Every option button"],
+      ["activeTabClassName", "string", "Selected option button"],
+      ["size", '"sm" | "md" | "lg"', "Control height", '"md"'],
+      [
+        "mobileView",
+        '"keep" | "native" | "bottom-drawer"',
+        "Mobile presentation",
+        '"keep"',
+      ],
+      ["mobileViewSearch", "boolean", "Search in mobile drawer", "false"],
+      ["drawerTitle", "string", "Drawer header", '"Select an option"'],
+      ["placeholder", "string", "Mobile empty text", '"Select an option"'],
+      ["disabled", "boolean", "Blocks all options"],
+    ],
     related: ["simple-select"],
     localNotes:
       "iconOnly hides visible labels while keeping accessible names; the mobile select presentations keep their labels.",
@@ -311,6 +564,14 @@ export const uiCatalog: readonly UIEntry[] = [
       "A controlled search input with clear and Escape handling. Use it to share the same search entry interaction across lists and toolbars; it reports text changes and leaves filtering to the caller.",
     imports: ['import { SearchBar } from "@/ui/components/SearchBar";'],
     files: ["ui/components/SearchBar.tsx"],
+    props: [
+      ["value", "string", "Query text"],
+      ["onChange", "(value: string) => void", "Text change"],
+      ["placeholder", "string", "Empty field text", '"Search..."'],
+      ["onClose", "() => void", "Blur callback"],
+      ["onForceClose", "() => void", "Escape callback"],
+      ["autoFocus", "boolean", "Focus on mount", "false"],
+    ],
     related: ["input", "command"],
   },
   {
@@ -322,6 +583,23 @@ export const uiCatalog: readonly UIEntry[] = [
       "An application header with left/middle/right slots, optional scroll-fixed positioning and a shared drawer-menu trigger. Use it to keep header sizing and mobile navigation composition consistent across screens instead of rebuilding header and drawer wiring together. The website header is built on it.",
     imports: ['import { PageHeader } from "@/ui/components/PageHeader";'],
     files: ["ui/components/PageHeader.tsx", "ui/hooks/useScrolledPast.ts"],
+    props: [
+      ["leftSide", "ReactNode", "Leading slot"],
+      ["middle", "ReactNode", "Center slot"],
+      ["drawerContent", "ReactNode", "Default menu drawer body"],
+      ["height", "number", "Header height in px", "80"],
+      ["fixedOnScroll", "boolean", "Stick after scrolling past height", "false"],
+      [
+        "renderRightSide",
+        "({ menuButton, bottomDrawer }) => ReactNode",
+        "Custom trailing slot",
+      ],
+      [
+        "classNames",
+        "{ root?, container?, leftSide?, middle?, rightSide?, menuButton?, pastScrolled? }",
+        "Slot class names",
+      ],
+    ],
     related: ["bottom-drawer", "custom-button"],
   },
 
@@ -335,6 +613,10 @@ export const uiCatalog: readonly UIEntry[] = [
       "The shared keycap component for a sequence of keys. Use it to display shortcut hints with consistent sizing, borders and typography instead of plain strings. It is display only and binds no handlers.",
     imports: ['import { Kbd } from "@/ui/components/Kbd";'],
     files: ["ui/components/Kbd.tsx"],
+    props: [
+      ["keys", "string[]", "Keycaps in order"],
+      ["classNames", "{ root?, key?, separator? }", "Slot class names"],
+    ],
     related: ["kbd-shortcuts"],
   },
   {
@@ -349,6 +631,13 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { MenuShortcut } from "@/ui/components/MenuShortcut";',
     ],
     files: ["ui/components/KbdShortcuts.tsx", "ui/components/MenuShortcut.tsx"],
+    props: [
+      ["shortcuts", "string[]", "Individual keycaps"],
+      ["separator", "string | null", "Between keycaps; null hides", '"+"'],
+      ["classNames", "{ root?, key?, separator? }", "Slot class names"],
+      ["shortcut", "string | string[]", "MenuShortcut keys"],
+      ["destructive", "boolean", "MenuShortcut destructive tone"],
+    ],
     related: ["kbd"],
   },
   {
@@ -360,6 +649,18 @@ export const uiCatalog: readonly UIEntry[] = [
       "A compact help icon connected to the shared tooltip/drawer explanation pattern. Use it beside a field or action when a label needs an optional explanation, so every screen does not invent its own help trigger and touch behavior. Defaults to a bottom drawer on mobile.",
     imports: ['import { HelpInfoCircle } from "@/ui/components/HelpInfoCircle";'],
     files: ["ui/components/HelpInfoCircle.tsx"],
+    props: [
+      ["content", "React.ReactNode", "Tooltip or drawer body"],
+      ["iconClassName", "string", "Help icon class"],
+      ["tooltipClassName", "string", "Content class"],
+      ["drawerTitle", "string", "Drawer header", '"Help Information"'],
+      [
+        "mobileView",
+        '"keep" | "popover" | "bottom-drawer"',
+        "Mobile presentation",
+        '"bottom-drawer"',
+      ],
+    ],
     related: ["simple-tooltip"],
   },
 
@@ -373,6 +674,11 @@ export const uiCatalog: readonly UIEntry[] = [
       "Add a SimpleTooltip only when a condition and content are present; otherwise render the original child. Use it for disabled explanations or context-dependent hints without duplicating the trigger in two branches.",
     imports: ['import { ConditionalTooltip } from "@/ui/components/ConditionalTooltip";'],
     files: ["ui/components/ConditionalTooltip.tsx"],
+    props: [
+      ["condition", "boolean", "When true and content set, wrap"],
+      ["content", "string", "Tooltip text"],
+      ["classNames", "{ wrapper?, tooltip?, content? }", "Slot class names"],
+    ],
     related: ["simple-tooltip", "custom-button", "segmented-control"],
   },
 
@@ -388,6 +694,19 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { KitzeUIProvider, useKitzeUI } from "@/ui/components/KitzeUIContext";',
     ],
     files: ["ui/components/KitzeUIContext.tsx"],
+    props: [
+      ["isMobile", "boolean", "Desktop vs mobile presentation"],
+      [
+        "portalContainer",
+        "HTMLElement | null",
+        "Where portalled surfaces mount; defaults to body",
+      ],
+      [
+        "useKitzeUI",
+        "{ isMobile: boolean; portalContainer?: HTMLElement | null }",
+        "Provider values; isMobile defaults false",
+      ],
+    ],
     related: ["responsive-dialog", "dialog-manager", "ui-alert"],
     localNotes:
       "Export names keep the upstream KitzeUIProvider/useKitzeUI so upstream diffs stay small. The website provides isMobile from a (max-width: 767px) media query in components/providers.tsx.",
@@ -403,6 +722,12 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { MenuProvider, useMenuContext } from "@/ui/components/MenuContext";',
     ],
     files: ["ui/components/MenuContext.tsx"],
+    props: [
+      ["menuType", '"dropdown" | "context" | "bottom-drawer"', "Owning surface"],
+      ["open", "boolean", "Whether the menu is open", "true"],
+      ["closeMenu", "() => void", "Dismiss the owning menu"],
+      ["useMenuContext", "{ menuType, open?, closeMenu? }", "Reads the nearest menu"],
+    ],
     related: ["bottom-drawer"],
   },
 
@@ -416,6 +741,21 @@ export const uiCatalog: readonly UIEntry[] = [
       "The styled Base UI button primitive with shadcn variants and sizes. Use it for compositions that need the raw primitive; CustomButton is the shared application button with icons, loading and links.",
     imports: ['import { Button, buttonVariants } from "@/ui/primitives/button";'],
     files: ["ui/primitives/button.tsx"],
+    props: [
+      [
+        "variant",
+        '"default" | "outline" | "secondary" | "ghost" | "destructive" | "link"',
+        "Visual style",
+        '"default"',
+      ],
+      [
+        "size",
+        '"default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg"',
+        "Height and padding",
+        '"default"',
+      ],
+      ["...", "Button.Props", "Base UI props pass through"],
+    ],
     related: ["custom-button"],
   },
   {
@@ -427,6 +767,7 @@ export const uiCatalog: readonly UIEntry[] = [
       "The plain styled input primitive. Use it for a field without adornments or loading; the enhanced Input adds icon slots and a loading state on top.",
     imports: ['import { Input } from "@/ui/primitives/input";'],
     files: ["ui/primitives/input.tsx"],
+    props: [["...", "Input.Props", "Base UI props pass through"]],
     related: ["input", "input-group", "textarea"],
   },
   {
@@ -438,6 +779,7 @@ export const uiCatalog: readonly UIEntry[] = [
       "The styled multiline input primitive, sharing border, focus ring and disabled styling with the input primitive.",
     imports: ['import { Textarea } from "@/ui/primitives/textarea";'],
     files: ["ui/primitives/textarea.tsx"],
+    props: [["...", 'ComponentProps<"textarea">', "Base UI props pass through"]],
     related: ["base-input", "input-group"],
   },
   {
@@ -451,6 +793,23 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, InputGroupTextarea } from "@/ui/primitives/input-group";',
     ],
     files: ["ui/primitives/input-group.tsx"],
+    props: [
+      [
+        "align",
+        '"inline-start" | "inline-end" | "block-start" | "block-end"',
+        "InputGroupAddon placement",
+        '"inline-start"',
+      ],
+      ["size", '"xs" | "sm" | "icon-xs" | "icon-sm"', "InputGroupButton size", '"xs"'],
+      [
+        "variant",
+        '"default" | "outline" | "secondary" | "ghost" | "destructive" | "link"',
+        "InputGroupButton style",
+        '"ghost"',
+      ],
+      ["type", '"button" | "submit" | "reset"', "InputGroupButton type", '"button"'],
+      ["...", 'ComponentProps<"div">', "Base UI props pass through"],
+    ],
     related: ["input", "base-input", "textarea"],
   },
   {
@@ -462,6 +821,7 @@ export const uiCatalog: readonly UIEntry[] = [
       "The styled Base UI checkbox for boolean selection. Pair it with a visible label; it keeps the accessible primitive API and the library's visual conventions.",
     imports: ['import { Checkbox } from "@/ui/primitives/checkbox";'],
     files: ["ui/primitives/checkbox.tsx"],
+    props: [["...", "Checkbox.Root.Props", "Base UI props pass through"]],
   },
   {
     slug: "accordion",
@@ -474,6 +834,7 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/ui/primitives/accordion";',
     ],
     files: ["ui/primitives/accordion.tsx"],
+    props: [["...", "Accordion.Root.Props", "Base UI props pass through"]],
     related: ["simple-accordion"],
   },
   {
@@ -487,6 +848,10 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/ui/primitives/dialog";',
     ],
     files: ["ui/primitives/dialog.tsx"],
+    props: [
+      ["showCloseButton", "boolean", "DialogContent close control", "true"],
+      ["...", "Dialog.Root.Props", "Base UI props pass through"],
+    ],
     related: ["simple-dialog", "responsive-dialog"],
   },
   {
@@ -500,6 +865,10 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/ui/primitives/alert-dialog";',
     ],
     files: ["ui/primitives/alert-dialog.tsx"],
+    props: [
+      ["...", "AlertDialog.Root.Props", "Base UI props pass through"],
+      ["variant", "Button variant", "AlertDialogAction button variant", '"default"'],
+    ],
     related: ["ui-alert"],
   },
   {
@@ -513,6 +882,17 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { Popover, PopoverTrigger, PopoverContent } from "@/ui/primitives/popover";',
     ],
     files: ["ui/primitives/popover.tsx"],
+    props: [
+      [
+        "side",
+        '"top" | "bottom" | "left" | "right" | "inline-start" | "inline-end"',
+        "PopoverContent placement",
+        '"bottom"',
+      ],
+      ["sideOffset", "number", "Distance from trigger", "4"],
+      ["align", '"start" | "center" | "end"', "Cross-axis alignment", '"center"'],
+      ["...", "Popover.Root.Props", "Base UI props pass through"],
+    ],
     related: ["simple-select", "simple-tooltip"],
   },
   {
@@ -526,6 +906,18 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/ui/primitives/tooltip";',
     ],
     files: ["ui/primitives/tooltip.tsx"],
+    props: [
+      ["delay", "number", "TooltipProvider open delay", "400"],
+      [
+        "side",
+        '"top" | "bottom" | "left" | "right" | "inline-start" | "inline-end"',
+        "TooltipContent placement",
+        '"top"',
+      ],
+      ["sideOffset", "number", "Distance from trigger", "4"],
+      ["align", '"start" | "center" | "end"', "Cross-axis alignment", '"center"'],
+      ["...", "Tooltip.Root.Props", "Base UI props pass through"],
+    ],
     related: ["simple-tooltip", "conditional-tooltip"],
   },
   {
@@ -539,6 +931,17 @@ export const uiCatalog: readonly UIEntry[] = [
       'import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandShortcut, CommandSeparator, CommandDialog } from "@/ui/primitives/command";',
     ],
     files: ["ui/primitives/command.tsx"],
+    props: [
+      ["title", "string", "CommandDialog accessible title", '"Command Palette"'],
+      [
+        "description",
+        "string",
+        "CommandDialog accessible description",
+        '"Search for a command to run..."',
+      ],
+      ["showCloseButton", "boolean", "Dialog close control", "false"],
+      ["...", "Command.Props", "Base UI props pass through"],
+    ],
     related: ["simple-select", "search-bar", "kbd"],
   },
 ];

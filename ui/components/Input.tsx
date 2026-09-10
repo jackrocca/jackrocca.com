@@ -4,6 +4,7 @@ import type { ElementType, InputHTMLAttributes, ReactNode } from "react";
 import React from "react";
 
 import { cn } from "@/ui/lib/utils";
+import { Input as PrimitiveInput } from "@/ui/primitives/input";
 import { InputAffix } from "@/ui/components/InputAffix";
 import { Spinner } from "@/ui/components/Spinner";
 
@@ -52,30 +53,20 @@ export const Input = ({
 }: InputProps & {
   ref?: React.Ref<HTMLInputElement>;
 }) => {
-  // If loading, override left icon with spinner
   const effectiveLeftIcon = isLoading ? undefined : leftIcon;
   const effectiveLeftItem = isLoading ? <Spinner size={spinnerSize} /> : leftItem;
-
-  // Handle both explicit disabled prop and loading state
   const isDisabled = disabled || isLoading;
   const hasLeft = isLoading || effectiveLeftIcon || effectiveLeftItem;
   const hasRight = rightIcon || rightItem;
   const hasAffix = Boolean(hasLeft || hasRight);
   const inputElement = (
-    <input
+    <PrimitiveInput
       type={type}
       className={cn(
-        "flex h-9 w-full rounded-md bg-transparent px-3 py-1 text-base",
-        "transition-[border-color,box-shadow] duration-200 ease-in-out",
-        "file:text-foreground file:border-0 file:bg-transparent file:text-sm file:font-medium",
-        "placeholder:text-muted-foreground",
-        "focus:outline-none",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "md:text-sm",
         hasLeft && "pl-1",
         hasRight && "pr-1",
-        !hasAffix &&
-          "border-input focus-visible:border-primary focus-visible:ring-primary border focus-visible:ring-1 focus-visible:outline-none",
+        hasAffix &&
+          "flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 disabled:bg-transparent aria-invalid:ring-0",
         !hasAffix && className,
         classNames.input,
       )}
@@ -90,9 +81,8 @@ export const Input = ({
   return (
     <div
       className={cn(
-        "border-input bg-background relative flex items-center rounded-md border",
-        "transition-[border-color,box-shadow] duration-200 ease-in-out",
-        "focus-within:border-primary focus-within:ring-primary focus-within:ring-1",
+        "relative flex h-8 w-full min-w-0 items-center rounded-lg border border-input bg-transparent",
+        "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50",
         isDisabled && "cursor-not-allowed opacity-50",
         classNames.container,
         className,

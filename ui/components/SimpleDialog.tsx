@@ -4,6 +4,7 @@ import React from "react";
 
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -13,13 +14,9 @@ import {
 import { cn } from "@/ui/lib/utils";
 import { useControlledOpen } from "@/ui/hooks/useControlledOpen";
 import { BottomDrawer } from "@/ui/components/BottomDrawer";
+import { CustomButton } from "@/ui/components/CustomButton";
 import { useKitzeUI } from "@/ui/components/KitzeUIContext";
 import { SimpleDialogActions } from "@/ui/components/SimpleDialogActions";
-import {
-  CustomDialogContent,
-  sizeToMaxWidth,
-  toDialogTriggerElement,
-} from "@/ui/components/SimpleDialogParts";
 import type * as SimpleDialogTypesModule from "@/ui/components/SimpleDialogTypes";
 
 export type DialogClassNames = SimpleDialogTypesModule.DialogClassNames;
@@ -27,6 +24,20 @@ export type DialogMobileViewType = SimpleDialogTypesModule.DialogMobileViewType;
 export type DialogSize = SimpleDialogTypesModule.DialogSize;
 export type SimpleDialogProps = SimpleDialogTypesModule.SimpleDialogProps;
 const EMPTY_CLASS_NAMES: NonNullable<SimpleDialogProps["classNames"]> = {};
+
+const sizeToMaxWidth: Record<DialogSize, string> = {
+  sm: "sm:max-w-[425px]",
+  md: "sm:max-w-[550px]",
+  lg: "sm:max-w-[680px]",
+  xl: "sm:max-w-[800px]",
+  "2xl": "sm:max-w-[1024px]",
+  "3xl": "sm:max-w-[1280px]",
+  "4xl": "sm:max-w-[1536px]",
+  "5xl": "sm:max-w-[1920px]",
+  full: "sm:max-w-[100vw]",
+};
+const toDialogTriggerElement = (trigger: React.ReactNode) =>
+  React.isValidElement(trigger) ? trigger : <CustomButton>{trigger}</CustomButton>;
 
 export const SimpleDialog = ({
   trigger = "Open",
@@ -118,7 +129,7 @@ export const SimpleDialog = ({
           }
         />
       ) : null}
-      <CustomDialogContent
+      <DialogContent
         className={cn(sizeToMaxWidth[size], classNames.root, classNames.content)}
         showCloseButton={showCloseButton}
       >
@@ -137,7 +148,7 @@ export const SimpleDialog = ({
         {hasFooter && (
           <DialogFooter className={classNames.footer}>{actions}</DialogFooter>
         )}
-      </CustomDialogContent>
+      </DialogContent>
     </Dialog>
   );
 };

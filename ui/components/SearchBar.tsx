@@ -55,7 +55,7 @@ const SearchBarRender = ({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         onBlur={() => onClose && onClose()}
-        className="bg-background border-input focus:ring-ring focus:border-ring h-10 w-full rounded-md border pr-10 pl-10 text-sm transition-[border-color,box-shadow] duration-150 focus:ring-2 focus:outline-none motion-reduce:transition-none"
+        className="h-8 w-full rounded-lg border border-input bg-transparent pr-10 pl-10 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         aria-label="Search"
       />
       {value && (

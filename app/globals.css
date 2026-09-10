@@ -6,7 +6,6 @@
    emits a --color-* variable when a utility uses it, so name them here. */
 @source inline("bg-{emerald,sky,rose}-600");
 @import "../ui/theme.css";
-@import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @custom-variant dark (&:is(.dark *));
 @layer base {
@@ -72,21 +71,13 @@
   color: white;
   padding: 12px 20px;
 }
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
 
 /* `static` always emits these as CSS variables: CustomButton and CustomBadge resolve
    color="primary" to var(--color-primary) at runtime, which no utility class references. */
 @theme inline static {
   --font-heading: var(--font-sans);
-  --font-sans: var(--font-geist);
+  --font-sans: var(--font-figtree);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -550,80 +541,102 @@ body {
   min-height: 40px;
 }
 
-/* Rocca UI library */
-.ui-library-link {
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.3;
-  color: var(--foreground);
+/* RockUI docs shell */
+/* Unlayered so it outranks the aside's lg:block. */
+html[data-sidebar="closed"] .docs-sidebar {
+  display: none;
 }
-.ui-library-link:hover,
-.ui-library-link[aria-current="page"] {
-  background: color-mix(in srgb, var(--brand-teal) 6%, white);
-  color: var(--brand-teal);
+.docs-topbar {
+  background: color-mix(in srgb, var(--background) 90%, transparent);
 }
-.ui-library-summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 4px 6px;
-  border-radius: 10px;
-  font-size: 12px;
+.docs-brand {
+  font-family: var(--font-jetbrains);
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.04em;
+}
+.docs-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted-foreground);
+}
+.docs-nav-link,
+.docs-nav-item,
+.docs-nav-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--muted-foreground);
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+.docs-nav-link {
+  font-size: 14px;
+}
+.docs-nav-item {
+  padding-left: 32px;
+  font-size: 12px;
+}
+.docs-nav-summary {
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   cursor: pointer;
   list-style: none;
 }
-.ui-library-summary::-webkit-details-marker,
-.ui-library-summary::marker {
+.docs-nav-summary::-webkit-details-marker {
   display: none;
-  content: "";
 }
-.ui-library-summary > span:first-child {
-  flex: 1;
+.docs-nav-link:hover,
+.docs-nav-item:hover {
+  background: var(--sidebar-accent);
+  color: var(--foreground);
 }
-.ui-library-count {
-  min-width: 1.5rem;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: var(--muted);
-  font-size: 11px;
+.docs-nav-summary:hover {
+  color: var(--foreground);
+}
+.docs-nav-link[aria-current="page"],
+.docs-nav-item[aria-current="page"],
+.docs-icon {
+  color: var(--brand-teal);
+  background: color-mix(in srgb, var(--brand-teal) 10%, transparent);
+}
+.docs-nav-item[aria-current="page"] {
   font-weight: 500;
-  text-align: center;
-  text-transform: none;
-  letter-spacing: 0;
 }
-.ui-library-chevron {
-  color: var(--muted-foreground);
-}
-.ui-library-group[open] .ui-library-chevron {
-  transform: rotate(180deg);
-}
-/* Unlayered, so it outranks Tailwind's lg:hidden; hide it here at the sidebar breakpoint. */
-.ui-library-toolbar {
-  display: flex;
+.docs-primary-link {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.6rem;
+  background: var(--brand-teal);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background-color 150ms;
 }
-@media (min-width: 64rem) {
-  .ui-library-toolbar {
-    display: none;
-  }
+.docs-primary-link:hover {
+  background: color-mix(in srgb, var(--brand-teal) 88%, black);
 }
-.ui-library-credit a {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+.docs-preview-grid {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--foreground) 11%, transparent) 0.7px,
+    transparent 0.7px
+  );
+  background-size: 16px 16px;
 }
 .ui-demo-section {
   display: grid;
+  justify-items: start;
   gap: 1rem;
 }
 .ui-demo-section + .ui-demo-section {
@@ -640,43 +653,4 @@ body {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
   color: var(--muted-foreground);
-}
-.ui-guide-prose h2 {
-  margin: 2.25rem 0 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 500;
-}
-.ui-guide-prose p,
-.ui-guide-prose li {
-  max-width: 65ch;
-  font-size: 0.875rem;
-  line-height: 1.75;
-  color: var(--muted-foreground);
-}
-.ui-guide-prose p + p {
-  margin-top: 0.75rem;
-}
-.ui-guide-prose ul {
-  display: grid;
-  gap: 0.5rem;
-  margin: 1rem 0 0;
-  padding-left: 1.15rem;
-}
-.ui-guide-prose pre {
-  margin-top: 1rem;
-  overflow-x: auto;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--foreground);
-  color: var(--background);
-  font-family: var(--font-geist-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-  line-height: 1.6;
-}
-.ui-guide-prose code {
-  font-family: var(--font-geist-mono, ui-monospace, monospace);
-  font-size: 0.75rem;
-}
-.ui-guide-prose a {
-  color: var(--brand-teal);
 }

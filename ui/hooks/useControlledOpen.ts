@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 interface UseControlledOpenProps {
   open?: boolean | undefined;
@@ -16,21 +16,18 @@ export const useControlledOpen = ({
   onOpenChange,
 }: UseControlledOpenProps): UseControlledOpenResult => {
   const [internalOpen, setInternalOpen] = useState(false);
-
-  // Determine if the component is controlled or uncontrolled
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open : internalOpen;
-
-  const setIsOpen = (newOpen: boolean) => {
-    if (!isControlled) {
-      setInternalOpen(newOpen);
-    }
-    if (onOpenChange) {
-      onOpenChange(newOpen);
-    }
-  };
-
-  const close = () => setIsOpen(false);
+  const setIsOpen = useCallback(
+    (newOpen: boolean) => {
+      if (!isControlled) {
+        setInternalOpen(newOpen);
+      }
+      onOpenChange?.(newOpen);
+    },
+    [isControlled, onOpenChange],
+  );
+  const close = useCallback(() => setIsOpen(false), [setIsOpen]);
 
   return { close, isOpen, setIsOpen };
 };

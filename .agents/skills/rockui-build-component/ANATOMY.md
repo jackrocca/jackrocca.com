@@ -1,4 +1,4 @@
-# Rocca UI component anatomy: reference shapes
+# RockUI component anatomy: reference shapes
 
 These are the code shapes the existing library uses. Copy the shape, not the component.
 

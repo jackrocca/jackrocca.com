@@ -15,7 +15,7 @@ export const BottomDrawerMenuLabel: ReactFC<BottomDrawerMenuLabelProps> = ({
 }) => (
   <div
     className={cn(
-      "px-4 py-2 text-left text-sm font-medium text-zinc-500 dark:text-zinc-400",
+      "px-4 py-2 text-left text-sm font-medium text-muted-foreground",
       className,
     )}
   >
@@ -33,10 +33,7 @@ export const BottomDrawerMenuSeparator: ReactFC<BottomDrawerMenuSeparatorProps> 
 }) => (
   <hr
     data-slot="bottom-drawer-menu-separator"
-    className={cn(
-      "my-1 h-px w-full shrink-0 border-0 bg-zinc-100 dark:bg-zinc-800",
-      className,
-    )}
+    className={cn("my-1 h-px w-full shrink-0 border-0 bg-border", className)}
   />
 );
 

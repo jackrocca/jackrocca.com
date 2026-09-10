@@ -2,6 +2,7 @@
 
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 
+import { useKitzeUI } from "@/ui/components/KitzeUIContext";
 import { cn } from "@/ui/lib/utils";
 
 const Popover = ({ ...props }: PopoverPrimitive.Root.Props) => (
@@ -21,24 +22,27 @@ const PopoverContent = ({
   Pick<
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) => (
-  <PopoverPrimitive.Portal>
-    <PopoverPrimitive.Positioner
-      align={align}
-      alignOffset={alignOffset}
-      side={side}
-      sideOffset={sideOffset}
-      className="isolate z-50"
-    >
-      <PopoverPrimitive.Popup
-        data-slot="popover-content"
-        className={cn(
-          "bg-popover text-popover-foreground z-50 w-72 origin-(--transform-origin) rounded-xl border p-4 shadow-md transition-[opacity,scale] duration-150 ease-out outline-none data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none",
-          className,
-        )}
-        {...props}
-      />
-    </PopoverPrimitive.Positioner>
-  </PopoverPrimitive.Portal>
-);
+  >) => {
+  const { portalContainer } = useKitzeUI();
+  return (
+    <PopoverPrimitive.Portal container={portalContainer ?? undefined}>
+      <PopoverPrimitive.Positioner
+        align={align}
+        alignOffset={alignOffset}
+        side={side}
+        sideOffset={sideOffset}
+        className="isolate z-50"
+      >
+        <PopoverPrimitive.Popup
+          data-slot="popover-content"
+          className={cn(
+            "bg-popover text-popover-foreground z-50 w-72 origin-(--transform-origin) rounded-xl border p-4 shadow-md transition-[opacity,scale] duration-150 outline-none data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none",
+            className,
+          )}
+          {...props}
+        />
+      </PopoverPrimitive.Positioner>
+    </PopoverPrimitive.Portal>
+  );
+};
 export { Popover, PopoverTrigger, PopoverContent };

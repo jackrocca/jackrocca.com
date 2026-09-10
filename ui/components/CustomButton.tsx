@@ -12,7 +12,6 @@ import { borderVariantKey } from "@/ui/components/CustomButtonStyles";
 import type * as CustomButtonTypesModule from "@/ui/components/CustomButtonTypes";
 
 const DEFAULT_LIGHT_COLOR = "bg-primary";
-const DEFAULT_DARK_COLOR = "bg-zinc-100";
 const EMPTY_CLASS_NAMES: NonNullable<CustomButtonProps["classNames"]> = {};
 export const { buttonVariants } = CustomButtonStylesModule;
 export const { defaultIconSizes } = CustomButtonStylesModule;
@@ -27,7 +26,6 @@ export const CustomButton: ReactFC<CustomButtonProps> = ({
   size = "md",
   circle = false,
   color,
-  darkColor,
   style,
   icon: Icon,
   iconSize,
@@ -51,10 +49,7 @@ export const CustomButton: ReactFC<CustomButtonProps> = ({
     href,
     ...props,
   });
-  const finalColorValue = color || DEFAULT_LIGHT_COLOR;
-  const finalDarkColorValue = darkColor ?? (color || DEFAULT_DARK_COLOR);
-  const finalColor = processColor(finalColorValue);
-  const finalDarkColor = processColor(finalDarkColorValue);
+  const finalColor = processColor(color || DEFAULT_LIGHT_COLOR);
   const finalIconSize = getFinalIconSize(size, iconSize);
   const hasIcon = Boolean(Icon || LeftIcon || RightIcon);
   const isIconOnly = circle || (!children && hasIcon);
@@ -81,11 +76,9 @@ export const CustomButton: ReactFC<CustomButtonProps> = ({
     }),
     style: {
       "--button-color": `var(--color-${finalColor})`,
-      "--button-dark-color": `var(--color-${finalDarkColor})`,
       ...style,
     } satisfies React.CSSProperties & {
       "--button-color": string;
-      "--button-dark-color": string;
     },
     ...linkProps,
     ...props,

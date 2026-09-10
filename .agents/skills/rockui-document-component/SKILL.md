@@ -1,9 +1,9 @@
 ---
-name: rocca-ui-document-component
-description: Add or improve a component's page in the public Rocca UI library at /ui - the catalog entry in lib/ui-catalog.ts (title, group, rationale, imports, files, related, local notes) and its interactive demo in components/ui-library/demos. Covers what a rationale paragraph must say, how demos are structured with DemoSection/DemoRow/DemoStack/DemoNote, how to make the Desktop/Mobile preview toggle meaningful, and how llms.txt and "Copy for agents" are generated. Use when asked to document, showcase, or add a demo for a ui/ component, fix a component page, or update the library's agent-facing text.
+name: rockui-document-component
+description: Add or improve a component's page in the public RockUI library at /ui - the catalog entry in lib/ui-catalog.ts (title, group, rationale, imports, files, related, local notes) and its interactive demo in components/ui-library/demos. Covers what a rationale paragraph must say, how demos are structured with DemoSection/DemoRow/DemoStack/DemoNote, how to make the Desktop/Mobile preview toggle meaningful, and how llms.txt and "Copy for agents" are generated. Use when asked to document, showcase, or add a demo for a ui/ component, fix a component page, or update the library's agent-facing text.
 ---
 
-# Documenting a component in the Rocca UI library
+# Documenting a component in the RockUI library
 
 The library at `/ui` follows [ui.kitze.io](https://ui.kitze.io): no props tables, no code dumps. A page is **a rationale paragraph, an import line, and a live preview** whose demos show every behavior the paragraph promises. Agents read the same data through `/ui/llms.txt` and the "Copy for agents" button, so the catalog text has to be precise.
 

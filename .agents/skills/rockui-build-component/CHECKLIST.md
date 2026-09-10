@@ -1,4 +1,4 @@
-# Definition of done for a Rocca UI change
+# Definition of done for a RockUI change
 
 Copy this into your working notes and tick every line. A change that skips a line is not finished.
 

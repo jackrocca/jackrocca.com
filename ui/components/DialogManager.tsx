@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   memo,
 } from "react";
@@ -60,8 +61,9 @@ const DialogManagerRender = ({
   children,
 }: DialogManagerProps) => {
   const [dialogs, setDialogs] = useState<DialogConfig[]>([]);
+  const idRef = useRef(0);
   const openDialog = useCallback((config: OpenDialogProps) => {
-    const id = Math.random().toString(36).slice(7);
+    const id = String(++idRef.current);
     setDialogs((prev) => {
       const newDialogs = [
         ...prev,

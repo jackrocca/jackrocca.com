@@ -26,7 +26,7 @@ export const SimpleSelectNative = ({
   <div className={cn("relative w-full", className)}>
     <div
       className={cn(
-        "border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-within:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2 focus-within:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-8 w-full items-center justify-between rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
         triggerClassName,
         disabled && "cursor-not-allowed opacity-50",
       )}

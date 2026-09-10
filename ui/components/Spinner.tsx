@@ -48,7 +48,11 @@ export const Spinner: ReactFC<SpinnerProps> = ({
 
   return (
     <SpinnerIcon
-      className={cn("text-foreground/50 animate-spin", foundSize, className)}
+      className={cn(
+        "text-foreground/50 animate-spin [animation-duration:700ms]",
+        foundSize,
+        className,
+      )}
     />
   );
 };

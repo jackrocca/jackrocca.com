@@ -10,7 +10,6 @@ export interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButton
   size?: Size | undefined;
   variant?: CustomButtonVariant | undefined;
   color?: string | undefined;
-  darkColor?: string | undefined;
   circle?: boolean | undefined;
   icon?: React.ElementType | undefined;
   iconSize?: number | undefined;

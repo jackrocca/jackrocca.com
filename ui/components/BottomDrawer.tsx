@@ -7,6 +7,7 @@ import type { ReactFC } from "@/ui/lib/types";
 import { cn } from "@/ui/lib/utils";
 import { useControlledOpen } from "@/ui/hooks/useControlledOpen";
 import { DrawerContext } from "@/ui/components/DrawerContext";
+import { useKitzeUI } from "@/ui/components/KitzeUIContext";
 
 export interface BottomDrawerClassNames {
   overlay?: string | undefined;
@@ -42,19 +43,18 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
     onOpenChange,
     open,
   });
+  const { portalContainer } = useKitzeUI();
 
   const [viewportWidth, setViewportWidth] = React.useState<number>();
   React.useLayoutEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || portalContainer) {
       return;
     }
-    // Scroll locking reserves a root scrollbar gutter, which also shrinks vw.
-    // Both portal layers must cover the actual window, including that gutter.
     const updateWidth = () => setViewportWidth(window.innerWidth);
     updateWidth();
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
-  }, [isOpen]);
+  }, [isOpen, portalContainer]);
 
   const contextValue = React.useMemo(() => ({ close }), [close]);
 
@@ -62,7 +62,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
     <div
       aria-hidden="true"
       className={cn(
-        "mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-zinc-300 dark:bg-zinc-700",
+        "mx-auto mb-4 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30",
         classNames?.handle,
       )}
     />
@@ -73,7 +73,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
       {handle}
       <Drawer.Title
         className={cn(
-          "mb-4 text-lg font-semibold text-zinc-900 dark:text-white",
+          "mb-4 text-lg font-semibold text-foreground",
           classNames?.title,
           !title && "sr-only",
         )}
@@ -103,25 +103,28 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
             <Drawer.Trigger>{trigger}</Drawer.Trigger>
           ))}
 
-        <Drawer.Portal>
+        <Drawer.Portal container={portalContainer ?? undefined}>
           <Drawer.Backdrop
             data-slot="bottom-drawer-backdrop"
-            style={{ width: viewportWidth }}
+            style={portalContainer ? undefined : { width: viewportWidth }}
             className={cn(
-              "fixed inset-y-0 left-0 z-[9999] w-screen bg-black/40 opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0 motion-reduce:transition-none dark:bg-black/60",
+              "fixed z-[9999] bg-black/40 opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity duration-200 data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:duration-0 motion-reduce:transition-none",
+              portalContainer ? "inset-0" : "inset-y-0 left-0 w-screen",
               classNames?.overlay,
             )}
           />
           <Drawer.Viewport
-            style={{ width: viewportWidth }}
-            className="pointer-events-none fixed inset-y-0 left-0 z-[9999] flex w-screen items-end justify-center"
+            style={portalContainer ? undefined : { width: viewportWidth }}
+            className={cn(
+              "pointer-events-none fixed z-[9999] flex items-end justify-center",
+              portalContainer ? "inset-0" : "inset-y-0 left-0 w-screen",
+            )}
           >
             <Drawer.Popup
               data-slot="bottom-drawer-content"
               className={cn(
-                "relative flex w-[95%] min-w-0 flex-col rounded-t-[10px] bg-white dark:bg-zinc-900",
-                "dark:border-t dark:border-zinc-800",
-                "pointer-events-auto max-h-[90dvh] max-w-[500px] transform-[translateY(var(--drawer-swipe-movement-y,0px))] transition-transform duration-300 ease-out outline-none data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:duration-0 motion-reduce:transition-none",
+                "relative flex w-[95%] min-w-0 flex-col rounded-t-[10px] bg-background",
+                "pointer-events-auto max-h-[90dvh] max-w-[500px] transform-[translateY(var(--drawer-swipe-movement-y,0px))] transition-transform duration-[280ms] ease-drawer outline-none data-ending-style:translate-y-full data-ending-style:duration-200 data-starting-style:translate-y-full data-swiping:duration-0 motion-reduce:transition-none",
                 classNames?.content,
                 {
                   "pt-6": !noHeader,
@@ -139,7 +142,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
               {!noHeader && (
                 <div
                   className={cn(
-                    "shrink-0 rounded-t-[10px] bg-white px-4 text-left dark:bg-zinc-900",
+                    "shrink-0 rounded-t-[10px] bg-background px-4 text-left",
                     classNames?.headerWrapper,
                   )}
                 >
@@ -148,7 +151,7 @@ export const BottomDrawer: ReactFC<BottomDrawerProps> = ({
               )}
               <Drawer.Content
                 className={cn(
-                  "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-white px-4 pt-0 pb-[max(1rem,env(safe-area-inset-bottom))] text-left dark:bg-zinc-900",
+                  "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-background px-4 pt-0 pb-[max(1rem,env(safe-area-inset-bottom))] text-left",
                   noHeader && "rounded-t-[10px] pt-6",
                   classNames?.childrenWrapper,
                 )}

@@ -56,8 +56,8 @@ export const ResponsiveSelectBottomDrawerMenu = ({
       type="button"
       aria-label={placeholder}
       className={cn(
-        "border-input bg-background flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "border-input bg-background flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm outline-none",
+        "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
         triggerClassName,
         className,
       )}

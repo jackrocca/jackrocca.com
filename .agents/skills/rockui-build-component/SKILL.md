@@ -1,11 +1,11 @@
 ---
-name: rocca-ui-build-component
-description: Build or change a component in Rocca UI, the site's Kitze-UI-derived component library under ui/. Covers the decision of whether a new component is warranted, the file anatomy (Component / Types / Styles / Parts), the small-prop-API rules (classNames slots, mobileView, controlled-or-uncontrolled open, Base UI render props), styling with tailwind-variants and semantic tokens, accessibility requirements, and how the component is registered in the /ui catalog. Use when asked to add, extend, refactor or fix anything in ui/components, ui/primitives or ui/hooks, or when a page needs UI that no existing component covers.
+name: rockui-build-component
+description: Build or change a component in RockUI, the site's Kitze-UI-derived component library under ui/. Covers the decision of whether a new component is warranted, the file anatomy (Component / Types / Styles / Parts), the small-prop-API rules (classNames slots, mobileView, controlled-or-uncontrolled open, Base UI render props), styling with tailwind-variants and semantic tokens, accessibility requirements, and how the component is registered in the /ui catalog. Use when asked to add, extend, refactor or fix anything in ui/components, ui/primitives or ui/hooks, or when a page needs UI that no existing component covers.
 ---
 
-# Building a Rocca UI component
+# Building a RockUI component
 
-Rocca UI is the source fork of [Kitze UI](https://ui.kitze.io) that lives in `ui/`. Its value is **smaller prop APIs and reusable desktop/mobile behavior**, not new visuals. A good component here lets a caller write one line where they used to write twelve, and behaves the same in every screen.
+RockUI is the source fork of [Kitze UI](https://ui.kitze.io) that lives in `ui/`. Its value is **smaller prop APIs and reusable desktop/mobile behavior**, not new visuals. A good component here lets a caller write one line where they used to write twelve, and behaves the same in every screen.
 
 Read before touching code: `ui/README.md`, `lib/ui-catalog.ts` (what already exists), and the closest existing component to what you are building.
 
@@ -16,7 +16,7 @@ Work down this list and stop at the first match.
 1. **An existing component already has the prop.** Use it. Check the catalog description and the `Props` interface; `classNames` slots and `mobileView` cover most "I need it slightly different" cases.
 2. **An existing component is missing one prop.** Add the prop to it (see "Extending"). Do not wrap it.
 3. **The need is app-specific** (league, photography, account). Compose existing `@/ui` pieces in `components/`, never in `ui/`. `ui/` cannot import application code; `npm run check:boundaries` enforces it.
-4. **Upstream Kitze UI has it.** Adopt it with the `rocca-ui-adopt-upstream` skill instead of writing from scratch. 76 entries are snapshotted in `vendor/kitze-ui/`; `ui/` only carries what the site uses.
+4. **Upstream Kitze UI has it.** Adopt it with the `rockui-adopt-upstream` skill instead of writing from scratch. 76 entries are snapshotted in `vendor/kitze-ui/`; `ui/` only carries what the site uses.
 5. **Genuinely new and reusable.** Build it here. Decide its tier first:
    - **Primitive** (`ui/primitives/kebab.tsx`): a styled Base UI/shadcn part with the primitive's own API. Lowercase file, named exports, `data-slot` attributes.
    - **Simple wrapper** (`ui/components/SimpleX.tsx`): one prop API over several primitives, standard presentation, `mobileView="keep"` by default.
@@ -74,7 +74,7 @@ Re-export the types from the main file (`export type SimpleDialogProps = Types.S
 A component does not exist until it is in the library:
 
 1. Add an entry to `lib/ui-catalog.ts` (slug, title, group, kind, one-paragraph rationale, `imports`, `files`, `related`, `localNotes` if it differs from upstream).
-2. Add `components/ui-library/demos/<slug>.tsx` and register it in `demos/index.ts`. Use the `rocca-ui-document-component` skill for what a good demo shows.
+2. Add `components/ui-library/demos/<slug>.tsx` and register it in `demos/index.ts`. Use the `rockui-document-component` skill for what a good demo shows.
 3. `tests/ui-catalog.test.ts` enforces catalog ↔ demo ↔ file pairing.
 
 ## Step 6: verify

@@ -37,8 +37,12 @@ retain the preview cached by the messaging app.
 
 ## Private Atlas paid-capacity release — September 9, 2026
 
-Production is `dpl_9Wwz6NfH4FTw7Gtp8NSdFptxZbT3`, promoted from the tested
-production candidate. Canonical alias inspection resolves to this deployment.
+Production is `dpl_DvhorMFySLVFFP5HKDcLgaWKLGym`. The preceding deployment
+`dpl_9Wwz6NfH4FTw7Gtp8NSdFptxZbT3` passed signed-out checks but returned 503 after
+owner authentication because its CLI source upload omitted the Git-ignored
+`private-atlas-build` directory. `.vercelignore` now explicitly includes that
+generated directory. The corrected deployment source contains its complete bundle
+and a manifest matching the local bytes; canonical alias inspection resolves to it.
 All 16 signed-out canonical HTTP checks passed: health, private entry/API/bundle
 restrictions with no-store headers, public home/gallery/Pick 4 and its OG image,
 and `/dev/ui` denial. The complete website check and 69-file private bundle passed

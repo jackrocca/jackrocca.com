@@ -39,23 +39,23 @@ export const SimpleSelectTrigger = ({
     aria-haspopup="listbox"
     aria-expanded={isOpen}
     aria-controls={listId}
-    className={cn("w-full justify-between", triggerClassName, className)}
+    className={cn("w-full justify-between gap-2", triggerClassName, className)}
     onClick={onClick}
     disabled={disabled}
     {...buttonProps}
   >
     {value && selectedOption ? (
-      <span className="flex items-center truncate">
+      <span className="flex items-center gap-2 truncate">
         {selectedOption.icon &&
           React.createElement(selectedOption.icon, {
-            className: "mr-2 h-4 w-4",
+            className: "size-4",
           })}
-        {selectedOption.emoji && <span className="mr-2">{selectedOption.emoji}</span>}
+        {selectedOption.emoji && <span>{selectedOption.emoji}</span>}
         {selectedOption.label || selectedOption.value}
       </span>
     ) : (
       placeholder
     )}
-    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
   </Button>
 );

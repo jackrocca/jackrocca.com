@@ -59,6 +59,19 @@ test("renderLlmsTxt includes titles, absolute urls, and imports", () => {
   }
 });
 
+test("component entries document unique props", () => {
+  for (const entry of uiCatalog) {
+    if (entry.kind !== "component") continue;
+    assert.ok((entry.props?.length ?? 0) >= 1, `${entry.slug} has no props`);
+    const names = (entry.props ?? []).map(([name]) => name);
+    assert.equal(
+      new Set(names).size,
+      names.length,
+      `${entry.slug} has duplicate prop names`,
+    );
+  }
+});
+
 test("renderAgentCopy includes the entry url, description, and import", () => {
   const entry = uiCatalog[0];
   assert.ok(entry);

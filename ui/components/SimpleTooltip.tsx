@@ -3,21 +3,14 @@
 import * as React from "react";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/primitives/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/ui/primitives/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/ui/primitives/tooltip";
 import { cn } from "@/ui/lib/utils";
 import { BottomDrawer } from "@/ui/components/BottomDrawer";
 import { useKitzeUI } from "@/ui/components/KitzeUIContext";
 
-// Define MobileViewType for SimpleTooltip
 export type TooltipMobileViewType = "keep" | "popover" | "bottom-drawer";
 export interface SimpleTooltipProps {
   children: React.ReactNode;
-  // Allow ReactNode for popover/drawer
   content: string | React.ReactNode;
   className?: string | undefined;
   tooltipClassName?: string | undefined;
@@ -36,8 +29,6 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
   if (!content) {
     return children;
   }
-
-  // --- Mobile Rendering ---
   if (isMobile) {
     if (mobileView === "popover") {
       return (
@@ -63,7 +54,6 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
         <BottomDrawer
           trigger={children}
           title={drawerTitle}
-          // Pass tooltipClassName to drawer content
           classNames={{
             content: tooltipClassName,
           }}
@@ -72,27 +62,22 @@ export const SimpleTooltip: React.FC<SimpleTooltipProps> = ({
         </BottomDrawer>
       );
     }
-    // If mobileView is 'keep', fall through to default Tooltip rendering
   }
-
-  // --- Default Tooltip Rendering (Desktop or mobileView='keep') ---
   return (
-    <TooltipProvider delay={0}>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            React.isValidElement(children) ? (
-              children
-            ) : (
-              <button type="button">{children}</button>
-            )
-          }
-          className={className}
-        />
-        <TooltipContent className={cn("max-w-[200px]", tooltipClassName)}>
-          {content}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          React.isValidElement(children) ? (
+            children
+          ) : (
+            <button type="button">{children}</button>
+          )
+        }
+        className={className}
+      />
+      <TooltipContent className={cn("max-w-[200px]", tooltipClassName)}>
+        {content}
+      </TooltipContent>
+    </Tooltip>
   );
 };

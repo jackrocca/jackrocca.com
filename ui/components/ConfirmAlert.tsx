@@ -69,11 +69,7 @@ const ConfirmAlertRender = ({
       <AlertDialogAction
         disabled={!canConfirm}
         onClick={handleConfirm}
-        className={
-          variant === "destructive"
-            ? "cursor-pointer bg-red-500/10 text-red-700 shadow-none hover:bg-red-500/20 dark:bg-red-400/10 dark:text-red-300 dark:hover:bg-red-400/20"
-            : undefined
-        }
+        variant={variant === "destructive" ? "destructive" : "default"}
       >
         {confirmLabel}
       </AlertDialogAction>

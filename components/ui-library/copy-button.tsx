@@ -50,8 +50,21 @@ export function CopyButton({
   const iconOnly = Boolean(circle || icon) && status !== "failed";
   const display =
     status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : label;
-  const Left = status === "copied" ? Check : (leftIcon ?? Clipboard);
-  const Only = status === "copied" ? Check : (icon ?? Copy);
+  const Idle = iconOnly ? (icon ?? Copy) : (leftIcon ?? Clipboard);
+  const t =
+    "size-4 transition-[opacity,scale] duration-150 motion-reduce:transition-none";
+  const stack = (
+    <span className="grid place-items-center [&>*]:col-start-1 [&>*]:row-start-1">
+      <Idle
+        aria-hidden
+        className={`${t} ${status === "copied" ? "opacity-0 scale-75" : "opacity-100 scale-100"}`}
+      />
+      <Check
+        aria-hidden
+        className={`${t} ${status === "copied" ? "opacity-100 scale-100" : "opacity-0 scale-75"}`}
+      />
+    </span>
+  );
   const name = status === "failed" ? "Copy failed" : (ariaLabel ?? label);
 
   return (
@@ -62,13 +75,16 @@ export function CopyButton({
       circle={iconOnly ? circle : undefined}
       color={color}
       className={className}
-      icon={iconOnly ? Only : undefined}
-      leftIcon={iconOnly ? undefined : Left}
+      leftSide={iconOnly ? undefined : stack}
       aria-label={name}
       tooltip={iconOnly ? tooltip : undefined}
       onClick={() => void copy(typeof text === "function" ? text() : text)}
     >
-      {iconOnly ? null : display}
+      {iconOnly ? (
+        stack
+      ) : (
+        <span style={{ minWidth: `${Math.max(label.length, 6)}ch` }}>{display}</span>
+      )}
     </CustomButton>
   );
 }
