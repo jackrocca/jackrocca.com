@@ -23,6 +23,7 @@ async function main() {
   const { POST: postAvatar, DELETE: deleteAvatar } =
     await import("../app/api/profile/avatar/route");
   const { GET: getAvatar } = await import("../app/api/avatars/[userId]/route");
+  const { GET: getGame } = await import("../app/api/game/[id]/route");
   const { mutate, readState } = await import("../lib/store");
   const { joinLeagueWithGoogle } = await import("../lib/google-account");
   const { loginResponse } = await import("../lib/auth");
@@ -228,6 +229,21 @@ async function main() {
     await avatarRequest("GET", player, base, undefined, users[1].id, 404);
     await request("admin/lines", {}, 403, player);
     await request("export", undefined, 403, player);
+    // Game detail is member-only and limited to games on the league schedule.
+    // The live ESPN fetch is not exercised here; the parser has fixture tests.
+    async function gameRequest(id: string, cookie: string, expected: number) {
+      const response = await getGame(
+        new NextRequest(`${base}/api/game/${id}`, { headers: { cookie } }),
+        { params: Promise.resolve({ id }) },
+      );
+      assert.equal(response.status, expected, `game ${id} status`);
+      checks++;
+    }
+    const scheduled = (await readState()).state.weeks[0].games[0].id;
+    await gameRequest(scheduled, "", 401);
+    await gameRequest("not-a-game", player, 404);
+    await gameRequest("999999999", player, 404);
+    await gameRequest("../state", player, 404);
     const state = (await readState()).state;
     const ids = state.weeks[0].games.slice(0, 4).map((g) => g.id);
     const input = {

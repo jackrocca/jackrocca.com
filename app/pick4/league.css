@@ -4020,6 +4020,8 @@
 .league-app .game-open {
   display: block;
   width: 100%;
+  height: auto;
+  min-height: 0;
   padding: 0;
   border-radius: 0;
   font: inherit;
@@ -4233,7 +4235,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.league-app .game-sheet h3 {
+.league-app.game-sheet h3 {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -4244,7 +4246,7 @@
   text-transform: uppercase;
   color: var(--league-muted);
 }
-.league-app .game-sheet h4 {
+.league-app.game-sheet h4 {
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 600;
@@ -4263,6 +4265,7 @@
   text-align: right;
   background: none;
   border: 0;
+  font-size: inherit;
   letter-spacing: 0;
   text-transform: none;
 }
