@@ -653,8 +653,12 @@ export default function League() {
                         const favorite = homeFavorite ? g.home : g.away,
                           underdog = homeFavorite ? g.away : g.home;
                         const cardPicks = data.gamePicks[g.id];
+                        const hasPicks = Boolean(
+                          cardPicks && PICK_TYPES.some((t) => cardPicks[t].length > 0),
+                        );
+                        // Before the reveal the row only carries the viewer's own pick and the reveal time.
                         const showPicks =
-                          cardPicks && PICK_TYPES.some((t) => cardPicks[t].length > 0);
+                          Boolean(w.publishedAt) && (hasPicks || !w.picksRevealed);
                         return (
                           <article
                             className={`game-card ${selected ? "has-pick" : ""}`}
@@ -772,16 +776,29 @@ export default function League() {
                               })}
                             </div>
                             {showPicks && (
-                              <div className="game-picks" aria-label="League picks">
-                                {PICK_TYPES.map((t) => (
-                                  <div key={t}>
-                                    <PickAvatars
-                                      pickers={cardPicks[t]}
-                                      viewerId={user.id}
-                                      label={labels[t]}
-                                    />
+                              <div
+                                className={`game-picks ${w.picksRevealed ? "" : "private"}`}
+                                aria-label="League picks"
+                              >
+                                {hasPicks && (
+                                  <div className="game-picks-row">
+                                    {PICK_TYPES.map((t) => (
+                                      <div key={t} className="game-picks-cell">
+                                        <PickAvatars
+                                          pickers={cardPicks[t]}
+                                          viewerId={user.id}
+                                          label={labels[t]}
+                                        />
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
+                                )}
+                                {!w.picksRevealed && (
+                                  <p className="game-picks-hint">
+                                    <LockKeyhole size={10} />
+                                    League picks reveal {date(w.deadline, true)} PT
+                                  </p>
+                                )}
                               </div>
                             )}
                           </article>
@@ -795,13 +812,6 @@ export default function League() {
                         : "Preview lines may move until published"}
                       <br />
                       Scores updated {updated} PT · All times Pacific
-                      {!w.picksRevealed && w.publishedAt && (
-                        <>
-                          <br />
-                          <LockKeyhole size={10} /> Other members’ picks reveal{" "}
-                          {date(w.deadline, true)} PT
-                        </>
-                      )}
                     </p>
                   </section>
                   <aside className="pick-rail" id="your-card">
@@ -1554,6 +1564,7 @@ export default function League() {
           revealed={w.picksRevealed}
           deadline={w.deadline}
           viewerId={user.id}
+          cards={data.standings.filter((s) => s.submitted).length}
           open={detailGameId !== null}
           onOpenChange={(open) => {
             if (!open) setDetailGameId(null);

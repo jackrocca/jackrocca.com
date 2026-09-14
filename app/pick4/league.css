@@ -4029,58 +4029,104 @@
   color: inherit;
   text-align: inherit;
   white-space: normal;
-  transition: background 0.16s;
+  transition:
+    background 0.16s ease,
+    transform 160ms var(--ease-out);
 }
-.league-app .game-open:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--muted) 55%, transparent);
+@media (hover: hover) and (pointer: fine) {
+  .league-app .game-open:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--muted) 55%, transparent);
+  }
 }
 .league-app .game-open:active:not(:disabled) {
-  transform: none;
+  transform: scale(0.985);
 }
 .league-app .game-open:focus-visible {
   outline-offset: -3px;
   border-radius: 6px 6px 0 0;
 }
 .league-app .game-picks {
+  padding: 0 13px 12px;
+  margin-top: -6px;
+  display: grid;
+  gap: 6px;
+}
+.league-app .game-picks-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 5px;
-  padding: 0 13px 12px;
-  margin-top: -6px;
 }
-.league-app .game-picks > div {
+.league-app .game-picks-cell {
   display: flex;
   justify-content: center;
   min-height: 26px;
 }
+.league-app .game-picks-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 0.2px;
+  color: var(--league-muted);
+}
 .league-app .pick-avatars {
   display: inline-flex;
   align-items: center;
-  padding: 2px 4px;
+  gap: 5px;
+  padding: 2px 6px 2px 4px;
   border-radius: 999px;
   min-height: 26px;
+  transition:
+    background 0.16s ease,
+    transform 160ms var(--ease-out);
 }
-.league-app .pick-avatars:hover {
-  background: var(--muted);
+.league-app .pick-avatars.mine {
+  background: var(--league-teal-soft);
+}
+@media (hover: hover) and (pointer: fine) {
+  .league-app .pick-avatars:hover {
+    background: var(--muted);
+  }
+}
+.league-app .pick-avatars:active {
+  transform: scale(0.96);
 }
 .league-app .pick-avatars:focus-visible {
   outline-offset: 1px;
+}
+.league-app .pick-count {
+  min-width: 14px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  text-align: center;
+}
+.league-app .pick-avatars.mine .pick-count {
+  color: var(--league-teal);
+}
+.league-app .pick-stack {
+  display: inline-flex;
 }
 .league-app .avatar-xs {
   height: 22px;
   width: 22px;
   font-size: 9px;
 }
-.league-app .pick-avatars .avatar,
+.league-app .pick-stack .avatar,
 .league-app .game-sheet-pickers .avatar {
   outline: 2px solid var(--paper);
   margin-left: -7px;
 }
-.league-app .pick-avatars .avatar:first-child,
+.league-app .pick-avatars.mine .pick-stack .avatar {
+  outline-color: var(--league-teal-soft);
+}
+.league-app .pick-stack .avatar:first-child,
 .league-app .game-sheet-pickers .avatar:first-child {
   margin-left: 0;
 }
-.league-app .pick-avatars .avatar img {
+.league-app .pick-stack .avatar img {
   outline: none;
 }
 .league-app .avatar-more {
@@ -4092,14 +4138,18 @@
 @media (max-width: 1150px) {
   .league-app .game-picks {
     padding: 0 8px 10px;
+  }
+  .league-app .game-picks-row {
     gap: 3px;
   }
 }
 @media (max-width: 850px) {
   .league-app .game-picks {
     padding: 0 15px 14px;
-    gap: 6px;
     margin-top: -8px;
+  }
+  .league-app .game-picks-row {
+    gap: 6px;
   }
 }
 /* The names list portals outside the board, beside the pick avatars. */
@@ -4140,78 +4190,258 @@
   object-fit: cover;
 }
 
-/* Game detail sheet. The body carries .league-app so the league look applies inside the portal. */
+/* ------------------------------------------------------------------ */
+/* Game detail sheet (v2). The body carries .league-app so league tokens apply inside the portal. */
 .game-sheet-dialog {
-  max-height: min(88dvh, 900px);
+  max-height: min(88dvh, 920px);
   overflow-y: auto;
-  padding: 20px;
+  padding: 0;
+  gap: 0;
+}
+.game-sheet-dialog > [data-slot="dialog-close"] {
+  top: 10px;
+  right: 10px;
+}
+.game-sheet-drawer {
+  max-height: calc(100dvh - 24px);
+}
+.game-sheet-drawer-header {
+  padding-inline: 0;
+}
+.game-sheet-drawer-header [data-slot="bottom-drawer-handle"],
+.game-sheet-drawer-header > div:first-child {
+  margin-bottom: 4px;
+}
+.game-sheet-drawer-body {
+  padding-inline: 0;
 }
 .league-app.game-sheet {
   display: grid;
-  gap: 18px;
   font-size: 13px;
-  padding-bottom: 6px;
+  --gs-live: #c56638;
 }
-.league-app .game-sheet-score {
+.league-app .gs-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
+  align-items: start;
+  gap: 8px;
+  padding: 22px 20px 14px;
 }
-.league-app .game-sheet-side {
+.league-app .gs-side {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  text-align: center;
   min-width: 0;
+  text-align: center;
+  transition: opacity 0.2s ease;
 }
-.league-app .game-sheet-side .team-mark {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 6px;
+.league-app .gs-side.muted {
+  opacity: 0.55;
 }
-.league-app .game-sheet-side strong {
-  font-size: 16px;
-  font-weight: 600;
+.league-app .gs-mark {
+  position: relative;
+  display: inline-flex;
+  margin-bottom: 4px;
+}
+.league-app .gs-mark .team-mark {
+  width: 52px;
+  height: 52px;
+  margin: 0;
+}
+.league-app .gs-ball {
+  position: absolute;
+  right: -6px;
+  bottom: 4px;
+  width: 14px;
+  height: 10px;
+  border-radius: 50%;
+  background: #7a4a1f;
+  box-shadow: 0 0 0 2px var(--paper);
+  transition: background 0.2s ease;
+}
+.league-app .gs-ball::after {
+  content: "";
+  position: absolute;
+  inset: 4px 3px;
+  border-top: 1px solid rgb(255 255 255 / 80%);
+}
+.league-app .gs-ball.red-zone {
+  background: var(--gs-live);
+}
+.league-app .gs-side strong {
+  font-size: 17px;
+  font-weight: 650;
   letter-spacing: -0.3px;
+  line-height: 1.2;
 }
-.league-app .game-sheet-side small {
-  color: var(--league-muted);
+.league-app .gs-side small {
   font-size: 10px;
+  color: var(--league-muted);
 }
-.league-app .game-sheet-tally {
+.league-app .gs-timeouts {
+  display: inline-flex;
+  gap: 3px;
+  margin-top: 5px;
+}
+.league-app .gs-timeouts i {
+  width: 9px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.2s ease;
+}
+.league-app .gs-timeouts i.on {
+  background: var(--foreground);
+}
+.league-app .gs-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  padding-top: 6px;
+  min-width: 96px;
 }
-.league-app .game-sheet-tally .versus b {
-  font-size: 34px;
+.league-app .gs-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 600 38px var(--font-display);
+  letter-spacing: -1.5px;
+  line-height: 1;
+  color: var(--ink);
 }
-.league-app .game-sheet-tally em {
+.league-app .gs-score > span {
+  color: #b9b9b9;
+  font-size: 22px;
+}
+.league-app .gs-score b {
+  font-weight: 600;
+  min-width: 1.15em;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+.league-app .gs-score b.muted {
+  color: var(--league-muted);
+}
+.league-app .gs-score.live b {
+  color: var(--gs-live);
+}
+.league-app .gs-score.pregame {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: #b9b9b9;
+  padding: 12px 0 4px;
+}
+.league-app .gs-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-style: normal;
   font-size: 10px;
-  letter-spacing: 0.4px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--league-muted);
   text-align: center;
+  white-space: nowrap;
 }
-.league-app .game-sheet-tally em.live {
-  color: #c56638;
+.league-app .gs-status.live {
+  color: var(--gs-live);
 }
-.league-app .game-sheet-tally em.live .live-dot {
-  background: #c56638;
+.league-app .gs-status.live .live-dot {
+  background: var(--gs-live);
+  animation: gs-pulse 2s var(--ease-in-out) infinite;
 }
-.league-app .game-sheet-meta {
-  margin: -8px 0 0;
+@keyframes gs-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.league-app .gs-meta {
+  font-size: 10px;
+  color: var(--league-muted);
   text-align: center;
-  font-size: 11px;
+  max-width: 180px;
+  line-height: 1.4;
 }
-.league-app .game-sheet-line {
+.league-app .gs-tabs {
+  gap: 0;
+}
+.league-app .gs-tablist {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper);
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.league-app .gs-tab {
+  min-height: 42px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--league-muted);
+  padding: 0 6px;
+}
+.league-app .gs-tab:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  border-radius: 6px;
+}
+.league-app .gs-tab[data-active] {
+  color: var(--ink);
+  font-weight: 600;
+}
+.league-app .gs-tab-count {
+  min-width: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 17px;
+  color: var(--ink);
+}
+.league-app .gs-tab[data-active] .gs-tab-count {
+  background: var(--ink);
+  color: var(--paper);
+}
+.league-app .gs-panel {
+  padding: 16px 20px 6px;
+}
+.league-app .gs-stack {
+  display: grid;
+  gap: 18px;
+}
+.league-app .gs-empty {
+  margin: 0;
+  padding: 18px 0;
+  text-align: center;
+  font-size: 12px;
+}
+.league-app .gs-section h3,
+.league-app .gs-picks-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .gs-section h4 {
+  margin: 10px 0 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .gs-line,
+.league-app .gs-facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
@@ -4221,13 +4451,21 @@
   border-radius: 8px;
   background: var(--muted);
 }
-.league-app .game-sheet-line dt {
+.league-app .gs-facts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: none;
+}
+.league-app .gs-line dt,
+.league-app .gs-facts dt,
+.league-app .gs-situation dt {
   font-size: 9px;
-  text-transform: uppercase;
   letter-spacing: 0.4px;
+  text-transform: uppercase;
   color: var(--league-muted);
 }
-.league-app .game-sheet-line dd {
+.league-app .gs-line dd,
+.league-app .gs-facts dd,
+.league-app .gs-situation dd {
   margin: 3px 0 0;
   font-size: 13px;
   font-weight: 600;
@@ -4235,32 +4473,21 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.league-app.game-sheet h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--league-muted);
+.league-app .gs-facts dd {
+  white-space: normal;
+  font-weight: 500;
+  line-height: 1.4;
 }
-.league-app.game-sheet h4 {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.league-app .game-sheet-periods,
-.league-app .game-sheet-stat table {
+.league-app .gs-periods,
+.league-app .gs-stat table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
 }
-.league-app .game-sheet-periods th,
-.league-app .game-sheet-periods td,
-.league-app .game-sheet-stat th,
-.league-app .game-sheet-stat td {
+.league-app .gs-periods th,
+.league-app .gs-periods td,
+.league-app .gs-stat th,
+.league-app .gs-stat td {
   padding: 6px 5px;
   text-align: right;
   background: none;
@@ -4269,14 +4496,14 @@
   letter-spacing: 0;
   text-transform: none;
 }
-.league-app .game-sheet-periods th:first-child,
-.league-app .game-sheet-periods td:first-child,
-.league-app .game-sheet-stat th:first-child,
-.league-app .game-sheet-stat td:first-child {
+.league-app .gs-periods th:first-child,
+.league-app .gs-periods td:first-child,
+.league-app .gs-stat th:first-child,
+.league-app .gs-stat td:first-child {
   text-align: left;
 }
-.league-app .game-sheet-periods thead th,
-.league-app .game-sheet-stat thead th {
+.league-app .gs-periods thead th,
+.league-app .gs-stat thead th {
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.4px;
@@ -4284,267 +4511,499 @@
   color: var(--league-muted);
   border-bottom: 1px solid var(--border);
 }
-.league-app .game-sheet-periods tbody th {
+.league-app .gs-periods tbody th {
   font-weight: 600;
   color: var(--ink);
 }
-.league-app .game-sheet-periods td b {
+.league-app .gs-periods td b {
   font-weight: 600;
 }
-.league-app .game-sheet-live {
+/* Live situation */
+.league-app .gs-live {
+  display: grid;
+  gap: 12px;
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid color-mix(in srgb, #c56638 30%, var(--border));
-  background: color-mix(in srgb, #c56638 5%, var(--paper));
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--gs-live) 28%, var(--border));
+  background: color-mix(in srgb, var(--gs-live) 4%, var(--paper));
 }
-.league-app .game-sheet-live h3 {
-  color: #c56638;
+.league-app .field-strip {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 30px;
+  height: 44px;
+  margin: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  outline: 1px solid rgb(0 0 0 / 8%);
+  outline-offset: -1px;
 }
-.league-app .game-sheet-live .live-dot {
-  background: #c56638;
-}
-.league-app .red-zone {
-  margin-left: auto;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: #c56638;
+.league-app .field-endzone {
+  display: grid;
+  place-items: center;
   color: white;
   font-size: 9px;
-  letter-spacing: 0.4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  writing-mode: vertical-rl;
 }
-.league-app .game-sheet-situation {
+.league-app .field-endzone-away {
+  transform: rotate(180deg);
+}
+.league-app .field-turf {
+  position: relative;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 25%) 1px, transparent 1px) 0 0 / 10% 100%,
+    linear-gradient(180deg, #3f8f4a, #367f41);
+}
+.league-app .field-yard {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(255 255 255 / 30%);
+  transform: translateX(-50%);
+}
+.league-app .field-yard.midfield {
+  background: rgb(255 255 255 / 70%);
+}
+.league-app .field-redzone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20%;
+  background: color-mix(in srgb, var(--gs-live) 45%, transparent);
+}
+.league-app .field-redzone.left {
+  left: 0;
+}
+.league-app .field-redzone.right {
+  right: 0;
+}
+.league-app .field-first-down {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ffd23f;
+  transform: translateX(-50%);
+}
+.league-app .field-ball {
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+.league-app .field-ball i {
+  position: absolute;
+  top: -6px;
+  left: -8px;
+  width: 16px;
+  height: 12px;
+  border-radius: 50%;
+  background: #7a4a1f;
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 1px 3px rgb(0 0 0 / 35%);
+}
+.league-app .field-strip[data-direction="left"] .field-ball::after,
+.league-app .field-strip[data-direction="right"] .field-ball::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  border: 4px solid transparent;
+}
+.league-app .field-strip[data-direction="right"] .field-ball::after {
+  left: 11px;
+  border-left-color: var(--paper);
+}
+.league-app .field-strip[data-direction="left"] .field-ball::after {
+  right: 11px;
+  border-right-color: var(--paper);
+}
+.league-app .gs-situation {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 8px 18px;
+  margin: 0;
 }
-.league-app .game-sheet-situation small,
-.league-app .game-sheet-last-play small,
-.league-app .game-sheet-picks small,
-.league-app .game-sheet-leaders small {
+.league-app .gs-situation dd {
+  font-size: 14px;
+}
+.league-app .gs-last-play {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.league-app .gs-last-play small {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   font-size: 9px;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--league-muted);
 }
-.league-app .game-sheet-situation strong {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  font-weight: 600;
-}
-.league-app .game-sheet-situation .team-mark {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-}
-.league-app .game-sheet-last-play {
-  margin: 12px 0 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink);
-}
-.league-app .game-sheet-empty {
-  margin: 0;
-  font-size: 12px;
-}
-.league-app .game-sheet-reveal {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 10px;
-  font-size: 11px;
-}
-.league-app .game-sheet-picks ul,
-.league-app .game-sheet-scoring ol,
-.league-app .game-sheet-drives ol,
-.league-app .game-sheet-leaders {
+/* Leaders, scoring, drives */
+.league-app .gs-leaders {
   list-style: none;
   margin: 0;
   padding: 0;
-}
-.league-app .game-sheet-picks li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 0;
-  border-top: 1px solid var(--border);
-}
-.league-app .game-sheet-picks li:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-.league-app .game-sheet-picks li > div {
-  flex: 1;
-  min-width: 0;
-}
-.league-app .game-sheet-picks .slot-icon {
-  height: 30px;
-  width: 30px;
-  background: var(--league-teal-soft);
-}
-.league-app .game-sheet-picks strong {
-  font-size: 13px;
-  font-weight: 600;
-}
-.league-app .game-sheet-pickers {
-  display: inline-flex;
-}
-.league-app .game-sheet-scoring li,
-.league-app .game-sheet-drives li {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
-  font-size: 12px;
+  gap: 6px;
 }
-.league-app .game-sheet-scoring li:first-child {
-  border-top: 0;
-  padding-top: 0;
-}
-.league-app .game-sheet-play-team {
+.league-app .gs-leaders li {
   display: grid;
-  font-size: 12px;
-  font-weight: 600;
-}
-.league-app .game-sheet-play-team small {
-  font-size: 9px;
-  font-weight: 500;
-  color: var(--league-muted);
-  white-space: nowrap;
-}
-.league-app .game-sheet-play-text {
-  line-height: 1.45;
-  color: var(--ink);
-}
-.league-app .game-sheet-scoring b,
-.league-app .game-sheet-drives b {
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--league-muted);
-}
-.league-app .game-sheet-box-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.league-app .game-sheet-box-heading h3 {
-  margin: 0;
-}
-.league-app .game-sheet-leaders {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
-  margin-bottom: 14px;
+  padding: 8px 0 10px;
+  border-top: 1px solid var(--border);
 }
-.league-app .game-sheet-leaders li {
+.league-app .gs-leaders li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.league-app .gs-leaders li > small {
+  grid-column: 1 / -1;
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .gs-leader {
   display: grid;
   gap: 2px;
   min-width: 0;
-  padding: 9px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding-left: 8px;
+  border-left: 2px solid var(--team, var(--border));
 }
-.league-app .game-sheet-leaders strong {
+.league-app .gs-leader strong {
   font-size: 12px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.league-app .game-sheet-leaders strong span {
+.league-app .gs-leader strong span,
+.league-app .gs-leader > span {
+  font-size: 11px;
   font-weight: 500;
   color: var(--league-muted);
 }
-.league-app .game-sheet-leaders > li > span {
-  font-size: 11px;
+.league-app .gs-group ol,
+.league-app .gs-drives,
+.league-app .gs-picks ul,
+.league-app .gs-leader-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.league-app .gs-group li,
+.league-app .gs-drives li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+.league-app .gs-group li:first-child {
+  border-top: 0;
+}
+.league-app .gs-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.league-app .gs-chip.td {
+  background: var(--ink);
+  color: var(--paper);
+}
+.league-app .gs-chip.quiet {
   color: var(--league-muted);
 }
-.league-app .game-sheet-stat {
-  margin-top: 12px;
+.league-app .gs-play {
+  display: grid;
+  min-width: 0;
+  line-height: 1.45;
 }
-.league-app .game-sheet-stat table {
+.league-app .gs-play b {
+  font-weight: 600;
+}
+.league-app .gs-play small {
+  font-size: 10px;
+  color: var(--league-muted);
+}
+.league-app .gs-play > span {
+  color: var(--ink);
+}
+.league-app .gs-running {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--league-muted);
+}
+.league-app .gs-drives li {
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  padding-left: 8px;
+  border-left: 2px solid var(--team);
+  border-top-color: transparent;
+  margin-top: 4px;
+}
+.league-app .gs-drives li.current {
+  background: color-mix(in srgb, var(--gs-live) 6%, var(--paper));
+  border-radius: 0 6px 6px 0;
+}
+.league-app .gs-drives li.current .gs-chip {
+  background: var(--gs-live);
+  color: white;
+}
+.league-app .gs-drive-team {
+  display: grid;
+  font-size: 12px;
+  font-weight: 600;
+}
+.league-app .gs-drive-team small {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--league-muted);
+  white-space: nowrap;
+}
+.league-app .gs-drive-text {
+  color: var(--ink);
+  line-height: 1.4;
+}
+/* Box score */
+.league-app .gs-team-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.league-app .gs-leader-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.league-app .gs-leader-cards li {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.league-app .gs-leader-cards small {
+  font-size: 9px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--league-muted);
+}
+.league-app .gs-leader-cards strong {
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.league-app .gs-leader-cards li > span {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--league-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.league-app .gs-leader-cards em {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--muted);
+  color: var(--ink);
+}
+.league-app .gs-stat {
+  margin-top: 8px;
+}
+.league-app .gs-stat h4 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.league-app .gs-stat table {
   font-size: 11px;
   white-space: nowrap;
 }
-.league-app .game-sheet-stat tbody th {
+.league-app .gs-stat tbody th {
   font-weight: 500;
   color: var(--ink);
 }
-.league-app .game-sheet-stat tbody th small {
+.league-app .gs-stat tbody th small {
   font-size: 9px;
   color: var(--league-muted);
 }
-.league-app .game-sheet-stat tbody tr:first-child th {
+.league-app .gs-stat tbody tr:first-child th {
   font-weight: 600;
 }
-.league-app .game-sheet-stat tbody td {
+.league-app .gs-stat tbody td {
   border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
-.league-app .game-sheet-stat tfoot th,
-.league-app .game-sheet-stat tfoot td {
+.league-app .gs-stat tfoot th,
+.league-app .gs-stat tfoot td {
   border-top: 1px solid var(--border);
   color: var(--league-muted);
   font-weight: 500;
 }
-.league-app .game-sheet-drives summary {
+/* Picks tab */
+.league-app .gs-picks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+.league-app .gs-picks li:first-child {
+  border-top: 0;
+  padding-top: 2px;
+}
+.league-app .gs-picks li.empty {
+  opacity: 0.6;
+}
+.league-app .gs-picks .slot-icon {
+  height: 30px;
+  width: 30px;
+  background: var(--muted);
+  color: var(--league-muted);
+}
+.league-app .gs-picks li.mine .slot-icon {
+  background: var(--league-teal-soft);
+  color: var(--league-teal);
+}
+.league-app .gs-pick-body {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+.league-app .gs-pick-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.league-app .gs-pick-head small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.league-app .gs-pick-head small span {
+  font-weight: 500;
+  color: var(--league-muted);
+}
+.league-app .gs-pick-head b {
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.league-app .gs-pick-head b span {
+  font-weight: 500;
+  color: var(--league-muted);
+}
+.league-app .gs-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--muted);
+  overflow: hidden;
+}
+.league-app .gs-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ink);
+  transform-origin: left;
+  transition: transform 300ms var(--ease-out);
+}
+.league-app .gs-picks li.mine .gs-bar span {
+  background: var(--league-teal);
+}
+.league-app .gs-pick-members {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--league-muted);
-  list-style: none;
+  min-height: 22px;
 }
-.league-app .game-sheet-drives summary::-webkit-details-marker {
-  display: none;
-}
-.league-app .game-sheet-drives summary small {
-  padding: 1px 6px;
-  border-radius: 999px;
-  background: var(--muted);
-  font-size: 10px;
-  letter-spacing: 0;
-}
-.league-app .game-sheet-drives ol {
-  margin-top: 8px;
-}
-.league-app .game-sheet-drives li.current {
-  background: var(--muted);
-  border-radius: 6px;
-  padding-inline: 8px;
-}
-.league-app .game-sheet-drives b.scored {
+.league-app .game-sheet-pickers {
   display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--league-teal);
 }
-.league-app .game-sheet-foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
+.league-app .gs-pick-names {
+  font-size: 11px;
+  color: var(--league-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.league-app .gs-foot {
   margin: 0;
+  padding: 10px 20px 16px;
 }
 @media (max-width: 480px) {
-  .league-app .game-sheet-leaders {
+  .league-app .gs-header {
+    padding: 14px 16px 10px;
+  }
+  .league-app .gs-panel {
+    padding: 14px 16px 6px;
+  }
+  .league-app .gs-foot {
+    padding-inline: 16px;
+  }
+  .league-app .gs-score {
+    font-size: 34px;
+  }
+  .league-app .gs-mark .team-mark {
+    width: 46px;
+    height: 46px;
+  }
+  .league-app .gs-leader-cards {
     grid-template-columns: 1fr;
   }
-  .league-app .game-sheet-tally .versus b {
-    font-size: 30px;
+  .league-app .gs-leader-cards li {
+    grid-template-columns: auto 1fr;
+    align-items: center;
   }
-  .league-app .game-sheet-line {
-    padding: 9px 10px;
+  .league-app .gs-situation {
+    grid-template-columns: 1fr 1fr;
+  }
+  .league-app .gs-meta {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .league-app .game-open,
+  .league-app .pick-avatars,
+  .league-app .gs-bar span {
+    transition-property: background, color;
+  }
+  .league-app .game-open:active:not(:disabled),
+  .league-app .pick-avatars:active {
+    transform: none;
+  }
+  .league-app .gs-status.live .live-dot {
+    animation: none;
   }
 }

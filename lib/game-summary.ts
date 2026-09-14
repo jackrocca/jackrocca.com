@@ -290,6 +290,7 @@ export type TeamSummary = {
 export type DriveSummary = {
   id: string;
   teamId: string | null;
+  period: number | null;
   description: string | null;
   result: string | null;
   plays: number | null;
@@ -302,8 +303,12 @@ export type DriveSummary = {
 };
 export type GameSituation = {
   possessionTeamId: string | null;
+  down: number | null;
+  distance: number | null;
   downDistance: string | null;
   ballOn: string | null;
+  /** Yards from the ball to the end zone the possessing team is driving toward. */
+  yardsToEndzone: number | null;
   redZone: boolean | null;
   lastPlay: string | null;
   drive: DriveSummary | null;
@@ -350,6 +355,7 @@ function drive(raw: z.infer<typeof driveSchema>, current: boolean): DriveSummary
   return {
     id: raw.id,
     teamId: raw.team?.id ?? null,
+    period: raw.start?.period?.number ?? null,
     description: raw.description ?? null,
     result: current ? null : (raw.displayResult ?? raw.result ?? null),
     plays: raw.offensivePlays ?? null,
@@ -405,7 +411,12 @@ export function parseGameSummary(raw: unknown, fetchedAt = new Date()): GameSumm
       });
     }
     const leaders: TeamLeader[] = [];
-    for (const group of data.leaders?.find((l) => l.team.id === teamId)?.leaders ?? []) {
+    // Pregame payloads carry season leaders, which are not this game's numbers.
+    const groups =
+      state === "pre"
+        ? []
+        : (data.leaders?.find((l) => l.team.id === teamId)?.leaders ?? []);
+    for (const group of groups) {
       const label = leaderLabels[group.name];
       const top = group.leaders?.[0];
       if (!label || !top?.displayValue) continue;
@@ -448,8 +459,21 @@ export function parseGameSummary(raw: unknown, fetchedAt = new Date()): GameSumm
       spot?.team?.id ??
       (homeRaw.possession ? home.id : awayRaw.possession ? away.id : null);
     if (live || last) {
+      // ESPN yard lines count from the home goal line, so the distance to the
+      // target end zone depends on who has the ball.
+      const yardLine = live?.yardLine ?? spot?.yardLine;
+      const yardsToEndzone =
+        spot?.yardsToEndzone ??
+        (yardLine !== undefined && possessionTeamId
+          ? possessionTeamId === home.id
+            ? 100 - yardLine
+            : yardLine
+          : null);
       situation = {
         possessionTeamId: possessionTeamId ?? null,
+        down: live?.down ?? spot?.down ?? null,
+        distance: live?.distance ?? spot?.distance ?? null,
+        yardsToEndzone,
         downDistance:
           live?.shortDownDistanceText ??
           live?.downDistanceText ??
@@ -463,6 +487,8 @@ export function parseGameSummary(raw: unknown, fetchedAt = new Date()): GameSumm
         lastPlay: live?.lastPlay?.text ?? last?.text ?? null,
         drive: current,
       };
+      if (live?.homeTimeouts !== undefined) home.timeouts = live.homeTimeouts;
+      if (live?.awayTimeouts !== undefined) away.timeouts = live.awayTimeouts;
     }
   }
   const scoring: ScoringPlay[] = (data.scoringPlays ?? []).map((p) => ({

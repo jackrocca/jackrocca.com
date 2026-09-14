@@ -27,6 +27,7 @@ test("a final summary yields scores, leaders, sorted box score, drives, and scor
   assert.equal(passing.totals.length, passing.columns.length);
   assert.ok(summary.drives.length > 0);
   assert.ok(summary.drives.every((d) => !d.current));
+  assert.ok(summary.drives.every((d) => typeof d.period === "number"));
   assert.equal(summary.situation, null);
   assert.ok(summary.scoring.length > 0);
   assert.equal(summary.scoring[0].type, "TD");
@@ -38,7 +39,23 @@ test("a final summary yields scores, leaders, sorted box score, drives, and scor
   });
 });
 test("a pregame summary reports every live section as unavailable", () => {
-  const summary = parseGameSummary(fixture("espn-summary-pregame"));
+  const raw = fixture("espn-summary-pregame");
+  // ESPN lists season leaders before kickoff; they must not read as game stats.
+  raw.leaders = [
+    {
+      team: { id: raw.header.competitions[0].competitors[0].team.id },
+      leaders: [
+        {
+          name: "passingYards",
+          displayName: "Passing Yards",
+          leaders: [
+            { displayValue: "300 YDS", athlete: { id: "1", displayName: "Someone" } },
+          ],
+        },
+      ],
+    },
+  ];
+  const summary = parseGameSummary(raw);
   assert.equal(summary.state, "pre");
   assert.equal(summary.home.score, null);
   assert.deepEqual(summary.home.box, []);
@@ -108,6 +125,9 @@ test("a live summary derives the situation from the current drive", () => {
   assert.equal(summary.situation.possessionTeamId, "26");
   assert.equal(summary.situation.downDistance, "1st & 10");
   assert.equal(summary.situation.ballOn, "NE 19");
+  assert.equal(summary.situation.down, 1);
+  assert.equal(summary.situation.distance, 10);
+  assert.equal(summary.situation.yardsToEndzone, 19);
   assert.equal(summary.situation.redZone, true);
   assert.equal(
     summary.situation.lastPlay,
@@ -127,14 +147,24 @@ test("an explicit situation block wins over the drive-derived fallback", () => {
     downDistanceText: "3rd & 2 at NE 4",
     shortDownDistanceText: "3rd & 2",
     possessionText: "NE 4",
-    isRedZone: true,
+    isRedZone: false,
     possession: "17",
+    down: 3,
+    distance: 2,
+    yardLine: 96,
+    homeTimeouts: 2,
+    awayTimeouts: 3,
     lastPlay: { text: "Timeout Seahawks." },
   };
+  delete raw.drives.current.plays;
   const summary = parseGameSummary(raw);
   assert.equal(summary.situation?.possessionTeamId, "17");
   assert.equal(summary.situation?.downDistance, "3rd & 2");
   assert.equal(summary.situation?.lastPlay, "Timeout Seahawks.");
+  // Away team (NE) backed up at its own 4: yard lines count from the home goal line.
+  assert.equal(summary.situation?.yardsToEndzone, 96);
+  assert.equal(summary.home.timeouts, 2);
+  assert.equal(summary.away.timeouts, 3);
 });
 test("a live game without any drive data shows the situation as unavailable", () => {
   const raw = liveFixture();
