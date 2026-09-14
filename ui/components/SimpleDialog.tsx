@@ -88,6 +88,7 @@ export const SimpleDialog = ({
           childrenWrapper: classNames.drawerRoot,
           content: classNames.drawerContent,
           headerWrapper: classNames.drawerHeader,
+          title: classNames.title,
         }}
       >
         <div className={classNames.body}>{children}</div>
