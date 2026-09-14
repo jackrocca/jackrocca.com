@@ -1,13 +1,46 @@
 import { onboardingFlags } from "./onboarding";
 import { buyInStatus, currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
-import { BUY_IN_DOLLARS, State, User } from "./types";
+import { BUY_IN_DOLLARS, Entry, PICK_TYPES, PickType, State, User } from "./types";
+export type GamePicker = { userId: string; name: string; avatarRevision: number };
+export type GamePicks = Record<string, Record<PickType, GamePicker[]>>;
+/**
+ * Members grouped by the game and slot they picked. Callers pass only entries
+ * whose picks the viewer may see, so redaction happens before grouping.
+ */
+export function gamePicks(
+  entries: Entry[],
+  users: User[],
+  viewerId: string | null,
+): GamePicks {
+  const byGame: GamePicks = {};
+  const ordered = [...entries].sort((a, b) =>
+    a.userId === viewerId ? -1 : b.userId === viewerId ? 1 : 0,
+  );
+  for (const entry of ordered) {
+    const member = users.find((u) => u.id === entry.userId);
+    if (!member) continue;
+    for (const type of PICK_TYPES) {
+      const gameId = entry.picks[type]?.gameId;
+      if (!gameId) continue;
+      byGame[gameId] ??= { favorite: [], underdog: [], over: [], under: [] };
+      byGame[gameId][type].push({
+        userId: member.id,
+        name: member.name,
+        avatarRevision: member.avatarRevision ?? 0,
+      });
+    }
+  }
+  return byGame;
+}
 export function view(
   state: State,
   user: User | null,
   weekNumber: number,
   googleReady = false,
+  now = Date.now(),
 ) {
   const week = state.weeks.find((w) => w.number === weekNumber)!;
+  const reveal = now >= deadline(week);
   const allGames = state.weeks.flatMap((w) => w.games);
   const allScores = state.entries.map((e) => ({
     ...e,
@@ -73,6 +106,7 @@ export function view(
         : null,
       deadline: deadline(week),
       freezeAt: freezeTime(week),
+      picksRevealed: reveal,
     },
     pot: {
       players: paidPlayers,
@@ -84,7 +118,6 @@ export function view(
           .filter((e) => e.week === weekNumber)
           .map((e) => {
             const own = e.userId === user.id;
-            const reveal = Date.now() >= deadline(week);
             return {
               ...e,
               buyIn: own
@@ -101,6 +134,16 @@ export function view(
             };
           })
       : [],
+    // Same redaction as `entries`: a member's own card always, others only after the deadline.
+    gamePicks: user
+      ? gamePicks(
+          visibleScores.filter(
+            (e) => e.week === weekNumber && (e.userId === user.id || reveal),
+          ),
+          state.users,
+          user.id,
+        )
+      : {},
     history: user
       ? allScores.filter((e) => e.userId === user.id).sort((a, b) => b.week - a.week)
       : [],

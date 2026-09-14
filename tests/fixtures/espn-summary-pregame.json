@@ -1,0 +1,154 @@
+{
+  "header": {
+    "id": "401872931",
+    "competitions": [
+      {
+        "id": "401872931",
+        "date": "2026-09-15T00:15Z",
+        "status": {
+          "type": {
+            "id": "1",
+            "name": "STATUS_SCHEDULED",
+            "state": "pre",
+            "completed": false,
+            "description": "Scheduled",
+            "detail": "Mon, September 14th at 8:15 PM EDT",
+            "shortDetail": "9/14 - 8:15 PM EDT"
+          },
+          "isTBDFlex": false
+        },
+        "competitors": [
+          {
+            "id": "12",
+            "homeAway": "home",
+            "possession": false,
+            "record": [
+              {
+                "type": "total",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              },
+              {
+                "type": "home",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              },
+              {
+                "type": "vsconf",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              }
+            ],
+            "team": {
+              "id": "12",
+              "abbreviation": "KC",
+              "displayName": "Kansas City Chiefs",
+              "name": "Chiefs",
+              "location": "Kansas City",
+              "color": "e31837"
+            }
+          },
+          {
+            "id": "7",
+            "homeAway": "away",
+            "possession": false,
+            "record": [
+              {
+                "type": "total",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              },
+              {
+                "type": "road",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              },
+              {
+                "type": "vsconf",
+                "summary": "0-0",
+                "displayValue": "0-0"
+              }
+            ],
+            "team": {
+              "id": "7",
+              "abbreviation": "DEN",
+              "displayName": "Denver Broncos",
+              "name": "Broncos",
+              "location": "Denver",
+              "color": "0a2343"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "boxscore": {
+    "players": []
+  },
+  "leaders": [
+    {
+      "team": {
+        "id": "12"
+      },
+      "leaders": [
+        {
+          "name": "passingYards",
+          "displayName": "Passing Yards",
+          "leaders": []
+        },
+        {
+          "name": "rushingYards",
+          "displayName": "Rushing Yards",
+          "leaders": []
+        },
+        {
+          "name": "receivingYards",
+          "displayName": "Receiving Yards",
+          "leaders": []
+        },
+        {
+          "name": "sacks",
+          "displayName": "Sacks",
+          "leaders": []
+        },
+        {
+          "name": "totalTackles",
+          "displayName": "Tackles",
+          "leaders": []
+        }
+      ]
+    },
+    {
+      "team": {
+        "id": "7"
+      },
+      "leaders": [
+        {
+          "name": "passingYards",
+          "displayName": "Passing Yards",
+          "leaders": []
+        },
+        {
+          "name": "rushingYards",
+          "displayName": "Rushing Yards",
+          "leaders": []
+        },
+        {
+          "name": "receivingYards",
+          "displayName": "Receiving Yards",
+          "leaders": []
+        },
+        {
+          "name": "sacks",
+          "displayName": "Sacks",
+          "leaders": []
+        },
+        {
+          "name": "totalTackles",
+          "displayName": "Tackles",
+          "leaders": []
+        }
+      ]
+    }
+  ]
+}
