@@ -85,6 +85,11 @@ export function view(
             a.name.localeCompare(b.name),
         )
     : [];
+  const pickCards = user
+    ? visibleScores.filter(
+        (e) => e.week === weekNumber && (e.userId === user.id || reveal),
+      )
+    : [];
   return {
     season: 2026,
     currentWeek: currentWeek(state.weeks),
@@ -135,15 +140,10 @@ export function view(
           })
       : [],
     // Same redaction as `entries`: a member's own card always, others only after the deadline.
-    gamePicks: user
-      ? gamePicks(
-          visibleScores.filter(
-            (e) => e.week === weekNumber && (e.userId === user.id || reveal),
-          ),
-          state.users,
-          user.id,
-        )
-      : {},
+    gamePicks: user ? gamePicks(pickCards, state.users, user.id) : {},
+    // Denominator for pick shares: the very cards `gamePicks` was built from, so a
+    // viewer whose own buy-in is still pending never sees "2 of 1 cards".
+    pickCardCount: pickCards.length,
     history: user
       ? allScores.filter((e) => e.userId === user.id).sort((a, b) => b.week - a.week)
       : [],

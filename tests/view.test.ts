@@ -94,3 +94,23 @@ test("gamePicks orders the viewer first and skips unknown members", () => {
   const orphan = gamePicks(s.entries, [], "ada");
   assert.deepEqual(orphan, {});
 });
+test("the pick-share denominator counts exactly the cards behind gamePicks", () => {
+  const { s, w, ada, cy } = league();
+  // Cy's buy-in is pending: after the reveal Cy sees the two confirmed cards plus their own.
+  const pending = view(s, cy, 1, false, deadline(w));
+  const pickers = new Set(
+    Object.values(pending.gamePicks)
+      .flatMap((slots) => Object.values(slots).flat())
+      .map((p) => p.userId),
+  );
+  assert.deepEqual([...pickers].sort(), ["ada", "bea", "cy"]);
+  assert.equal(pending.pickCardCount, 3);
+  assert.equal(pending.standings.filter((member) => member.submitted).length, 2);
+  // Confirmed viewers never see the pending card, and the count matches.
+  const confirmed = view(s, ada, 1, false, deadline(w));
+  assert.equal(confirmed.pickCardCount, 2);
+  assert.ok(!JSON.stringify(confirmed.gamePicks).includes("cy"));
+  // Before the reveal only the viewer's own card counts.
+  assert.equal(view(s, ada, 1, false, deadline(w) - 1).pickCardCount, 1);
+  assert.equal(view(s, null, 1, false, deadline(w)).pickCardCount, 0);
+});

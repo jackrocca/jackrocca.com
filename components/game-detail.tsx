@@ -24,6 +24,7 @@ import type { GameDetail } from "@/lib/game-detail";
 import { pacificClock, pacificDay, quarterLabel } from "@/lib/game-format";
 import type { GameSummary, TeamSummary } from "@/lib/game-summary";
 import type { GameLine } from "@/lib/lines";
+import { displayScores } from "@/lib/game-scores";
 import type { Game, Team } from "@/lib/types";
 
 function gameStatus(game: Game, summary: GameSummary | null) {
@@ -170,8 +171,8 @@ export function GameDetailSheet({
   }, [open, game?.id]);
   if (!game) return null;
   const summary = detail?.summary ?? null;
-  const awayScore = summary?.away.score ?? game.awayScore,
-    homeScore = summary?.home.score ?? game.homeScore;
+  const scores = displayScores(game, summary);
+  const { awayScore, homeScore } = scores;
   const scored = awayScore !== null && homeScore !== null;
   const final = game.state === "final";
   const pregame = game.state === "scheduled";
@@ -199,7 +200,9 @@ export function GameDetailSheet({
           deadline={deadline}
         />
       )}
-      {summary && scored && <LineScores away={summary.away} home={summary.home} />}
+      {summary && scored && scores.source === "summary" && (
+        <LineScores away={summary.away} home={summary.home} />
+      )}
       {summary && <Leaders summary={summary} game={game} />}
       {summary && summary.scoring.length > 0 && (
         <ScoringList plays={summary.scoring} game={game} />
@@ -337,6 +340,7 @@ export function GameDetailSheet({
           ]}
         />
         <p className="source-note gs-foot" role="status">
+          {game.resultOverride ? "Score set by the commissioner · " : ""}
           {detail?.error ? `${detail.error} ` : failure && !summary ? `${failure} ` : ""}
           {updated
             ? `ESPN · Updated ${updated}${detail?.stale ? " (stale)" : ""}`

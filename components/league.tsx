@@ -1539,7 +1539,7 @@ export default function League() {
           revealed={w.picksRevealed}
           deadline={w.deadline}
           viewerId={user.id}
-          cardsSubmitted={data.standings.filter((s) => s.submitted).length}
+          cardsSubmitted={data.pickCardCount}
           open={detailGameId !== null}
           onOpenChange={(open) => {
             if (!open) setDetailGameId(null);
