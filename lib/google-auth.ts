@@ -2,7 +2,7 @@ import { OAuth2Client, CodeChallengeMethod } from "google-auth-library";
 import { SignJWT, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { newToken, safeSecret, secret, loginResponse, tokenHash } from "./auth";
-import { googleProfileSchema, joinLeagueWithGoogle } from "./google-account";
+import { googleProfileSchema, signInWithGoogle } from "./accounts";
 import { mutate, audit, rateLimit } from "./store";
 import { authReturnPath, DEFAULT_AUTH_RETURN_PATH } from "./auth-navigation";
 const FLOW_COOKIE = "pick4-google-flow";
@@ -130,7 +130,7 @@ export async function finishGoogle(req: NextRequest) {
       const profile = googleProfileSchema.parse(payload);
       const user = await mutate((state) => {
         const existed = state.users.some((u) => u.googleSub === profile.sub);
-        const user = joinLeagueWithGoogle(state, profile, process.env.OWNER_EMAIL!);
+        const user = signInWithGoogle(state, profile, process.env.OWNER_EMAIL!);
         if (!existed)
           audit(state, user.id, "join", `${user.name} joined the league with Google.`);
         return user;

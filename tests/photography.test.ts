@@ -8,7 +8,7 @@ import { GET } from "../app/api/photos/[[...path]]/route";
 import { catalogSchema, type Catalog } from "../lib/photography";
 import { initialState } from "../lib/store";
 import { loginResponse } from "../lib/auth";
-import { joinLeagueWithGoogle } from "../lib/google-account";
+import { signInWithGoogle } from "../lib/accounts";
 
 test("gallery and preview endpoints enforce the same current rating and Google session", async () => {
   const dir = await mkdtemp(path.join(os.tmpdir(), "photo-access-"));
@@ -33,7 +33,7 @@ test("gallery and preview endpoints enforce the same current rating and Google s
     })),
   };
   const state = initialState();
-  const user = joinLeagueWithGoogle(
+  const user = signInWithGoogle(
     state,
     {
       sub: "photo-reader",
