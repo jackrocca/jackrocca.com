@@ -144,7 +144,7 @@ test("unsolicited callback cannot log in and clears temporary flow cookie", asyn
   );
   assert.equal(
     result.headers.get("location"),
-    "http://localhost:3106/pick4?authError=failed",
+    "http://localhost:3106/account?authError=failed",
   );
   assert.equal(result.cookies.has("pick4-session"), false);
   assert.match(result.headers.get("set-cookie")!, /Max-Age=0/);
@@ -179,17 +179,45 @@ test("members see only their own email and no Google identifiers; commissioner s
 
 import { authReturnPath } from "../lib/auth-navigation";
 test("OAuth return destinations allow site pages and reject external or unrecognized URLs", () => {
-  for (const value of ["/", "/account", "/pick4"])
+  for (const value of ["/", "/photography", "/projects", "/account", "/pick4", "/atlas"])
     assert.equal(authReturnPath(value), value);
   for (const value of [
     "https://evil.example",
     "//evil.example",
     "/\\evil.example",
     "/api/export",
+    "/atlas/",
+    "/atlas/index.html",
     "javascript:alert(1)",
     null,
   ])
-    assert.equal(authReturnPath(value), "/pick4");
+    assert.equal(authReturnPath(value), "/account");
+});
+
+test("Atlas sign-in returns to /atlas on success and to the account page on failure", async () => {
+  const cookie = await flow("10m", "pick4-oauth", "/atlas");
+  assert.equal((await validateGoogleFlow(cookie, "random-state")).returnTo, "/atlas");
+  const canceled = await finishGoogle(
+    new NextRequest(
+      "http://localhost:3106/api/auth/callback/google?error=access_denied&state=random-state",
+      { headers: { cookie: `pick4-google-flow=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    canceled.headers.get("location"),
+    "http://localhost:3106/account?authError=canceled",
+  );
+  const failed = await finishGoogle(
+    new NextRequest(
+      "http://localhost:3106/api/auth/callback/google?code=attacker&state=random-state",
+      { headers: { cookie: `pick4-google-flow=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    failed.headers.get("location"),
+    "http://localhost:3106/account?authError=failed",
+  );
+  assert.equal(failed.cookies.has("pick4-session"), false);
 });
 
 test("signed OAuth flow preserves the account destination on cancellation", async () => {
@@ -212,6 +240,6 @@ test("signed OAuth flow preserves the account destination on cancellation", asyn
         "random-state",
       )
     ).returnTo,
-    "/pick4",
+    "/account",
   );
 });
