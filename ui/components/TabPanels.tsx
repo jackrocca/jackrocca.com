@@ -3,12 +3,12 @@
 import type { LucideIcon } from "lucide-react";
 import * as React from "react";
 
-import { cn } from "@/ui/lib/utils";
 import { Tabs, TabsIndicator, TabsList, TabsPanel, TabsTab } from "@/ui/primitives/tabs";
 
 // Local adaptation of the upstream tab-panels item: Base UI Tabs for keyboard and
 // aria wiring, a transform-only sliding indicator, and an opacity-only panel entry
 // instead of the upstream Motion slide, so no animation library is required.
+// Keyboard activation marks the root `data-instant` so nothing animates for it.
 export interface TabPanelProps {
   value: string;
   label: string;
@@ -50,6 +50,7 @@ export const TabPanels = ({
       ? defaultTab
       : (firstTab?.value ?? ""),
   );
+  const [instant, setInstant] = React.useState(false);
   const value = activeTab ?? internal;
   if (!firstTab) {
     return null;
@@ -65,8 +66,14 @@ export const TabPanels = ({
         onTabChange?.(nextValue);
       }}
       className={classNames?.root}
+      data-instant={instant || undefined}
     >
-      <TabsList aria-label={ariaLabel} className={classNames?.list}>
+      <TabsList
+        aria-label={ariaLabel}
+        className={classNames?.list}
+        onKeyDown={() => setInstant(true)}
+        onPointerDown={() => setInstant(false)}
+      >
         {tabs.map(({ value: tabValue, label, icon: Icon, badge, disabled }) => (
           <TabsTab
             key={tabValue}
@@ -86,10 +93,7 @@ export const TabPanels = ({
           key={tabValue}
           value={tabValue}
           keepMounted={keepMounted}
-          className={cn(
-            "transition-opacity duration-150 ease-out starting:opacity-0 motion-reduce:transition-none",
-            classNames?.panel,
-          )}
+          className={classNames?.panel}
         >
           {content}
         </TabsPanel>

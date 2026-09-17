@@ -34,13 +34,15 @@ const TabsTab = ({ className, ...props }: TabsPrimitive.Tab.Props) => (
 /**
  * Sliding underline positioned from Base UI's `--active-tab-left` variable. Only
  * `transform` animates; the width follows the active tab without transitioning.
+ * A `data-instant` attribute on the list (set for keyboard activation) removes
+ * the slide, because keyboard-driven changes should never animate.
  */
 const TabsIndicator = ({ className, ...props }: TabsPrimitive.Indicator.Props) => (
   <TabsPrimitive.Indicator
     data-slot="tabs-indicator"
     renderBeforeHydration
     className={cn(
-      "bg-foreground pointer-events-none absolute bottom-0 left-0 h-0.5 w-(--active-tab-width) translate-x-(--active-tab-left) rounded-full transition-transform duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none",
+      "bg-foreground pointer-events-none absolute bottom-0 left-0 h-0.5 w-(--active-tab-width) translate-x-(--active-tab-left) rounded-full transition-transform duration-200 ease-(--ease-out) motion-reduce:transition-none in-data-instant:transition-none",
       className,
     )}
     {...props}
@@ -49,7 +51,10 @@ const TabsIndicator = ({ className, ...props }: TabsPrimitive.Indicator.Props) =
 const TabsPanel = ({ className, ...props }: TabsPrimitive.Panel.Props) => (
   <TabsPrimitive.Panel
     data-slot="tabs-panel"
-    className={cn("outline-none", className)}
+    className={cn(
+      "outline-none transition-opacity duration-150 ease-(--ease-out) starting:opacity-0 motion-reduce:transition-none in-data-instant:transition-none",
+      className,
+    )}
     {...props}
   />
 );
