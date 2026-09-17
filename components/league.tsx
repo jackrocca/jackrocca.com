@@ -157,7 +157,9 @@ export default function League() {
     [touring, setTouring] = useState(false),
     // Milestones reached in this session, ahead of the next server refresh.
     [reached, setReached] = useState<{ onboarded?: boolean; chatted?: boolean }>({}),
-    [detailGameId, setDetailGameId] = useState<string | null>(null);
+    [detailGameId, setDetailGameId] = useState<string | null>(null),
+    // Stays true through the close transition; the id clears once it completes.
+    [detailOpen, setDetailOpen] = useState(false);
   // The card control that opened the game sheet; focus returns there on close.
   const detailTrigger = useRef<HTMLElement | null>(null);
   const tourReturn = useRef("board");
@@ -666,6 +668,7 @@ export default function League() {
                               onClick={(event: React.MouseEvent<HTMLElement>) => {
                                 detailTrigger.current = event.currentTarget;
                                 setDetailGameId(g.id);
+                                setDetailOpen(true);
                               }}
                             >
                               <div className="game-top">
@@ -1540,13 +1543,12 @@ export default function League() {
           deadline={w.deadline}
           viewerId={user.id}
           cardsSubmitted={data.pickCardCount}
-          open={detailGameId !== null}
-          onOpenChange={(open) => {
-            if (!open) setDetailGameId(null);
-          }}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
           onClosed={() => {
             detailTrigger.current?.focus({ preventScroll: true });
             detailTrigger.current = null;
+            setDetailGameId(null);
           }}
         />
       )}

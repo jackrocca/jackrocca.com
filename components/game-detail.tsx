@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { TabPanels } from "@/ui/components/TabPanels";
@@ -53,7 +53,7 @@ function gameStatus(game: Game, summary: GameSummary | null) {
 function Timeouts({ count }: { count: number | null }) {
   if (count === null) return null;
   return (
-    <span className="gs-timeouts" aria-label={`${count} timeouts left`}>
+    <span className="gs-timeouts" role="img" aria-label={`${count} timeouts left`}>
       {[0, 1, 2].map((i) => (
         <i key={i} className={i < count ? "on" : ""} />
       ))}
@@ -95,41 +95,51 @@ function Side({
   );
 }
 
-/** Polls `/api/game/:id` while the sheet is open; every 20 s for a live game. */
+/**
+ * Loads `/api/game/:id` while the sheet is open and polls every 20 s for a live
+ * game. Detail is only cleared when the game changes, so a game turning live
+ * mid-view keeps its content until the refetch lands.
+ */
 function useGameDetail(gameId: string | undefined, live: boolean) {
   const [detail, setDetail] = useState<GameDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [failure, setFailure] = useState("");
+  const request = useRef(0);
+  const load = useCallback(async () => {
+    if (!gameId) return;
+    const id = ++request.current;
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/game/${encodeURIComponent(gameId)}`, {
+        cache: "no-store",
+      });
+      const result = (await response.json().catch(() => null)) as
+        (GameDetail & { error?: string }) | null;
+      if (id !== request.current) return;
+      if (!response.ok || !result?.summary)
+        throw new Error(result?.error ?? "Game details are unavailable right now.");
+      setDetail(result);
+      setFailure("");
+    } catch (e) {
+      if (id === request.current) setFailure((e as Error).message);
+    } finally {
+      if (id === request.current) setLoading(false);
+    }
+  }, [gameId]);
   useEffect(() => {
     if (!gameId) return;
-    let cancelled = false;
     setDetail(null);
     setFailure("");
-    async function load() {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/game/${encodeURIComponent(gameId!)}`, {
-          cache: "no-store",
-        });
-        const result = await response.json();
-        if (cancelled) return;
-        if (!response.ok)
-          throw new Error(result.error ?? "Game details are unavailable.");
-        setDetail(result as GameDetail);
-        setFailure("");
-      } catch (e) {
-        if (!cancelled) setFailure((e as Error).message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
     void load();
-    const interval = live ? window.setInterval(() => void load(), 20_000) : undefined;
     return () => {
-      cancelled = true;
-      if (interval) window.clearInterval(interval);
+      request.current++;
     };
-  }, [gameId, live]);
+  }, [gameId, load]);
+  useEffect(() => {
+    if (!gameId || !live) return;
+    const interval = window.setInterval(() => void load(), 20_000);
+    return () => window.clearInterval(interval);
+  }, [gameId, live, load]);
   return { detail, failure, waiting: loading && !detail };
 }
 
@@ -339,9 +349,15 @@ export function GameDetailSheet({
             },
           ]}
         />
-        <p className="source-note gs-foot" role="status">
+        <p className="source-note gs-foot">
+          <span role="status">
+            {detail?.error
+              ? `${detail.error} `
+              : failure && !summary
+                ? `${failure} `
+                : ""}
+          </span>
           {game.resultOverride ? "Score set by the commissioner · " : ""}
-          {detail?.error ? `${detail.error} ` : failure && !summary ? `${failure} ` : ""}
           {updated
             ? `ESPN · Updated ${updated}${detail?.stale ? " (stale)" : ""}`
             : waiting
