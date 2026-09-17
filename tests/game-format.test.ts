@@ -74,3 +74,8 @@ test("slot lines name the favorite, underdog, and totals from the frozen line", 
   assert.equal(slotLine(game, null, "over"), null);
   assert.equal(gameLine(w, "missing"), null);
 });
+test("period 0 (pregame in ESPN payloads) renders no label", () => {
+  assert.equal(quarterLabel(0), "");
+  assert.equal(periodName(0), "");
+  assert.equal(periodName(-1), "");
+});

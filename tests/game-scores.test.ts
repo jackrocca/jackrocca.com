@@ -59,6 +59,11 @@ test("live games take the fresher summary score; missing or void games keep the 
     3,
   );
   assert.equal(displayScores(game(), null).source, "league");
+  // Feed lag: the league still says scheduled while ESPN is already live.
+  assert.deepEqual(
+    displayScores(game({ state: "scheduled", awayScore: null, homeScore: null }), live),
+    { awayScore: null, homeScore: null, source: "league" },
+  );
   assert.equal(
     displayScores(game({ state: "canceled", awayScore: null, homeScore: null }), live)
       .awayScore,

@@ -18,7 +18,7 @@ export const pacificDay = (value: string | number) =>
   });
 /** `Q1`…`Q4`, then `OT`, `OT2`, … */
 export const quarterLabel = (period: number | null) =>
-  period === null
+  period === null || period < 1
     ? ""
     : period <= 4
       ? `Q${period}`
@@ -29,7 +29,7 @@ export const ordinal = (n: number) =>
   n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th";
 /** "2nd quarter", "Overtime", "2nd overtime". */
 export const periodName = (period: number | null) =>
-  period === null
+  period === null || period < 1
     ? ""
     : period <= 4
       ? `${period}${ordinal(period)} quarter`
