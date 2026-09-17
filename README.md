@@ -77,6 +77,8 @@ npm audit --omit=dev
 
 `npm run sync:schedule` refreshes the checked-in real 2026 schedule and requires 272 unique games before replacing it. Runtime cron updates current, previous, and next weeks, plus older weeks with unresolved games; the in-app refresh also updates the selected week. Commissioner corrections survive feed refreshes.
 
+To try the Score Board locally without Google sign-in or league data, run `npm run seed:local` with `SESSION_SECRET` set to the dev server's value and no Blob variables in the environment. It rebuilds `work/league.local.json` with fixture members, Week 1 and Week 2 cards, and photos, then prints a `pick4-session` cookie per member to paste into the browser; the dev server must also run without `BLOB_READ_WRITE_TOKEN` so both read the same local file. Tapping a game card opens the detail sheet, which reads ESPN's public event summary through the member-only `/api/game/:id` route and never writes to league storage.
+
 For an isolated API integration run, use `npx tsx scripts/check-api.ts`. It calls the real route handlers with temporary local storage, seeds test identities through internal code, verifies concurrent picks and access boundaries, and deletes its fixtures afterward. It refuses production and never contacts Google. This is separate from the required real Google sign-in smoke test. Unit tests cover OAuth state integrity/expiry, account enrollment, provider identity, role assignment, session invalidation, data privacy, and scoring.
 
 ## Source references

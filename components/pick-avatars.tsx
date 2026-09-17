@@ -19,13 +19,11 @@ export function PickAvatars({
   viewerId,
   label,
   size = "xs",
-  showCount = true,
 }: {
   pickers: GamePicker[];
   viewerId: string;
   label: string;
   size?: "xs" | "sm";
-  showCount?: boolean;
 }) {
   if (!pickers.length) return null;
   const names = pickerNames(pickers, viewerId);
@@ -61,7 +59,7 @@ export function PickAvatars({
         className={`pick-avatars pick-avatars-${size} ${mine ? "mine" : ""}`}
         aria-label={`${label}: ${pickers.length} ${pickers.length === 1 ? "pick" : "picks"} — ${summary}`}
       >
-        {showCount && <b className="pick-count">{pickers.length}</b>}
+        <b className="pick-count">{pickers.length}</b>
         <span className="pick-stack">
           {shown.map((p) => (
             <PlayerAvatar

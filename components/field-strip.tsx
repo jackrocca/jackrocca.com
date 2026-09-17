@@ -1,10 +1,11 @@
 "use client";
+import { fieldPosition } from "@/lib/field-position";
 import type { Team } from "@/lib/types";
 
 /**
  * A 100-yard field strip. The away team defends the left end zone and the home
- * team the right one, matching the score header, so the possessing team always
- * drives toward the opponent's end zone on the far side.
+ * team the right one, matching the score header. Ball and first-down positions
+ * are data, so they are placed without transitions.
  */
 export function FieldStrip({
   away,
@@ -23,17 +24,14 @@ export function FieldStrip({
   redZone: boolean | null;
   ballOn: string | null;
 }) {
-  const homeBall = possessionTeamId === home.id;
-  const awayBall = possessionTeamId === away.id;
-  const known = yardsToEndzone !== null && (homeBall || awayBall);
-  const clamp = (n: number) => Math.min(100, Math.max(0, n));
-  // Home drives toward the left (away) end zone; away drives right.
-  const ballX = known ? clamp(homeBall ? yardsToEndzone : 100 - yardsToEndzone) : null;
-  const firstDownX =
-    known && distance !== null && yardsToEndzone - distance > 0
-      ? clamp(homeBall ? yardsToEndzone - distance : 100 - (yardsToEndzone - distance))
-      : null;
-  const team = homeBall ? home : awayBall ? away : null;
+  const possession =
+    possessionTeamId === home.id ? "home" : possessionTeamId === away.id ? "away" : null;
+  const { direction, ballX, firstDownX } = fieldPosition({
+    possession,
+    yardsToEndzone,
+    distance,
+  });
+  const team = possession === "home" ? home : possession === "away" ? away : null;
   const label = team
     ? `${team.abbreviation} ball${ballOn ? ` on the ${ballOn}` : ""}${
         yardsToEndzone !== null ? `, ${yardsToEndzone} yards to the end zone` : ""
@@ -42,7 +40,7 @@ export function FieldStrip({
   return (
     <figure
       className={`field-strip ${redZone ? "red-zone" : ""}`}
-      data-direction={homeBall ? "left" : awayBall ? "right" : "none"}
+      data-direction={direction}
     >
       <figcaption className="sr-only">{label}</figcaption>
       <div
@@ -59,15 +57,14 @@ export function FieldStrip({
             style={{ left: `${(i + 1) * 10}%` }}
           />
         ))}
-        {redZone && <span className={`field-redzone ${homeBall ? "left" : "right"}`} />}
+        {redZone && direction !== "none" && (
+          <span className={`field-redzone ${direction}`} />
+        )}
         {firstDownX !== null && (
           <span className="field-first-down" style={{ left: `${firstDownX}%` }} />
         )}
         {ballX !== null && team && (
-          <span
-            className="field-ball"
-            style={{ left: `${ballX}%`, ["--team" as string]: team.color }}
-          >
+          <span className="field-ball" style={{ left: `${ballX}%` }}>
             <i />
           </span>
         )}

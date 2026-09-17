@@ -52,6 +52,7 @@ import {
   checklistComplete,
 } from "@/components/league-onboarding";
 import type { AppView } from "@/lib/view";
+import { gameLine, slotLine } from "@/lib/lines";
 import { PICK_TYPES, PickInput, PickType } from "@/lib/types";
 import { gameOpen, signed } from "@/lib/rules";
 const blank = (): PickInput => ({
@@ -639,19 +640,12 @@ export default function League() {
                     <h2 className="sr-only">Week {week} matchups</h2>
                     <div className="game-grid" id="game-board">
                       {w.games.map((g) => {
-                        const odds = w.publishedAt
-                          ? w.lines[g.id]
-                          : { homeSpread: g.homeSpread, total: g.total };
-                        const spread = odds?.homeSpread ?? null,
-                          total = odds?.total ?? null,
-                          homeFavorite = spread !== null && spread < 0;
+                        const odds = gameLine(w, g.id);
                         const closed =
                           tick >= Date.parse(g.kickoff) ||
                           g.state !== "scheduled" ||
                           !g.timeConfirmed;
                         const selected = PICK_TYPES.find((t) => draft.picks[t] === g.id);
-                        const favorite = homeFavorite ? g.home : g.away,
-                          underdog = homeFavorite ? g.away : g.home;
                         const cardPicks = data.gamePicks[g.id];
                         const hasPicks = Boolean(
                           cardPicks && PICK_TYPES.some((t) => cardPicks[t].length > 0),
@@ -731,23 +725,15 @@ export default function League() {
                               {PICK_TYPES.map((t) => {
                                 const selectedThis = draft.picks[t] === g.id,
                                   conflict = Boolean(selected && selected !== t);
-                                const unavailable =
-                                  t === "over" || t === "under"
-                                    ? total === null
-                                    : spread === null || spread === 0;
-                                const line =
-                                  t === "favorite"
-                                    ? `${favorite.abbreviation} ${signed(-Math.abs(spread ?? 0))}`
-                                    : t === "underdog"
-                                      ? `${underdog.abbreviation} ${signed(Math.abs(spread ?? 0))}`
-                                      : `${t === "over" ? "O" : "U"} ${total ?? "—"}`;
+                                const line = slotLine(g, odds, t);
+                                const unavailable = line === null;
                                 return (
                                   <CustomButton
                                     variant="unstyled"
                                     key={t}
                                     className={selectedThis ? "chosen" : ""}
                                     aria-pressed={selectedThis}
-                                    aria-label={`${labels[t]}: ${unavailable ? "line unavailable" : line}, ${g.away.short} at ${g.home.short}`}
+                                    aria-label={`${labels[t]}: ${line ?? "line unavailable"}, ${g.away.short} at ${g.home.short}`}
                                     title={
                                       slotLocked(t) && !selectedThis
                                         ? "A started game on your card is locked"
@@ -769,7 +755,7 @@ export default function League() {
                                     onClick={() => choose(t, g.id)}
                                   >
                                     <small>{labels[t]}</small>
-                                    <strong>{unavailable ? "—" : line}</strong>
+                                    <strong>{line ?? "—"}</strong>
                                     {selectedThis && <Check size={12} />}
                                   </CustomButton>
                                 );
@@ -1547,24 +1533,13 @@ export default function League() {
       {user && (
         <GameDetailSheet
           game={w.games.find((g) => g.id === detailGameId) ?? null}
-          line={
-            detailGameId
-              ? w.publishedAt
-                ? (w.lines[detailGameId] ?? null)
-                : (() => {
-                    const g = w.games.find((item) => item.id === detailGameId);
-                    return g
-                      ? { homeSpread: g.homeSpread, total: g.total, provider: g.provider }
-                      : null;
-                  })()
-              : null
-          }
+          line={detailGameId ? gameLine(w, detailGameId) : null}
           published={Boolean(w.publishedAt)}
           picks={detailGameId ? data.gamePicks[detailGameId] : undefined}
           revealed={w.picksRevealed}
           deadline={w.deadline}
           viewerId={user.id}
-          cards={data.standings.filter((s) => s.submitted).length}
+          cardsSubmitted={data.standings.filter((s) => s.submitted).length}
           open={detailGameId !== null}
           onOpenChange={(open) => {
             if (!open) setDetailGameId(null);
