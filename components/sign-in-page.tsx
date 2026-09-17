@@ -33,8 +33,8 @@ export function SignInPage({
         <h1 id="sign-in-title">{league ? "Four picks. Every week." : "Welcome in."}</h1>
         <p className="sign-in-copy">
           {league
-            ? "A favorite, an underdog, an over, and an under. Make your picks and join the league."
-            : "Sign in to your account and join Jack’s Pick\u00a04 league."}
+            ? "A favorite, an underdog, an over, and an under. Sign in to make your picks."
+            : "Sign in to your jackrocca.com account."}
         </p>
         {error && (
           <p className="sign-in-error" role="alert">

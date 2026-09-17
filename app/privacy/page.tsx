@@ -13,8 +13,9 @@ export default function Privacy() {
       <p>
         This is Jack Rocca’s personal website, including the 2026 Pick 4 NFL league.
         Public photography, writing, and project pages can be browsed without an account.
-        Signing in with Google creates an account for this website and automatically adds
-        you to the league.
+        Signing in with Google creates one account for this website. Pick 4 league
+        membership belongs to that account; during the 2026 season, signing in also
+        enrolls you in the league.
       </p>
       <h2>Your Google account</h2>
       <p>

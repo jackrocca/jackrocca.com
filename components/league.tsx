@@ -1598,7 +1598,7 @@ export default function League() {
               }}
             >
               <label>
-                League display name
+                Display name
                 <Input
                   name="name"
                   defaultValue={user.name}

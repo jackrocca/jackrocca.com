@@ -175,7 +175,7 @@ export async function POST(
         route,
       )
     )
-      throw new AppError("Use Google sign-in to join the league.", 410);
+      throw new AppError("Use Google sign-in.", 410);
     if (route === "logout") {
       const response = json({ ok: true });
       response.cookies.delete("pick4-session");
