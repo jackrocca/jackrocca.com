@@ -9,8 +9,6 @@
     --orange: #dd7044;
     --font-body: var(--font-geist), Arial, sans-serif;
     --font-display: var(--font-geist), Arial, sans-serif;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   }
   * {
     box-sizing: border-box;
@@ -4030,7 +4028,7 @@
   text-align: inherit;
   white-space: normal;
   transition:
-    background 0.16s ease,
+    background 160ms ease,
     transform 160ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
@@ -4039,7 +4037,7 @@
   }
 }
 .league-app .game-open:active:not(:disabled) {
-  transform: scale(0.985);
+  transform: scale(0.98);
 }
 .league-app .game-open:focus-visible {
   outline-offset: -3px;
@@ -4079,7 +4077,7 @@
   border-radius: 999px;
   min-height: 26px;
   transition:
-    background 0.16s ease,
+    background 160ms ease,
     transform 160ms var(--ease-out);
 }
 .league-app .pick-avatars.mine {
@@ -4115,7 +4113,7 @@
   font-size: 9px;
 }
 .league-app .pick-stack .avatar,
-.league-app .game-sheet-pickers .avatar {
+.league-app .gs-pick-avatars .avatar {
   outline: 2px solid var(--paper);
   margin-left: -7px;
 }
@@ -4123,7 +4121,7 @@
   outline-color: var(--league-teal-soft);
 }
 .league-app .pick-stack .avatar:first-child,
-.league-app .game-sheet-pickers .avatar:first-child {
+.league-app .gs-pick-avatars .avatar:first-child {
   margin-left: 0;
 }
 .league-app .pick-stack .avatar img {
@@ -4234,7 +4232,7 @@
   gap: 2px;
   min-width: 0;
   text-align: center;
-  transition: opacity 0.2s ease;
+  transition: opacity 200ms ease;
 }
 .league-app .gs-side.muted {
   opacity: 0.55;
@@ -4258,7 +4256,7 @@
   border-radius: 50%;
   background: #7a4a1f;
   box-shadow: 0 0 0 2px var(--paper);
-  transition: background 0.2s ease;
+  transition: background 200ms ease;
 }
 .league-app .gs-ball::after {
   content: "";
@@ -4289,7 +4287,7 @@
   height: 3px;
   border-radius: 2px;
   background: var(--border);
-  transition: background 0.2s ease;
+  transition: background 200ms ease;
 }
 .league-app .gs-timeouts i.on {
   background: var(--foreground);
@@ -4319,7 +4317,7 @@
   font-weight: 600;
   min-width: 1.15em;
   text-align: center;
-  transition: color 0.3s ease;
+  transition: color 200ms ease;
 }
 .league-app .gs-score b.muted {
   color: var(--league-muted);
@@ -4937,7 +4935,7 @@
   border-radius: inherit;
   background: var(--ink);
   transform-origin: left;
-  transition: transform 300ms var(--ease-out);
+  transition: transform 200ms var(--ease-out);
 }
 .league-app .gs-picks li.mine .gs-bar span {
   background: var(--league-teal);
@@ -4948,7 +4946,7 @@
   gap: 8px;
   min-height: 22px;
 }
-.league-app .game-sheet-pickers {
+.league-app .gs-pick-avatars {
   display: inline-flex;
 }
 .league-app .gs-pick-names {
