@@ -15,13 +15,23 @@ export function safeSecret(input: string, expected: string | undefined) {
   if (!expected) return false;
   return timingSafeEqual(Buffer.from(tokenHash(input)), Buffer.from(tokenHash(expected)));
 }
-export async function session(req: NextRequest, state: State): Promise<User | null> {
-  const token = req.cookies.get("pick4-session")?.value;
-  if (!token) return null;
+// Session rename, phase A: the site cookie and issuer are read alongside the
+// league-era ones, but sign-in still issues only the league-era cookie so a
+// rollback to the previous deploy keeps every current member signed in.
+export const SESSION_COOKIE = "jackrocca-session";
+export const LEGACY_SESSION_COOKIE = "pick4-session";
+export const SESSION_ISSUERS = ["jackrocca.com", "pick4"] as const;
+export const SESSION_AUDIENCES = ["jackrocca.com", "pick4-league"] as const;
+const SESSION_COOKIES = [SESSION_COOKIE, LEGACY_SESSION_COOKIE] as const;
+// Cheap pre-check for routes that skip reading state when nobody is signed in.
+export function hasSessionCookie(req: NextRequest) {
+  return SESSION_COOKIES.some((name) => req.cookies.has(name));
+}
+async function verifySession(token: string, state: State): Promise<User | null> {
   try {
     const { payload } = await jwtVerify(token, secret(), {
-      issuer: "pick4",
-      audience: "pick4-league",
+      issuer: [...SESSION_ISSUERS],
+      audience: [...SESSION_AUDIENCES],
       algorithms: ["HS256"],
     });
     if (payload.provider !== "google") return null;
@@ -34,6 +44,15 @@ export async function session(req: NextRequest, state: State): Promise<User | nu
   } catch {
     return null;
   }
+}
+export async function session(req: NextRequest, state: State): Promise<User | null> {
+  for (const name of SESSION_COOKIES) {
+    const token = req.cookies.get(name)?.value;
+    if (!token) continue;
+    const user = await verifySession(token, state);
+    if (user) return user;
+  }
+  return null;
 }
 export async function loginResponse(
   user: User,
@@ -51,13 +70,17 @@ export async function loginResponse(
     .setIssuedAt()
     .setExpirationTime("14d")
     .sign(secret());
-  response.cookies.set("pick4-session", token, {
+  response.cookies.set(LEGACY_SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 14 * 86400,
   });
+  return response;
+}
+export function logoutResponse(response: NextResponse) {
+  for (const name of SESSION_COOKIES) response.cookies.delete(name);
   return response;
 }
 export function requireUser(user: User | null) {

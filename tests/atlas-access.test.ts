@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { SignJWT } from "jose";
 import { NextRequest } from "next/server";
 import { AtlasAccessError, requireAtlasOwner } from "../lib/atlas-access";
+import { LEGACY_SESSION_COOKIE } from "../lib/auth";
 import { initialState } from "../lib/store";
 import type { User } from "../lib/types";
 
@@ -52,7 +53,10 @@ function request(
 ) {
   return new NextRequest(origin + "/api/atlas/session", {
     method,
-    headers: { ...(cookie ? { cookie: `pick4-session=${cookie}` } : {}), ...headers },
+    headers: {
+      ...(cookie ? { cookie: `${LEGACY_SESSION_COOKIE}=${cookie}` } : {}),
+      ...headers,
+    },
   });
 }
 const rejected = (status: number) => (error: unknown) =>

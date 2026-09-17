@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { session } from "./auth";
+import { hasSessionCookie, session } from "./auth";
 import type { State, User } from "./types";
 
 export const atlasPrivateHeaders = {
@@ -38,7 +38,7 @@ export async function requireAtlasOwner(
   readState: () => Promise<State>,
   policy: AtlasOwnerPolicy = configuredAtlasOwner(),
 ): Promise<User> {
-  if (!req.cookies.has("pick4-session"))
+  if (!hasSessionCookie(req))
     throw new AtlasAccessError(401, "Sign in to access your archive.");
   const user = await session(req, await readState());
   if (!user) throw new AtlasAccessError(401, "Sign in to access your archive.");

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { SignJWT } from "jose";
 import { NextRequest } from "next/server";
 import { handleAtlasControl } from "../lib/atlas-control";
+import { LEGACY_SESSION_COOKIE } from "../lib/auth";
 import { initialState } from "../lib/store";
 import type { User } from "../lib/types";
 
@@ -52,7 +53,7 @@ async function request(
   return new NextRequest(policy.origin + "/api/atlas" + path, {
     method: body === undefined ? "GET" : "POST",
     headers: {
-      ...(user ? { cookie: "pick4-session=" + (await token(user)) } : {}),
+      ...(user ? { cookie: `${LEGACY_SESSION_COOKIE}=${await token(user)}` } : {}),
       origin: policy.origin,
       "content-type": "application/json",
       ...headers,

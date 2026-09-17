@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { readState, mutate, audit, rateLimit } from "@/lib/store";
-import { session, requireUser, requireAdmin, sameOrigin, safeSecret } from "@/lib/auth";
+import {
+  session,
+  requireUser,
+  requireAdmin,
+  sameOrigin,
+  safeSecret,
+  logoutResponse,
+} from "@/lib/auth";
 import { findAccount, publicAccount } from "@/lib/accounts";
 import {
   AppError,
@@ -169,11 +176,7 @@ export async function POST(
       )
     )
       throw new AppError("Use Google sign-in.", 410);
-    if (route === "logout") {
-      const response = json({ ok: true });
-      response.cookies.delete("pick4-session");
-      return response;
-    }
+    if (route === "logout") return logoutResponse(json({ ok: true }));
     const member = requireUser(user);
     await rateLimit(`user:${member.id}`, 90, 60_000);
     if (route === "picks") {

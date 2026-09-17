@@ -1,11 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SignJWT } from "jose";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { initialState } from "../lib/store";
 import { findAccount, publicAccount, signInWithGoogle } from "../lib/accounts";
 import { joinLeagueWithGoogle } from "../lib/google-account";
-import { loginResponse, session, secret } from "../lib/auth";
+import {
+  LEGACY_SESSION_COOKIE,
+  SESSION_COOKIE,
+  hasSessionCookie,
+  loginResponse,
+  logoutResponse,
+  session,
+  secret,
+} from "../lib/auth";
 import { validateGoogleFlow, finishGoogle } from "../lib/google-auth";
 import { view } from "../lib/view";
 process.env.SESSION_SECRET = "test-only-session-secret-with-at-least-32-characters";
@@ -115,12 +123,58 @@ test("Google sessions are HTTP-only and version checked; legacy sessions are rej
   assert.equal(
     await session(
       new NextRequest("http://localhost:3106", {
-        headers: { cookie: `pick4-session=${legacy}` },
+        headers: { cookie: `${LEGACY_SESSION_COOKIE}=${legacy}` },
       }),
       s,
     ),
     null,
   );
+});
+test("session rename phase A: both cookie names and issuers are read; only the league cookie is issued", async () => {
+  const s = initialState();
+  const user = signInWithGoogle(s, profile(), owner);
+  const issued = await loginResponse(user);
+  assert.ok(issued.cookies.has(LEGACY_SESSION_COOKIE));
+  assert.equal(issued.cookies.has(SESSION_COOKIE), false);
+  const legacyToken = issued.cookies.get(LEGACY_SESSION_COOKIE)!.value;
+  const siteToken = await new SignJWT({
+    version: user.sessionVersion,
+    provider: "google",
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuer("jackrocca.com")
+    .setAudience("jackrocca.com")
+    .setExpirationTime("1h")
+    .sign(secret());
+  const request = (cookie: string) =>
+    new NextRequest("http://localhost:3106", { headers: { cookie } });
+  for (const cookie of [
+    `${SESSION_COOKIE}=${siteToken}`,
+    `${SESSION_COOKIE}=${legacyToken}`,
+    `${LEGACY_SESSION_COOKIE}=${siteToken}`,
+    `${SESSION_COOKIE}=expired-or-garbage; ${LEGACY_SESSION_COOKIE}=${legacyToken}`,
+  ]) {
+    assert.ok(hasSessionCookie(request(cookie)), cookie);
+    assert.equal((await session(request(cookie), s))?.id, user.id, cookie);
+  }
+  const anonymous = new NextRequest("http://localhost:3106", {
+    headers: { cookie: "other=1" },
+  });
+  assert.equal(hasSessionCookie(anonymous), false);
+  assert.equal(await session(anonymous, s), null);
+  const foreign = await new SignJWT({ version: user.sessionVersion, provider: "google" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuer("someone-else")
+    .setAudience("jackrocca.com")
+    .setExpirationTime("1h")
+    .sign(secret());
+  assert.equal(await session(request(`${SESSION_COOKIE}=${foreign}`), s), null);
+  const logout = logoutResponse(NextResponse.json({ ok: true }));
+  const cleared = logout.headers.getSetCookie();
+  assert.ok(cleared.some((c) => c.startsWith(`${SESSION_COOKIE}=;`)));
+  assert.ok(cleared.some((c) => c.startsWith(`${LEGACY_SESSION_COOKIE}=;`)));
 });
 async function flow(expiration = "10m", issuer = "pick4-oauth", returnTo = "/pick4") {
   return new SignJWT({
@@ -161,7 +215,7 @@ test("unsolicited callback cannot log in and clears temporary flow cookie", asyn
     result.headers.get("location"),
     "http://localhost:3106/account?authError=failed",
   );
-  assert.equal(result.cookies.has("pick4-session"), false);
+  assert.equal(result.cookies.has(LEGACY_SESSION_COOKIE), false);
   assert.match(result.headers.get("set-cookie")!, /Max-Age=0/);
   assert.equal(result.headers.get("cache-control"), "no-store");
 });
@@ -176,7 +230,7 @@ test("canceled Google flow returns a safe error instead of creating an account",
     result.headers.get("location"),
     "http://localhost:3106/pick4?authError=canceled",
   );
-  assert.equal(result.cookies.has("pick4-session"), false);
+  assert.equal(result.cookies.has(LEGACY_SESSION_COOKIE), false);
 });
 test("members see only their own email and no Google identifiers; commissioner sees member emails", () => {
   const s = initialState();
@@ -232,7 +286,7 @@ test("Atlas sign-in returns to /atlas on success and to the account page on fail
     failed.headers.get("location"),
     "http://localhost:3106/account?authError=failed",
   );
-  assert.equal(failed.cookies.has("pick4-session"), false);
+  assert.equal(failed.cookies.has(LEGACY_SESSION_COOKIE), false);
 });
 
 test("signed OAuth flow preserves the account destination on cancellation", async () => {

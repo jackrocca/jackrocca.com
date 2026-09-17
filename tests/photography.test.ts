@@ -7,7 +7,7 @@ import { NextRequest } from "next/server";
 import { GET } from "../app/api/photos/[[...path]]/route";
 import { catalogSchema, type Catalog } from "../lib/photography";
 import { initialState } from "../lib/store";
-import { loginResponse } from "../lib/auth";
+import { LEGACY_SESSION_COOKIE, loginResponse } from "../lib/auth";
 import { signInWithGoogle } from "../lib/accounts";
 
 test("gallery and preview endpoints enforce the same current rating and Google session", async () => {
@@ -49,13 +49,13 @@ test("gallery and preview endpoints enforce the same current rating and Google s
   const save = () => writeFile(path.join(dir, "catalog.json"), JSON.stringify(catalog));
   await save();
   await writeFile(process.env.LOCAL_STORE_PATH, JSON.stringify(state));
-  const token = (await loginResponse(user)).cookies.get("pick4-session")!.value;
+  const token = (await loginResponse(user)).cookies.get(LEGACY_SESSION_COOKIE)!.value;
   const request = (suffix = "", cookie?: string) => {
     const url = new URL(`http://localhost/api/photos${suffix}`);
     const route = url.pathname.split("/").slice(3);
     return GET(
       new NextRequest(url, {
-        headers: cookie ? { cookie: `pick4-session=${cookie}` } : {},
+        headers: cookie ? { cookie: `${LEGACY_SESSION_COOKIE}=${cookie}` } : {},
       }),
       { params: Promise.resolve({ path: route }) },
     );
