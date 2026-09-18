@@ -311,14 +311,15 @@ export function Rules({
           code appears, and your card waits as pending until Jack confirms the payment.
           Then it goes live on the board.
         </p>
-        <a
+        <CustomButton
+          variant="unstyled"
           className="secondary venmo-link"
           href={buyIn.url}
-          target="_blank"
-          rel="noreferrer"
+          external
+          rightIcon={ArrowUpRight}
         >
-          Open Venmo <ArrowUpRight size={16} />
-        </a>
+          Open Venmo
+        </CustomButton>
       </section>
 
       <section>

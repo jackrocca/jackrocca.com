@@ -675,11 +675,7 @@
     white-space: nowrap;
   }
   .game-top .picked-badge {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    color: #666666 !important;
-    font-size: 8px !important;
+    letter-spacing: 0.2px;
   }
   .matchup {
     display: flex;
@@ -754,6 +750,8 @@
     gap: 5px;
   }
   .game-options button {
+    min-width: 0;
+    height: auto;
     min-height: 48px;
     border: 1px solid #e6e6e6;
     border-radius: 5px;
@@ -764,6 +762,8 @@
     position: relative;
     background: #f9faf6;
     padding: 6px 1px;
+    white-space: normal;
+    overflow: hidden;
   }
   .game-options button small {
     font-size: 8px;
@@ -962,16 +962,34 @@
   }
   .power-row {
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
     margin: 0;
     padding: 11px 0;
+    gap: 12px;
   }
-  .power-row > span {
+  .power-row-select {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .power-row > span,
+  .power-row label {
     display: grid;
     grid-template-columns: 20px 1fr;
     gap: 3px 6px;
     align-items: center;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    line-height: 1.35;
+    cursor: pointer;
+  }
+  .power-row label > span {
+    display: contents;
   }
   .power-row svg {
     color: #909090;
@@ -987,12 +1005,9 @@
     color: #a1a1a1;
     font-weight: 400;
   }
-  .power-row select {
-    width: 61px;
-    min-height: 30px;
-    padding: 4px;
-    font-size: 10px;
-    margin: 0;
+  .power-helper {
+    flex: 0 0 auto;
+    min-width: 0;
   }
   .save-button {
     font-size: 11px;
@@ -1745,17 +1760,19 @@
       font-size: 10px;
     }
     .game-options {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       padding: 0 15px 16px;
-      gap: 6px;
+      gap: 8px;
     }
     .game-options button {
-      min-height: 53px;
+      min-height: 52px;
+      gap: 2px;
     }
     .game-options button strong {
-      font-size: 12px;
+      font-size: 13px;
     }
     .game-options button small {
-      font-size: 9px;
+      font-size: 10px;
     }
     .game-footer {
       font-size: 9px;
@@ -1810,14 +1827,9 @@
     .power-row small {
       font-size: 10px;
     }
-    .power-row select {
-      min-height: 40px;
-      width: 72px;
-      font-size: 12px;
-    }
-    .power-row input[type="checkbox"] {
-      height: 22px;
-      width: 22px;
+    .power-row-select .power-helper {
+      flex: 1 1 100%;
+      width: 100%;
     }
     .save-button {
       font-size: 13px;
@@ -2049,10 +2061,7 @@
   display: block;
   min-width: 100px;
 }
-.league-app .power-row .league-select {
-  width: 110px;
-}
-.league-app .power-row [data-slot="checkbox"] {
+.league-app .power-row [data-slot="switch"] {
   flex-shrink: 0;
 }
 .league-app .board-filter {
@@ -2289,7 +2298,8 @@
     color: var(--league-teal);
   }
   .game-top .picked-badge {
-    color: var(--league-teal) !important;
+    color: var(--league-teal);
+    letter-spacing: 0.2px;
   }
   .slot-icon {
     border: 0;
@@ -2330,7 +2340,7 @@
     color: var(--muted-foreground);
   }
   .powerups summary > svg,
-  .power-row > span > svg,
+  .power-row svg,
   .rule-icon,
   .empty-state > svg {
     color: var(--league-teal);
@@ -2569,6 +2579,15 @@
     font-size: 11px;
     color: white;
     opacity: 0.8;
+  }
+}
+@media (max-width: 400px) {
+  .league-app .league-dock .mobile-card-jump-label {
+    display: none;
+  }
+  .league-app .league-dock .mobile-card-jump {
+    padding-inline: 10px;
+    gap: 6px;
   }
 }
 

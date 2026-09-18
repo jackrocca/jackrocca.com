@@ -26,9 +26,11 @@ import {
   UserRound,
   MessagesSquare,
 } from "lucide-react";
+import { CustomBadge } from "@/ui/components/CustomBadge";
 import { CustomButton } from "@/ui/components/CustomButton";
 import { Input } from "@/ui/components/Input";
-import { Checkbox } from "@/ui/primitives/checkbox";
+import { LabeledSwitch } from "@/ui/components/LabeledSwitch";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { SignInPage } from "@/components/sign-in-page";
 import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
 import { BottomDrawer } from "@/ui/components/BottomDrawer";
@@ -407,7 +409,7 @@ export default function League() {
     setNotice("");
   }
   const pages = [
-    { value: "board", label: "Score Board", icon: Grid2X2 },
+    { value: "board", label: "Picks", icon: Grid2X2 },
     { value: "standings", label: "Standings", icon: Trophy },
     { value: "chat", label: "Chat", icon: MessagesSquare },
     { value: "history", label: "My season", icon: History },
@@ -511,8 +513,8 @@ export default function League() {
               href="#your-card"
               aria-label={`Review your card: ${count} of 4 picks${dirty ? ", unsaved" : ""}`}
             >
-              <span>{count} / 4</span>
-              Your card
+              <span>{count}/4</span>
+              <span className="mobile-card-jump-label">Your card</span>
               <ArrowRight size={16} />
             </a>
           )}
@@ -714,10 +716,15 @@ export default function League() {
                                             : "KICKOFF TBD"}
                                 </span>
                                 {selected ? (
-                                  <span className="picked-badge">
-                                    <Check size={12} />
+                                  <CustomBadge
+                                    color="brand-teal"
+                                    size="xs"
+                                    variant="ghost"
+                                    leftIcon={Check}
+                                    className="picked-badge"
+                                  >
                                     {labels[selected]}
-                                  </span>
+                                  </CustomBadge>
                                 ) : (
                                   <span>{g.broadcast}</span>
                                 )}
@@ -762,7 +769,7 @@ export default function League() {
                                   <CustomButton
                                     variant="unstyled"
                                     key={t}
-                                    className={selectedThis ? "chosen" : ""}
+                                    className={`h-auto min-w-0 whitespace-normal ${selectedThis ? "chosen" : ""}`}
                                     aria-pressed={selectedThis}
                                     aria-label={`${labels[t]}: ${line ?? "line unavailable"}, ${g.away.short} at ${g.home.short}`}
                                     title={
@@ -946,36 +953,41 @@ export default function League() {
                           Optional · Set before the game it affects kicks off, and by the
                           card deadline at the latest.
                         </p>
-                        <label className="power-row">
-                          <span>
-                            <Zap size={16} />
-                            <b>Super Spread</b>
-                            <small>
-                              {used("superSpread")
-                                ? "Used this season"
-                                : slotLocked("favorite")
-                                  ? "Locked · your favorite has kicked off"
-                                  : "Double the spread · 2.5 pts"}
-                            </small>
-                          </span>
-                          <Checkbox
-                            checked={draft.superSpread}
-                            disabled={
-                              !canPick ||
-                              late ||
-                              used("superSpread") ||
-                              slotLocked("favorite")
-                            }
-                            onCheckedChange={(checked) => {
-                              setDirty(true);
-                              setDraft((d) => ({
-                                ...d,
-                                superSpread: checked,
-                              }));
-                            }}
-                          />
-                        </label>
-                        <label className="power-row">
+                        <LabeledSwitch
+                          className="power-row"
+                          checked={draft.superSpread}
+                          disabled={
+                            !canPick ||
+                            late ||
+                            used("superSpread") ||
+                            slotLocked("favorite")
+                          }
+                          onCheckedChange={(checked) => {
+                            setDirty(true);
+                            setDraft((d) => ({
+                              ...d,
+                              superSpread: checked,
+                            }));
+                          }}
+                          label={
+                            <span>
+                              <Zap size={16} />
+                              <b>Super Spread</b>
+                              <small>
+                                {used("superSpread")
+                                  ? "Used this season"
+                                  : slotLocked("favorite")
+                                    ? "Locked · your favorite has kicked off"
+                                    : "Double the spread · 2.5 pts"}
+                              </small>
+                            </span>
+                          }
+                        />
+                        <div
+                          className="power-row power-row-select"
+                          role="group"
+                          aria-label="Total Helper target"
+                        >
                           <span>
                             <Target size={16} />
                             <b>Total Helper</b>
@@ -987,83 +999,88 @@ export default function League() {
                                   : "5 points in your favor"}
                             </small>
                           </span>
-                          <select
-                            aria-label="Total Helper target"
-                            value={draft.totalHelper ?? ""}
+                          <SegmentedControl
+                            size="md"
+                            className="power-helper"
+                            value={draft.totalHelper ?? "off"}
                             disabled={
                               !canPick ||
                               late ||
                               used("totalHelper") ||
                               Boolean(own?.totalHelper && slotLocked(own.totalHelper))
                             }
-                            onChange={(e) => {
+                            onChange={(value) => {
                               setDirty(true);
                               setDraft((d) => ({
                                 ...d,
-                                totalHelper: (e.target.value ||
-                                  null) as PickInput["totalHelper"],
+                                totalHelper:
+                                  value === "off"
+                                    ? null
+                                    : (value as PickInput["totalHelper"]),
                               }));
                             }}
-                          >
-                            <option value="">Off</option>
-                            <option value="over" disabled={slotLocked("over")}>
-                              Over
-                            </option>
-                            <option value="under" disabled={slotLocked("under")}>
-                              Under
-                            </option>
-                          </select>
-                        </label>
-                        <label className="power-row">
-                          <span>
-                            <Sparkles size={16} />
-                            <b>Perfect Prediction</b>
-                            <small>
-                              {used("perfectPrediction")
-                                ? "Used this season"
-                                : anySlotLocked
-                                  ? "Locked · a game on your card has kicked off"
-                                  : "Call a perfect week · 8 pts"}
-                            </small>
-                          </span>
-                          <Checkbox
-                            checked={draft.perfectPrediction}
-                            disabled={
-                              !canPick ||
-                              late ||
-                              used("perfectPrediction") ||
-                              anySlotLocked
-                            }
-                            onCheckedChange={(checked) => {
-                              setDirty(true);
-                              setDraft((d) => ({
-                                ...d,
-                                perfectPrediction: checked,
-                              }));
-                            }}
+                            options={[
+                              { value: "off", label: "Off" },
+                              {
+                                value: "over",
+                                label: "Over",
+                                disabled: slotLocked("over"),
+                              },
+                              {
+                                value: "under",
+                                label: "Under",
+                                disabled: slotLocked("under"),
+                              },
+                            ]}
                           />
-                        </label>
+                        </div>
+                        <LabeledSwitch
+                          className="power-row"
+                          checked={draft.perfectPrediction}
+                          disabled={
+                            !canPick || late || used("perfectPrediction") || anySlotLocked
+                          }
+                          onCheckedChange={(checked) => {
+                            setDirty(true);
+                            setDraft((d) => ({
+                              ...d,
+                              perfectPrediction: checked,
+                            }));
+                          }}
+                          label={
+                            <span>
+                              <Sparkles size={16} />
+                              <b>Perfect Prediction</b>
+                              <small>
+                                {used("perfectPrediction")
+                                  ? "Used this season"
+                                  : anySlotLocked
+                                    ? "Locked · a game on your card has kicked off"
+                                    : "Call a perfect week · 8 pts"}
+                              </small>
+                            </span>
+                          }
+                        />
                       </details>
                       <CustomButton
                         variant="unstyled"
                         className="primary save-button"
-                        disabled={busy || count !== 4 || !canPick}
+                        disabled={count !== 4 || !canPick}
+                        loading={busy}
+                        rightIcon={locked ? LockKeyhole : ArrowRight}
                         onClick={submit}
                       >
-                        {busy
-                          ? "Saving…"
-                          : locked
-                            ? "Picks locked"
-                            : own && !dirty
-                              ? "Edit picks"
-                              : own
-                                ? buyInPending
-                                  ? "Update pending picks"
-                                  : "Update picks"
-                                : late
-                                  ? "Submit late picks (−1)"
-                                  : "Submit picks"}
-                        {locked ? <LockKeyhole size={17} /> : <ArrowRight size={17} />}
+                        {locked
+                          ? "Picks locked"
+                          : own && !dirty
+                            ? "Edit picks"
+                            : own
+                              ? buyInPending
+                                ? "Update pending picks"
+                                : "Update picks"
+                              : late
+                                ? "Submit late picks (−1)"
+                                : "Submit picks"}
                       </CustomButton>
                       <p className="slip-foot">
                         {buyInPending
@@ -1462,10 +1479,14 @@ export default function League() {
                     <RefreshCw size={16} />
                     Refresh scores & schedule
                   </CustomButton>
-                  <a className="secondary" href="/api/export">
-                    <Download size={16} />
+                  <CustomButton
+                    variant="unstyled"
+                    className="secondary"
+                    href="/api/export"
+                    leftIcon={Download}
+                  >
                     Export league data
-                  </a>
+                  </CustomButton>
                   <p className="source-note">
                     Data includes all picks, frozen lines, results, and the audit log.
                     Google credentials are never included.
@@ -1732,14 +1753,15 @@ export default function League() {
               <strong>{buyIn.handle}</strong>
               <span>Use the note “Pick 4 · {user.name}”.</span>
             </p>
-            <a
+            <CustomButton
+              variant="unstyled"
               className="secondary venmo-link"
               href={buyIn.url}
-              target="_blank"
-              rel="noreferrer"
+              external
+              rightIcon={ArrowUpRight}
             >
-              Open Venmo <ArrowUpRight size={16} />
-            </a>
+              Open Venmo
+            </CustomButton>
             {buyInIntent === "save" ? (
               <CustomButton
                 variant="unstyled"
