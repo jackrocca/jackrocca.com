@@ -9,6 +9,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "sync:schedule": "tsx scripts/sync-schedule.ts",
+    "seed:local": "tsx scripts/seed-local-league.ts",
     "test:api": "tsx scripts/check-api.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

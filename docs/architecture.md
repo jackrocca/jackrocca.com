@@ -32,4 +32,6 @@ See `docs/photography.md` for publication and privacy boundaries.
 
 The UI dependency direction is application → UI. Shared components cannot import account or league code. `npm run check:boundaries` enforces this and rejects runtime imports from archived/upstream source.
 
+Game detail (`/api/game/:id`) reads ESPN's public event summary on demand for games on the league schedule, with a short per-instance memory cache; it is never written into league state. `npm run seed:local` fills the isolated local store with fixture members and cards for trying the board without Google sign-in and refuses to run with Blob credentials present.
+
 The backend uses private Vercel Blob state with conditional ETag writes and bounded retries. League chat lives in a sibling `chat.json` object so message writes do not contend with pick saves; profile photos are stored as private square WebP files and served only to signed-in members through `/api/avatars/:userId`. Server handlers enforce authorization, CSRF origin checks, frozen-line selection, deadlines, unique games, powerup availability, and stale-card revision conflicts. Read-time scoring prevents refreshes from accumulating duplicate points. Keep this model authoritative; UI controls never replace server checks.

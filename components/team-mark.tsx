@@ -1,10 +1,12 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import type { Game } from "@/lib/types";
+import type { Game, Team } from "@/lib/types";
 
-export function TeamMark({ game, side }: { game: Game; side: "home" | "away" }) {
-  const team = game[side];
+type Props = { game: Game; side: "home" | "away"; team?: never } | { team: Team };
+
+export function TeamMark(props: Props) {
+  const team = "team" in props && props.team ? props.team : props.game![props.side!];
   const [failedTeamId, setFailedTeamId] = useState<string | null>(null);
   return (
     <span className="team-mark" aria-hidden="true">

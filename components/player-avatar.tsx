@@ -12,14 +12,14 @@ export function PlayerAvatar({
   name: string;
   userId: string;
   revision?: number;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
 }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     setFailed(false);
   }, [revision, userId]);
   const letter = (name.trim()[0] || "?").toUpperCase();
-  const pixels = size === "lg" ? 72 : size === "md" ? 40 : 30;
+  const pixels = size === "lg" ? 72 : size === "md" ? 40 : size === "xs" ? 22 : 30;
   return (
     <span className={`avatar avatar-${size}`} aria-hidden="true">
       {revision > 0 && !failed ? (

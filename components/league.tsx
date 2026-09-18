@@ -34,6 +34,8 @@ import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
 import { BottomDrawer } from "@/ui/components/BottomDrawer";
 import { LeagueChat } from "@/components/league-chat";
 import { PlayerAvatar, ProfilePhotoField } from "@/components/player-avatar";
+import { PickAvatars } from "@/components/pick-avatars";
+import { GameDetailSheet } from "@/components/game-detail";
 import {
   Accordion,
   AccordionItem,
@@ -50,6 +52,7 @@ import {
   checklistComplete,
 } from "@/components/league-onboarding";
 import type { AppView } from "@/lib/view";
+import { gameLine, slotLine } from "@/lib/lines";
 import { PICK_TYPES, PickInput, PickType } from "@/lib/types";
 import { gameOpen, signed } from "@/lib/rules";
 const blank = (): PickInput => ({
@@ -153,7 +156,12 @@ export default function League() {
     [buyInIntent, setBuyInIntent] = useState<"save" | "info">("save"),
     [touring, setTouring] = useState(false),
     // Milestones reached in this session, ahead of the next server refresh.
-    [reached, setReached] = useState<{ onboarded?: boolean; chatted?: boolean }>({});
+    [reached, setReached] = useState<{ onboarded?: boolean; chatted?: boolean }>({}),
+    [detailGameId, setDetailGameId] = useState<string | null>(null),
+    // Stays true through the close transition; the id clears once it completes.
+    [detailOpen, setDetailOpen] = useState(false);
+  // The card control that opened the game sheet; focus returns there on close.
+  const detailTrigger = useRef<HTMLElement | null>(null);
   const tourReturn = useRef("board");
   const tourChecked = useRef<string | null>(null);
   const load = useCallback(async (number: number | null) => {
@@ -634,97 +642,101 @@ export default function League() {
                     <h2 className="sr-only">Week {week} matchups</h2>
                     <div className="game-grid" id="game-board">
                       {w.games.map((g) => {
-                        const odds = w.publishedAt
-                          ? w.lines[g.id]
-                          : { homeSpread: g.homeSpread, total: g.total };
-                        const spread = odds?.homeSpread ?? null,
-                          total = odds?.total ?? null,
-                          homeFavorite = spread !== null && spread < 0;
+                        const odds = gameLine(w, g.id);
                         const closed =
                           tick >= Date.parse(g.kickoff) ||
                           g.state !== "scheduled" ||
                           !g.timeConfirmed;
                         const selected = PICK_TYPES.find((t) => draft.picks[t] === g.id);
-                        const favorite = homeFavorite ? g.home : g.away,
-                          underdog = homeFavorite ? g.away : g.home;
+                        const cardPicks = data.gamePicks[g.id];
+                        const hasPicks = Boolean(
+                          cardPicks && PICK_TYPES.some((t) => cardPicks[t].length > 0),
+                        );
+                        // Before the reveal the row only carries the viewer's own pick and the reveal time.
+                        const showPicks =
+                          Boolean(w.publishedAt) && (hasPicks || !w.picksRevealed);
                         return (
                           <article
                             className={`game-card ${selected ? "has-pick" : ""}`}
                             key={g.id}
                           >
-                            <div className="game-top">
-                              <span>
-                                {g.state === "final"
-                                  ? "FINAL"
-                                  : g.state === "live"
-                                    ? g.detail
-                                    : g.state === "postponed"
-                                      ? "POSTPONED"
-                                      : g.state === "canceled"
-                                        ? "CANCELED"
-                                        : g.timeConfirmed
-                                          ? date(g.kickoff, true) + " PT"
-                                          : "KICKOFF TBD"}
-                              </span>
-                              {selected ? (
-                                <span className="picked-badge">
-                                  <Check size={12} />
-                                  {labels[selected]}
+                            <CustomButton
+                              variant="unstyled"
+                              className="game-open"
+                              aria-label={`Game details: ${g.away.short} at ${g.home.short}`}
+                              aria-haspopup="dialog"
+                              onClick={(event: React.MouseEvent<HTMLElement>) => {
+                                detailTrigger.current = event.currentTarget;
+                                setDetailGameId(g.id);
+                                setDetailOpen(true);
+                              }}
+                            >
+                              <div className="game-top">
+                                <span>
+                                  {g.state === "final"
+                                    ? "FINAL"
+                                    : g.state === "live"
+                                      ? g.detail
+                                      : g.state === "postponed"
+                                        ? "POSTPONED"
+                                        : g.state === "canceled"
+                                          ? "CANCELED"
+                                          : g.timeConfirmed
+                                            ? date(g.kickoff, true) + " PT"
+                                            : "KICKOFF TBD"}
                                 </span>
-                              ) : (
-                                <span>{g.broadcast}</span>
-                              )}
-                            </div>
-                            <div className="matchup">
-                              <div>
-                                <TeamMark game={g} side="away" />
-                                <span className="team-city">
-                                  {g.away.name.slice(0, -g.away.short.length).trim()}
-                                </span>
-                                <strong>{g.away.short}</strong>
-                              </div>
-                              <span
-                                className={`versus ${g.state === "live" ? "live-score" : ""}`}
-                              >
-                                {g.homeScore !== null && g.awayScore !== null ? (
-                                  <>
-                                    <b>{g.awayScore}</b>
-                                    <span>–</span>
-                                    <b>{g.homeScore}</b>
-                                  </>
+                                {selected ? (
+                                  <span className="picked-badge">
+                                    <Check size={12} />
+                                    {labels[selected]}
+                                  </span>
                                 ) : (
-                                  "at"
+                                  <span>{g.broadcast}</span>
                                 )}
-                              </span>
-                              <div>
-                                <TeamMark game={g} side="home" />
-                                <span className="team-city">
-                                  {g.home.name.slice(0, -g.home.short.length).trim()}
-                                </span>
-                                <strong>{g.home.short}</strong>
                               </div>
-                            </div>
+                              <div className="matchup">
+                                <div>
+                                  <TeamMark game={g} side="away" />
+                                  <span className="team-city">
+                                    {g.away.name.slice(0, -g.away.short.length).trim()}
+                                  </span>
+                                  <strong>{g.away.short}</strong>
+                                </div>
+                                <span
+                                  className={`versus ${g.state === "live" ? "live-score" : ""}`}
+                                >
+                                  {g.homeScore !== null && g.awayScore !== null ? (
+                                    <>
+                                      <b>{g.awayScore}</b>
+                                      <span>–</span>
+                                      <b>{g.homeScore}</b>
+                                    </>
+                                  ) : (
+                                    "at"
+                                  )}
+                                </span>
+                                <div>
+                                  <TeamMark game={g} side="home" />
+                                  <span className="team-city">
+                                    {g.home.name.slice(0, -g.home.short.length).trim()}
+                                  </span>
+                                  <strong>{g.home.short}</strong>
+                                </div>
+                              </div>
+                            </CustomButton>
                             <div className="game-options">
                               {PICK_TYPES.map((t) => {
                                 const selectedThis = draft.picks[t] === g.id,
                                   conflict = Boolean(selected && selected !== t);
-                                const unavailable =
-                                  t === "over" || t === "under"
-                                    ? total === null
-                                    : spread === null || spread === 0;
-                                const line =
-                                  t === "favorite"
-                                    ? `${favorite.abbreviation} ${signed(-Math.abs(spread ?? 0))}`
-                                    : t === "underdog"
-                                      ? `${underdog.abbreviation} ${signed(Math.abs(spread ?? 0))}`
-                                      : `${t === "over" ? "O" : "U"} ${total ?? "—"}`;
+                                const line = slotLine(g, odds, t);
+                                const unavailable = line === null;
                                 return (
                                   <CustomButton
                                     variant="unstyled"
                                     key={t}
                                     className={selectedThis ? "chosen" : ""}
                                     aria-pressed={selectedThis}
-                                    aria-label={`${labels[t]}: ${unavailable ? "line unavailable" : line}, ${g.away.short} at ${g.home.short}`}
+                                    aria-label={`${labels[t]}: ${line ?? "line unavailable"}, ${g.away.short} at ${g.home.short}`}
                                     title={
                                       slotLocked(t) && !selectedThis
                                         ? "A started game on your card is locked"
@@ -746,12 +758,38 @@ export default function League() {
                                     onClick={() => choose(t, g.id)}
                                   >
                                     <small>{labels[t]}</small>
-                                    <strong>{unavailable ? "—" : line}</strong>
+                                    <strong>{line ?? "—"}</strong>
                                     {selectedThis && <Check size={12} />}
                                   </CustomButton>
                                 );
                               })}
                             </div>
+                            {showPicks && (
+                              <div
+                                className={`game-picks ${w.picksRevealed ? "" : "private"}`}
+                                aria-label="League picks"
+                              >
+                                {hasPicks && (
+                                  <div className="game-picks-row">
+                                    {PICK_TYPES.map((t) => (
+                                      <div key={t} className="game-picks-cell">
+                                        <PickAvatars
+                                          pickers={cardPicks[t]}
+                                          viewerId={user.id}
+                                          label={labels[t]}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {!w.picksRevealed && (
+                                  <p className="game-picks-hint">
+                                    <LockKeyhole size={10} />
+                                    League picks reveal {date(w.deadline, true)} PT
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </article>
                         );
                       })}
@@ -1494,6 +1532,25 @@ export default function League() {
             )}
           </main>
         </>
+      )}
+      {user && (
+        <GameDetailSheet
+          game={w.games.find((g) => g.id === detailGameId) ?? null}
+          line={detailGameId ? gameLine(w, detailGameId) : null}
+          published={Boolean(w.publishedAt)}
+          picks={detailGameId ? data.gamePicks[detailGameId] : undefined}
+          revealed={w.picksRevealed}
+          deadline={w.deadline}
+          viewerId={user.id}
+          cardsSubmitted={data.pickCardCount}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onClosed={() => {
+            detailTrigger.current?.focus({ preventScroll: true });
+            detailTrigger.current = null;
+            setDetailGameId(null);
+          }}
+        />
       )}
       {user && (
         <ResponsiveDialog

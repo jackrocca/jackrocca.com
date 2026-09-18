@@ -5,6 +5,7 @@ import { Input } from "@/ui/components/Input";
 import { SimpleSelect } from "@/ui/components/SimpleSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { ResponsiveDialog } from "@/ui/components/ResponsiveDialog";
+import { TabPanels } from "@/ui/components/TabPanels";
 import { Checkbox } from "@/ui/primitives/checkbox";
 import { Editorial } from "@/components/personal-pages";
 export function UIGallery() {
@@ -56,6 +57,22 @@ export function UIGallery() {
         <section className="space-y-5">
           <h2 className="text-sm font-medium">Segmented control</h2>
           <SegmentedControl options={options} value={choice} onChange={setChoice} />
+        </section>
+        <section className="space-y-5">
+          <h2 className="text-sm font-medium">Tab panels</h2>
+          <TabPanels
+            aria-label="Collections"
+            tabs={options.map((option) => ({
+              value: option.value,
+              label: option.label,
+              content: (
+                <p className="text-sm leading-7 text-muted-foreground">
+                  {option.label} panel. Arrow keys move between tabs; the underline slides
+                  with transform only.
+                </p>
+              ),
+            }))}
+          />
         </section>
         <section className="space-y-5">
           <h2 className="text-sm font-medium">Responsive dialog</h2>
