@@ -523,7 +523,8 @@ test("the weekend snapshot refreezes only Sunday and Monday games and rebases sa
   assert.equal(entry.picks.over.movedFrom, before.over.line);
   assert.equal(entry.picks.under.movedFrom, undefined);
   // New saves now build from the final number and clear the flag.
-  const resaved = saveEntry(s, "one", { ...input, revision: 1 }, saturday + 1);
+  assert.equal(entry.revision, 2);
+  const resaved = saveEntry(s, "one", { ...input, revision: 2 }, saturday + 1);
   assert.equal(resaved.picks.over.line, sundayB.total);
   assert.equal(resaved.picks.over.movedFrom, undefined);
   assert.throws(() => publishWeekend(w, s.entries, saturday + 1), /already frozen/);
@@ -542,6 +543,48 @@ test("the weekend snapshot keeps a flipped favorite's team and releases an ineli
   assert.equal(entry.picks.favorite.line, 1.5);
   assert.equal(entry.picks.favorite.movedFrom, -6);
   assert.equal(entry.superSpread, false);
+  // Re-saving the same game keeps the member's team; only a new pick can switch sides.
+  const resaved = saveEntry(
+    s,
+    "one",
+    { ...input, revision: entry.revision },
+    weekendFreezeTime(w) + 1,
+  );
+  assert.equal(resaved.picks.favorite.teamId, favoriteGame.home.id);
+  assert.equal(resaved.picks.favorite.line, 1.5);
+  assert.equal(resaved.picks.favorite.movedFrom, undefined);
+  const switched = saveEntry(
+    s,
+    "one",
+    {
+      ...input,
+      picks: { ...input.picks, favorite: w.games[5].id },
+      revision: resaved.revision,
+    },
+    weekendFreezeTime(w) + 2,
+  );
+  assert.equal(switched.picks.favorite.gameId, w.games[5].id);
+});
+test("the weekend rebase bumps the card revision so a stale tab cannot overwrite the moved pick", () => {
+  const { s, w, input, saved } = weekFixture(2, [1, 2, 3, 4]);
+  const entry = saveEntry(s, "one", input, saved);
+  assert.equal(entry.revision, 1);
+  const untouched = saveEntry(
+    s,
+    "two",
+    { ...input, picks: { ...input.picks, over: w.games[6].id, under: w.games[7].id } },
+    saved,
+  );
+  w.games[3].total = (w.games[3].total ?? 0) + 1; // moves "one"'s over only
+  publishWeekend(w, s.entries, weekendFreezeTime(w));
+  assert.equal(entry.revision, 2);
+  assert.equal(untouched.revision, 1);
+  assert.throws(
+    () => saveEntry(s, "one", { ...input, revision: 1 }, weekendFreezeTime(w) + 1),
+    /another tab/,
+  );
+  const fresh = saveEntry(s, "one", { ...input, revision: 2 }, weekendFreezeTime(w) + 1);
+  assert.equal(fresh.revision, 3);
 });
 test("snapshots refuse to run out of order or after the Sunday deadline", () => {
   const s = initialState(),

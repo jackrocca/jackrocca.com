@@ -120,6 +120,28 @@ test("powerups reveal with the slot they affect", () => {
   )!;
   assert.equal(atDeadline.totalHelper, "over");
 });
+test("a canceled game reveals at once so its void half point cannot leak a hidden slot", () => {
+  const { s, w, ada, bea } = league();
+  // Bea's under sits on game 7, a Sunday game; it is canceled on Friday.
+  const beaEntry = s.entries.find((e) => e.userId === "bea")!;
+  const canceled = w.games.find((g) => g.id === beaEntry.picks.under.gameId)!;
+  assert.ok(Date.parse(canceled.kickoff) >= deadline(w));
+  const friday = deadline(w) - 2 * 86_400_000;
+  // Bea's opener slot is already public by Friday; the under is not.
+  const before = view(s, ada, 1, false, friday).entries.find((e) => e.userId === "bea")!;
+  assert.equal(before.picks!.under, null);
+  assert.equal(before.score.points, 0);
+  canceled.state = "canceled";
+  const after = view(s, ada, 1, false, friday).entries.find((e) => e.userId === "bea")!;
+  assert.equal(after.score.points, 0.5);
+  assert.equal(after.score.outcomes.under, "void");
+  assert.equal(after.picks!.under!.gameId, canceled.id);
+  assert.equal(after.picks!.favorite, null);
+  assert.equal(after.picks!.over, null);
+  // The board and standings agree with what the card shows.
+  const shown = view(s, bea, 1, false, friday);
+  assert.equal(shown.standings.find((m) => m.id === "bea")!.weekPoints, 0.5);
+});
 test("a member's own hidden slots never leak through gamePicks before Sunday", () => {
   const { s, w, cy } = league();
   const afterOpener = Date.parse(w.games[0].kickoff) + 1;

@@ -127,7 +127,17 @@ function totalSelection(game: Game, type: "over" | "under", total: number): Sele
     label: `${game.away.abbreviation} @ ${game.home.abbreviation} · ${type === "over" ? "Over" : "Under"} ${total}`,
   };
 }
-export function selection(week: Week, type: PickType, id: string): Selection {
+/**
+ * Builds a pick from the frozen line. `keepTeam` re-saves a spread pick on the
+ * same game with the team the member already holds, so a favorite/underdog flip
+ * at the weekend snapshot never swaps their side without an explicit new pick.
+ */
+export function selection(
+  week: Week,
+  type: PickType,
+  id: string,
+  keepTeam?: string,
+): Selection {
   const game = week.games.find((g) => g.id === id);
   if (!game) throw new AppError("That game is not in this week.");
   const odds = week.lines[id];
@@ -136,7 +146,11 @@ export function selection(week: Week, type: PickType, id: string): Selection {
     if (odds.homeSpread === null || odds.homeSpread === 0)
       throw new AppError("This game has no eligible spread.");
     const home = (type === "favorite") === odds.homeSpread < 0;
-    return spreadSelection(game, (home ? game.home : game.away).id, odds.homeSpread);
+    const teamId =
+      keepTeam && [game.home.id, game.away.id].includes(keepTeam)
+        ? keepTeam
+        : (home ? game.home : game.away).id;
+    return spreadSelection(game, teamId, odds.homeSpread);
   }
   if (odds.total === null) throw new AppError("This game has no total.");
   return totalSelection(game, type, odds.total);
@@ -215,10 +229,13 @@ export function saveEntry(
     if (input[power] && other.some((e) => e[power]))
       throw new AppError("That powerup has already been used this season.");
   const picks = Object.fromEntries(
-    PICK_TYPES.map((t) =>
+    PICK_TYPES.map((t) => {
       // A locked slot keeps the frozen selection it was scored against.
-      lockedSlots.has(t) ? [t, old!.picks[t]] : [t, selection(week, t, input.picks[t])],
-    ),
+      if (lockedSlots.has(t)) return [t, old!.picks[t]];
+      const previous = old?.picks[t];
+      const sameGame = previous?.gameId === input.picks[t] ? previous?.teamId : undefined;
+      return [t, selection(week, t, input.picks[t], sameGame)];
+    }),
   ) as Entry["picks"];
   if (input.superSpread && picks.favorite.line > -5)
     throw new AppError("Super Spread requires a favorite of -5 or greater.");
@@ -372,6 +389,7 @@ export function publishWeekend(week: Week, entries: Entry[], now = Date.now()) {
 export function rebaseWeekendPicks(week: Week, entries: Entry[]) {
   const moved: { entry: Entry; type: PickType; from: number; to: number }[] = [];
   const released: Entry[] = [];
+  const touched = new Set<Entry>();
   for (const entry of entries) {
     if (entry.week !== week.number || entry.season !== SEASON) continue;
     for (const type of PICK_TYPES) {
@@ -387,11 +405,16 @@ export function rebaseWeekendPicks(week: Week, entries: Entry[]) {
       if (!next || next.line === pick.line) continue;
       moved.push({ entry, type, from: pick.line, to: next.line });
       entry.picks[type] = { ...next, movedFrom: pick.movedFrom ?? pick.line };
+      touched.add(entry);
     }
     if (entry.superSpread && entry.picks.favorite.line > -5) {
       entry.superSpread = false;
       released.push(entry);
+      touched.add(entry);
     }
+    // A changed card is a new revision: a tab still holding the old one gets the
+    // 409 → refresh flow instead of overwriting the moved pick.
+    if (touched.has(entry)) entry.revision += 1;
   }
   return { moved, released };
 }

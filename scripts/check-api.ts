@@ -359,7 +359,10 @@ async function main() {
     );
     assert.equal(rebased.picks.over.line, refrozen.week.lines[ids[2]].total);
     assert.equal(rebased.picks.over.movedFrom, rebased.picks.over.line - 3);
-    await request("picks", { ...input, revision: 1 }, 200, player);
+    // The rebase is a new revision: a stale tab gets 409, a refreshed one saves.
+    assert.equal(rebased.revision, 2);
+    await request("picks", { ...input, revision: 1 }, 409, player);
+    await request("picks", { ...input, revision: 2 }, 200, player);
     const resaved = await (await request("state?week=1", undefined, 200, player)).json();
     assert.equal(
       resaved.entries.find((e: { userId: string }) => e.userId === users[1].id).picks.over

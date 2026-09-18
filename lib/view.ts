@@ -62,9 +62,12 @@ export function view(
   const week = state.weeks.find((w) => w.number === weekNumber)!;
   const reveal = now >= deadline(week);
   // A slot reveals at its game's kickoff or at the deadline, whichever is first.
+  // A canceled game is void for everyone and can no longer be picked, so it
+  // reveals at once; otherwise its half point would leak the slot through `score`.
   const slotRevealed = (pick: Selection) => {
     const game = week.games.find((g) => g.id === pick.gameId);
-    return game ? now >= slotLockTime(week, game) : reveal;
+    if (!game) return reveal;
+    return game.state === "canceled" || now >= slotLockTime(week, game);
   };
   const anyRevealed = reveal || week.games.some((g) => now >= slotLockTime(week, g));
   const allGames = state.weeks.flatMap((w) => w.games);

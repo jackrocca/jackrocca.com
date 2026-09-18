@@ -860,8 +860,22 @@ export default function League() {
                       </div>
                       {PICK_TYPES.map((t) => {
                         const g = w.games.find((g) => g.id === draft.picks[t]);
+                        const saved = own?.picks?.[t];
+                        // The saved selection is the source of truth for a saved slot: it
+                        // carries the member's team even after a favorite/underdog flip.
+                        const showSaved = !dirty && saved && saved.gameId === g?.id;
                         let text = "Choose a game";
-                        if (g) {
+                        if (g && showSaved) {
+                          const team =
+                            saved.teamId === g.home.id
+                              ? g.home
+                              : saved.teamId === g.away.id
+                                ? g.away
+                                : null;
+                          text = team
+                            ? `${team.short} ${signed(saved.line)}`
+                            : `${g.away.abbreviation} @ ${g.home.abbreviation} · ${t === "over" ? "Over" : "Under"} ${saved.line}`;
+                        } else if (g) {
                           const odds = w.lines[g.id];
                           const spread = odds?.homeSpread ?? g.homeSpread ?? 0;
                           const home = (t === "favorite") === spread < 0;
@@ -871,11 +885,7 @@ export default function League() {
                               : `${g.away.abbreviation} @ ${g.home.abbreviation} · ${t === "over" ? "Over" : "Under"} ${odds?.total ?? g.total}`;
                         }
                         const Icon = slotIcons[t];
-                        const saved = own?.picks?.[t];
-                        const moved =
-                          !dirty && saved && saved.gameId === g?.id
-                            ? saved.movedFrom
-                            : undefined;
+                        const moved = showSaved ? saved.movedFrom : undefined;
                         return (
                           <div className={`slip-slot ${g ? "filled" : ""}`} key={t}>
                             <span className="slot-icon">
@@ -1184,7 +1194,8 @@ export default function League() {
                                     pick.label
                                   ) : (
                                     <em className="hidden-pick">
-                                      <LockKeyhole size={11} /> Reveals {deadlineText} PT
+                                      <LockKeyhole size={11} /> Reveals by {deadlineText}{" "}
+                                      PT
                                     </em>
                                   )}
                                 </span>
