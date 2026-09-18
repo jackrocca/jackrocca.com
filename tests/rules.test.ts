@@ -6,17 +6,41 @@ import {
   buyInStatus,
   confirmBuyIn,
   deadline,
+  entryLate,
   freezeTime,
   openingKickoff,
   publishWeek,
+  publishWeekend,
   saveEntry,
   scoreEntry,
+  slotLockTime,
+  weekendFreezeTime,
+  weekendGame,
 } from "../lib/rules";
+import { autoPublish } from "../lib/sync";
 import { parseFeed } from "../lib/feed";
 import { PICK_TYPES, BUY_IN_DOLLARS, Entry, Game, PickInput, User } from "../lib/types";
 import { view } from "../lib/view";
 import { readFileSync } from "node:fs";
 const now = Date.parse("2026-09-08T20:00:00Z");
+/** A published week N with a card on the first `offsets` games, saved the Tuesday before. */
+function weekFixture(number: number, offsets = [0, 1, 2, 3]) {
+  const s = initialState(),
+    w = s.weeks[number - 1];
+  const saved = Date.parse(w.games[0].kickoff) - 2 * 86_400_000;
+  publishWeek(w, saved);
+  const input: PickInput = {
+    week: number,
+    picks: Object.fromEntries(
+      PICK_TYPES.map((t, i) => [t, w.games[offsets[i]].id]),
+    ) as PickInput["picks"],
+    superSpread: false,
+    totalHelper: null,
+    perfectPrediction: false,
+    revision: 0,
+  };
+  return { s, w, input, saved };
+}
 function fixture() {
   const s = initialState(),
     w = s.weeks[0];
@@ -77,18 +101,42 @@ test("opening kickoff is Wednesday September 9 at 5:20 PM Pacific", () => {
     Date.parse("2026-09-10T00:20:00Z"),
   );
 });
-test("Week 1 pick deadline is the Sunday slate, not the Wednesday opener", () => {
-  const week = initialState().weeks[0];
-  assert.equal(deadline(week), Date.parse("2026-09-13T17:00:00Z"));
-  assert.equal(
-    deadline(initialState().weeks[1]),
-    openingKickoff(initialState().weeks[1]),
-  );
+test("the card deadline is the first Sunday slate kickoff every week, not the opener", () => {
+  const s = initialState();
+  assert.equal(deadline(s.weeks[0]), Date.parse("2026-09-13T17:00:00Z"));
+  assert.equal(deadline(s.weeks[1]), Date.parse("2026-09-20T17:00:00Z"));
+  assert.notEqual(deadline(s.weeks[1]), openingKickoff(s.weeks[1]));
+  assert.equal(deadline(s.weeks[2]), Date.parse("2026-09-27T17:00:00Z"));
+});
+test("an early international Sunday game is a pre-deadline game that locks only itself", () => {
+  const w = initialState().weeks[3];
+  const london = w.games.find((g) => g.kickoff === "2026-10-04T13:30Z")!;
+  assert.equal(deadline(w), Date.parse("2026-10-04T17:00:00Z"));
+  assert.equal(weekendGame(w, london), false);
+  assert.equal(slotLockTime(w, london), Date.parse(london.kickoff));
+  const thursday = w.games[0];
+  assert.equal(weekendGame(w, thursday), false);
+  assert.equal(slotLockTime(w, thursday), Date.parse(thursday.kickoff));
+  const monday = w.games[w.games.length - 1];
+  assert.equal(weekendGame(w, monday), true);
+  assert.equal(slotLockTime(w, monday), deadline(w));
+});
+test("a week without Sunday games falls back to its earliest kickoff", () => {
+  const w = initialState().weeks[0];
+  for (const g of w.games) g.kickoff = "2027-01-09T21:00:00Z";
+  assert.equal(deadline(w), Date.parse("2027-01-09T21:00:00Z"));
 });
 test("freeze is Wednesday 9 AM Pacific; winter DST handled", () => {
   const s = initialState();
   assert.equal(freezeTime(s.weeks[0]), Date.parse("2026-09-09T16:00:00Z"));
   assert.equal(new Date(freezeTime(s.weeks[12])).getUTCHours(), 17);
+});
+test("the weekend freeze is Saturday 9 AM Pacific before the deadline; winter DST handled", () => {
+  const s = initialState();
+  assert.equal(weekendFreezeTime(s.weeks[1]), Date.parse("2026-09-19T16:00:00Z"));
+  assert.equal(new Date(weekendFreezeTime(s.weeks[12])).getUTCHours(), 17);
+  assert.ok(weekendFreezeTime(s.weeks[1]) < deadline(s.weeks[1]));
+  assert.ok(weekendFreezeTime(s.weeks[1]) > freezeTime(s.weeks[1]));
 });
 test("season selection supports pre-season and January", () => {
   const s = initialState();
@@ -237,7 +285,156 @@ test("existing card locks precisely at the weekly deadline", () => {
     /locked/,
   );
 });
-test("Week 1 stays punishment-free after the Wednesday opener", () => {
+test("Week 2: the Thursday slot locks at kickoff while the other three stay open until Sunday", () => {
+  const { s, w, input, saved } = weekFixture(2);
+  const thursday = w.games[0];
+  saveEntry(s, "one", input, saved);
+  const afterThursday = Date.parse(thursday.kickoff) + 60_000;
+  assert.ok(afterThursday < deadline(w));
+  assert.throws(
+    () =>
+      saveEntry(
+        s,
+        "one",
+        { ...input, picks: { ...input.picks, favorite: w.games[5].id }, revision: 1 },
+        afterThursday,
+      ),
+    /started game on your card is locked/,
+  );
+  const updated = saveEntry(
+    s,
+    "one",
+    { ...input, picks: { ...input.picks, under: w.games[6].id }, revision: 1 },
+    afterThursday,
+  );
+  assert.equal(updated.late, false);
+  assert.equal(updated.picks.favorite.gameId, thursday.id);
+  assert.equal(updated.picks.under.gameId, w.games[6].id);
+  const beforeSunday = deadline(w) - 1;
+  const again = saveEntry(
+    s,
+    "one",
+    { ...input, picks: { ...input.picks, under: w.games[7].id }, revision: 2 },
+    beforeSunday,
+  );
+  assert.equal(again.late, false);
+  assert.throws(
+    () => saveEntry(s, "one", { ...input, revision: 3 }, deadline(w)),
+    /locked for the week/,
+  );
+});
+test("Week 2: a brand-new card after Thursday kickoff is not late and cannot add the Thursday game", () => {
+  const { s, w, input } = weekFixture(2);
+  const afterThursday = Date.parse(w.games[0].kickoff) + 60_000;
+  assert.throws(() => saveEntry(s, "one", input, afterThursday), /started/);
+  input.picks = Object.fromEntries(
+    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+  ) as PickInput["picks"];
+  input.totalHelper = "over";
+  const entry = saveEntry(s, "one", input, afterThursday);
+  assert.equal(entry.late, false);
+  assert.equal(entry.totalHelper, "over");
+});
+test("a card persisted as late under the old Thursday rule reads as on time", () => {
+  const { s, w, input } = weekFixture(2);
+  const afterThursday = Date.parse(w.games[0].kickoff) + 60_000;
+  input.picks = Object.fromEntries(
+    PICK_TYPES.map((t, i) => [t, w.games[i + 1].id]),
+  ) as PickInput["picks"];
+  const entry = saveEntry(s, "one", input, afterThursday);
+  entry.late = true; // as the old rule would have stored it
+  assert.equal(entryLate(entry, w), false);
+  const one: User = {
+    id: "one",
+    name: "Ada",
+    role: "player",
+    sessionVersion: 0,
+    createdAt: new Date(now).toISOString(),
+  };
+  s.users.push(one);
+  const shown = view(s, one, 2, false, afterThursday + 1);
+  assert.equal(shown.entries[0].late, false);
+  assert.equal(shown.history[0].late, false);
+  // …and it can still be edited until Sunday.
+  const updated = saveEntry(
+    s,
+    "one",
+    { ...input, picks: { ...input.picks, under: w.games[8].id }, revision: 1 },
+    afterThursday + 2,
+  );
+  assert.equal(updated.late, false);
+});
+test("Super Spread on a Thursday favorite locks at Thursday kickoff; on a Sunday favorite it toggles until the deadline", () => {
+  const { s, w, input, saved } = weekFixture(2);
+  const thursday = w.games[0];
+  w.lines[thursday.id].homeSpread = -7;
+  saveEntry(s, "one", input, saved);
+  const afterThursday = Date.parse(thursday.kickoff) + 60_000;
+  assert.throws(
+    () =>
+      saveEntry(s, "one", { ...input, superSpread: true, revision: 1 }, afterThursday),
+    /Super Spread is locked/,
+  );
+  // Same card, favorite on a Sunday game that gives 7: toggles freely before Sunday.
+  const sunday = w.games[5];
+  assert.ok(weekendGame(w, sunday));
+  w.lines[sunday.id].homeSpread = -7;
+  const moved = { ...input, picks: { ...input.picks, favorite: sunday.id } };
+  const first = saveEntry(s, "two", moved, saved);
+  assert.equal(first.superSpread, false);
+  const on = saveEntry(
+    s,
+    "two",
+    { ...moved, superSpread: true, revision: 1 },
+    afterThursday,
+  );
+  assert.equal(on.superSpread, true);
+  const off = saveEntry(
+    s,
+    "two",
+    { ...moved, superSpread: false, revision: 2 },
+    deadline(w) - 1,
+  );
+  assert.equal(off.superSpread, false);
+});
+test("Total Helper locks with its total's game; Perfect Prediction locks with the first started game", () => {
+  const { s, w, input, saved } = weekFixture(2, [1, 2, 0, 3]);
+  // The over sits on the Thursday game.
+  saveEntry(s, "one", { ...input, totalHelper: "over" }, saved);
+  const afterThursday = Date.parse(w.games[0].kickoff) + 60_000;
+  assert.throws(
+    () =>
+      saveEntry(s, "one", { ...input, totalHelper: null, revision: 1 }, afterThursday),
+    /Total Helper is locked/,
+  );
+  assert.throws(
+    () =>
+      saveEntry(s, "one", { ...input, totalHelper: "under", revision: 1 }, afterThursday),
+    /Total Helper is locked/,
+  );
+  assert.throws(
+    () =>
+      saveEntry(
+        s,
+        "one",
+        { ...input, totalHelper: "over", perfectPrediction: true, revision: 1 },
+        afterThursday,
+      ),
+    /Perfect Prediction is locked/,
+  );
+  // A card with no started game may still switch the helper to the under.
+  const fresh = weekFixture(2, [1, 2, 3, 4]);
+  saveEntry(fresh.s, "two", { ...fresh.input, totalHelper: "over" }, fresh.saved);
+  const swapped = saveEntry(
+    fresh.s,
+    "two",
+    { ...fresh.input, totalHelper: "under", perfectPrediction: true, revision: 1 },
+    afterThursday,
+  );
+  assert.equal(swapped.totalHelper, "under");
+  assert.equal(swapped.perfectPrediction, true);
+});
+test("an early opener never makes the rest of the card late", () => {
   const { s, w, input } = fixture();
   const afterOpener = openingKickoff(w) + 1;
   assert.throws(() => saveEntry(s, "one", input, afterOpener), /started/);
@@ -297,6 +494,84 @@ test("a card that missed the opener cannot add it after kickoff", () => {
       ),
     /started/,
   );
+});
+test("the weekend snapshot refreezes only Sunday and Monday games and rebases saved picks", () => {
+  const { s, w, input, saved } = weekFixture(2, [0, 1, 2, 3]);
+  const [thursday, sundayA, sundayB, sundayC] = w.games;
+  const entry = saveEntry(s, "one", input, saved);
+  const before = structuredClone(entry.picks);
+  // Lines move before Saturday: Thursday moves too but must stay frozen.
+  thursday.homeSpread = (thursday.homeSpread ?? 0) - 3;
+  sundayA.homeSpread = (sundayA.homeSpread ?? 0) - 1; // underdog line moves
+  sundayB.total = (sundayB.total ?? 0) + 2; // over moves
+  sundayC.total = null; // feed dropped the market: keep the opening number
+  const saturday = weekendFreezeTime(w);
+  const { moved, released } = publishWeekend(w, s.entries, saturday);
+  assert.equal(w.weekendPublishedAt, new Date(saturday).toISOString());
+  assert.equal(w.lines[thursday.id].homeSpread, before.favorite.line);
+  assert.equal(w.lines[sundayA.id].homeSpread, sundayA.homeSpread);
+  assert.equal(w.lines[sundayB.id].total, sundayB.total);
+  assert.equal(w.lines[sundayC.id].total, before.under.line);
+  assert.equal(moved.length, 2);
+  assert.equal(released.length, 0);
+  assert.deepEqual(entry.picks.favorite, before.favorite);
+  assert.equal(entry.picks.underdog.teamId, before.underdog.teamId);
+  assert.equal(entry.picks.underdog.line, before.underdog.line + 1);
+  assert.equal(entry.picks.underdog.movedFrom, before.underdog.line);
+  assert.match(entry.picks.underdog.label, /\+/);
+  assert.equal(entry.picks.over.line, before.over.line + 2);
+  assert.equal(entry.picks.over.movedFrom, before.over.line);
+  assert.equal(entry.picks.under.movedFrom, undefined);
+  // New saves now build from the final number and clear the flag.
+  const resaved = saveEntry(s, "one", { ...input, revision: 1 }, saturday + 1);
+  assert.equal(resaved.picks.over.line, sundayB.total);
+  assert.equal(resaved.picks.over.movedFrom, undefined);
+  assert.throws(() => publishWeekend(w, s.entries, saturday + 1), /already frozen/);
+});
+test("the weekend snapshot keeps a flipped favorite's team and releases an ineligible Super Spread", () => {
+  const { s, w, input, saved } = weekFixture(2, [1, 2, 3, 4]);
+  const favoriteGame = w.games[1];
+  w.lines[favoriteGame.id].homeSpread = -6;
+  const entry = saveEntry(s, "one", { ...input, superSpread: true }, saved);
+  assert.equal(entry.picks.favorite.teamId, favoriteGame.home.id);
+  favoriteGame.homeSpread = 1.5; // the home side is now the underdog
+  const { moved, released } = publishWeekend(w, s.entries, weekendFreezeTime(w));
+  assert.equal(moved.length, 1);
+  assert.deepEqual(released, [entry]);
+  assert.equal(entry.picks.favorite.teamId, favoriteGame.home.id);
+  assert.equal(entry.picks.favorite.line, 1.5);
+  assert.equal(entry.picks.favorite.movedFrom, -6);
+  assert.equal(entry.superSpread, false);
+});
+test("snapshots refuse to run out of order or after the Sunday deadline", () => {
+  const s = initialState(),
+    w = s.weeks[1];
+  assert.throws(() => publishWeekend(w, [], now), /opening lines first/);
+  publishWeek(w, now);
+  assert.throws(() => publishWeekend(w, [], deadline(w)), /after the Sunday deadline/);
+  const fresh = initialState().weeks[1];
+  assert.throws(() => publishWeek(fresh, deadline(fresh)), /after the Sunday deadline/);
+  // The opening snapshot may still run after Thursday kickoff; the started game gets no line.
+  const late = initialState().weeks[1];
+  const afterThursday = Date.parse(late.games[0].kickoff) + 1;
+  publishWeek(late, afterThursday);
+  assert.equal(late.lines[late.games[0].id], undefined);
+  assert.ok(Object.keys(late.lines).length >= 4);
+});
+test("the cron publishes the opening snapshot from Wednesday and the weekend snapshot from Saturday", () => {
+  const s = initialState(),
+    w = s.weeks[1];
+  assert.equal(autoPublish(s, w, freezeTime(w) - 1), null);
+  assert.match(autoPublish(s, w, freezeTime(w))!, /opening lines frozen/);
+  assert.equal(autoPublish(s, w, weekendFreezeTime(w) - 1), null);
+  assert.match(
+    autoPublish(s, w, weekendFreezeTime(w))!,
+    /Sunday and Monday lines frozen/,
+  );
+  assert.equal(autoPublish(s, w, weekendFreezeTime(w) + 1), null);
+  const missed = initialState();
+  assert.equal(autoPublish(missed, missed.weeks[1], deadline(missed.weeks[1])), null);
+  assert.equal(missed.weeks[1].publishedAt, null);
 });
 test("late entry may only choose unstarted games, locks immediately", () => {
   const { s, w, input } = fixture();

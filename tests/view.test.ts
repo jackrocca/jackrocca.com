@@ -44,9 +44,9 @@ function league() {
   confirmBuyIn(s, "bea", now);
   return { s, w, ada, bea, cy };
 }
-test("before the deadline a member sees only their own picks on the board", () => {
+test("before any kickoff a member sees only their own picks on the board", () => {
   const { s, w, ada } = league();
-  const result = view(s, ada, 1, false, deadline(w) - 1);
+  const result = view(s, ada, 1, false, now + 1);
   assert.equal(result.week.picksRevealed, false);
   const pickers = Object.values(result.gamePicks).flatMap((slots) =>
     Object.values(slots).flat(),
@@ -56,6 +56,93 @@ test("before the deadline a member sees only their own picks on the board", () =
   assert.ok(!JSON.stringify(result.gamePicks).includes("bea"));
   assert.equal(result.gamePicks[w.games[0].id].favorite[0].name, "Ada");
   assert.deepEqual(result.gamePicks[w.games[0].id].underdog, []);
+  assert.equal(result.entries.find((e) => e.userId === "bea")!.picks, null);
+  assert.equal(result.pickCardCount, 1);
+});
+test("once the opener kicks off only that game's picks reveal; the rest wait for Sunday", () => {
+  const { s, w, ada, bea } = league();
+  const opener = w.games[0];
+  const afterOpener = Date.parse(opener.kickoff) + 1;
+  assert.ok(afterOpener < deadline(w));
+  const result = view(s, ada, 1, false, afterOpener);
+  assert.equal(result.week.picksRevealed, false);
+  assert.deepEqual(result.gamePicks[opener.id].underdog, [
+    { userId: "bea", name: "Bea", avatarRevision: 3 },
+  ]);
+  // Bea's other three picks (games 4–7) stay hidden from Ada.
+  assert.ok(!JSON.stringify(result.gamePicks[w.games[4].id] ?? {}).includes("bea"));
+  const beaCard = result.entries.find((e) => e.userId === "bea")!;
+  assert.equal(beaCard.picks!.underdog!.gameId, opener.id);
+  assert.equal(beaCard.picks!.favorite, null);
+  assert.equal(beaCard.picks!.over, null);
+  assert.equal(beaCard.picks!.under, null);
+  // Every confirmed card is now public for the opener, so both count toward shares.
+  assert.equal(result.pickCardCount, 2);
+  // Bea sees her own full card, and Ada's favorite on the opener.
+  const own = view(s, bea, 1, false, afterOpener).entries.find(
+    (e) => e.userId === "bea",
+  )!;
+  assert.ok(PICK_TYPES.every((t) => own.picks![t] !== null));
+  assert.deepEqual(
+    view(s, bea, 1, false, afterOpener).gamePicks[opener.id].favorite.map(
+      (p) => p.userId,
+    ),
+    ["ada"],
+  );
+});
+test("powerups reveal with the slot they affect", () => {
+  const { s, w, ada, bea } = league();
+  const opener = w.games[0];
+  const beaEntry = s.entries.find((e) => e.userId === "bea")!;
+  // Bea: Total Helper on the over (a Sunday game), Perfect Prediction on the card.
+  beaEntry.totalHelper = "over";
+  beaEntry.perfectPrediction = true;
+  const adaEntry = s.entries.find((e) => e.userId === "ada")!;
+  adaEntry.superSpread = true; // favorite on the opener
+  const afterOpener = Date.parse(opener.kickoff) + 1;
+  const adaSees = view(s, ada, 1, false, afterOpener).entries.find(
+    (e) => e.userId === "bea",
+  )!;
+  assert.equal(adaSees.totalHelper, null);
+  // Perfect Prediction locked with Bea's opener slot, so it is public with it.
+  assert.equal(adaSees.perfectPrediction, true);
+  const beaSees = view(s, bea, 1, false, afterOpener).entries.find(
+    (e) => e.userId === "ada",
+  )!;
+  assert.equal(beaSees.superSpread, true);
+  const beforeKickoff = view(s, bea, 1, false, now + 1).entries.find(
+    (e) => e.userId === "ada",
+  )!;
+  assert.equal(beforeKickoff.superSpread, false);
+  assert.equal(beforeKickoff.perfectPrediction, false);
+  const atDeadline = view(s, ada, 1, false, deadline(w)).entries.find(
+    (e) => e.userId === "bea",
+  )!;
+  assert.equal(atDeadline.totalHelper, "over");
+});
+test("a member's own hidden slots never leak through gamePicks before Sunday", () => {
+  const { s, w, cy } = league();
+  const afterOpener = Date.parse(w.games[0].kickoff) + 1;
+  const result = view(s, cy, 1, false, afterOpener);
+  // Cy's card (games 8–11) has no opener; Cy still sees all four of their own picks and nobody else's.
+  const pickers = Object.values(result.gamePicks).flatMap((slots) =>
+    Object.values(slots).flat(),
+  );
+  assert.ok(pickers.some((p) => p.userId === "cy"));
+  assert.ok(
+    pickers
+      .filter((p) => p.userId !== "cy")
+      .every((p) => p.userId === "ada" || p.userId === "bea"),
+  );
+  assert.ok(
+    Object.entries(result.gamePicks).every(
+      ([gameId, slots]) =>
+        gameId === w.games[0].id ||
+        Object.values(slots)
+          .flat()
+          .every((p) => p.userId === "cy"),
+    ),
+  );
 });
 test("at the deadline confirmed members' picks reveal, pending buy-ins stay hidden", () => {
   const { s, w, ada, bea } = league();
@@ -75,7 +162,7 @@ test("at the deadline confirmed members' picks reveal, pending buy-ins stay hidd
 });
 test("a pending player still sees their own pending card on the board", () => {
   const { s, w, cy } = league();
-  const result = view(s, cy, 1, false, deadline(w) - 1);
+  const result = view(s, cy, 1, false, now + 1);
   assert.equal(result.gamePicks[w.games[8].id].favorite[0].userId, "cy");
   assert.equal(Object.keys(result.gamePicks).length, 4);
 });
@@ -110,7 +197,7 @@ test("the pick-share denominator counts exactly the cards behind gamePicks", () 
   const confirmed = view(s, ada, 1, false, deadline(w));
   assert.equal(confirmed.pickCardCount, 2);
   assert.ok(!JSON.stringify(confirmed.gamePicks).includes("cy"));
-  // Before the reveal only the viewer's own card counts.
-  assert.equal(view(s, ada, 1, false, deadline(w) - 1).pickCardCount, 1);
+  // Before any kickoff only the viewer's own card counts.
+  assert.equal(view(s, ada, 1, false, now + 1).pickCardCount, 1);
   assert.equal(view(s, null, 1, false, deadline(w)).pickCardCount, 0);
 });

@@ -1,6 +1,36 @@
 import { fetchWeek } from "./feed";
 import { audit, mutate, readState } from "./store";
-import { currentWeek, freezeTime, openingKickoff, publishWeek } from "./rules";
+import type { Entry, Week } from "./types";
+import {
+  currentWeek,
+  deadline,
+  freezeTime,
+  publishWeek,
+  publishWeekend,
+  weekendFreezeTime,
+} from "./rules";
+/**
+ * Runs whichever scheduled snapshot is due: the opening freeze from Wednesday
+ * 09:00 PT, then the weekend freeze from Saturday 09:00 PT. Both refuse to run
+ * once the Sunday deadline has passed. Returns the audit line to record, if any.
+ */
+export function autoPublish(
+  state: { weeks: Week[]; entries: Entry[] },
+  week: Week,
+  now = Date.now(),
+) {
+  if (now >= deadline(week)) return null;
+  if (!week.publishedAt) {
+    if (now < freezeTime(week)) return null;
+    publishWeek(week, now);
+    return `Week ${week.number}: opening lines frozen.`;
+  }
+  if (!week.weekendPublishedAt && now >= weekendFreezeTime(week)) {
+    const { moved, released } = publishWeekend(week, state.entries, now);
+    return `Week ${week.number}: Sunday and Monday lines frozen. ${moved.length} saved pick${moved.length === 1 ? "" : "s"} moved to the final line${released.length ? `; Super Spread released on ${released.length} card${released.length === 1 ? "" : "s"}` : ""}.`;
+  }
+  return null;
+}
 export async function syncWeeks(numbers?: number[], force = false) {
   const { state } = await readState();
   const current = currentWeek(state.weeks);
@@ -54,22 +84,11 @@ export async function syncWeeks(numbers?: number[], force = false) {
           });
           w.fetchedAt = at;
           w.error = null;
-          if (
-            !w.publishedAt &&
-            Date.now() >= freezeTime(w) &&
-            Date.now() < openingKickoff(w)
-          ) {
-            try {
-              publishWeek(w);
-              audit(
-                s,
-                "system",
-                "publish-lines",
-                `Week ${number}: Wednesday lines frozen.`,
-              );
-            } catch (e) {
-              w.error = (e as Error).message;
-            }
+          try {
+            const published = autoPublish(s, w);
+            if (published) audit(s, "system", "publish-lines", published);
+          } catch (e) {
+            w.error = (e as Error).message;
           }
         });
         return { number, ok: true, games: games.length };

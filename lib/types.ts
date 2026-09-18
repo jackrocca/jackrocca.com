@@ -39,7 +39,11 @@ export type Week = {
   games: Game[];
   fetchedAt: string | null;
   error: string | null;
+  // Opening snapshot (Wednesday 09:00 PT): freezes every game and opens picks.
   publishedAt: string | null;
+  // Weekend snapshot (Saturday 09:00 PT): refreezes games kicking off at or after
+  // the Sunday deadline. Absent on weeks played before the two-snapshot rule.
+  weekendPublishedAt?: string | null;
   lines: Record<
     string,
     { homeSpread: number | null; total: number | null; provider: string | null }
@@ -76,6 +80,9 @@ export type Selection = {
   teamId?: string;
   line: number;
   label: string;
+  // Set when the weekend snapshot moved this line after the member saved it.
+  // Cleared the next time the member saves the card.
+  movedFrom?: number;
 };
 export type Entry = {
   id: string;
@@ -86,6 +93,8 @@ export type Entry = {
   superSpread: boolean;
   totalHelper: "over" | "under" | null;
   perfectPrediction: boolean;
+  // Snapshot of `entryLate` at save time for exports. Readers recompute it from
+  // `submittedAt` and the week deadline so a deadline change never strands a card.
   late: boolean;
   submittedAt: string;
   updatedAt: string;

@@ -15,8 +15,9 @@ import {
   confirmBuyIn,
   currentWeek,
   publishWeek,
+  publishWeekend,
   saveEntry,
-  openingKickoff,
+  weekendGame,
 } from "@/lib/rules";
 import { syncWeeks } from "@/lib/sync";
 import { view } from "@/lib/view";
@@ -243,21 +244,38 @@ export async function POST(
       return json({ ok: true });
     }
     if (route === "admin/publish") {
-      const input = z.object({ week: weekSchema }).parse(await body(req));
+      // "opening" freezes the whole week and opens picks (normally Wednesday);
+      // "weekend" refreezes the Sunday/Monday games (normally Saturday).
+      const input = z
+        .object({
+          week: weekSchema,
+          snapshot: z.enum(["opening", "weekend"]).default("opening"),
+        })
+        .parse(await body(req));
       const results = await syncWeeks([input.week], true);
       if (results.some((r) => "ok" in r && !r.ok))
         throw new AppError("Refresh failed. Lines were not published.", 503);
       await mutate((s) => {
         const w = s.weeks.find((w) => w.number === input.week)!;
-        if (!w.publishedAt) {
+        if (input.snapshot === "opening") {
+          if (w.publishedAt) return;
           publishWeek(w);
           audit(
             s,
             admin.id,
             "publish-lines",
-            `Week ${input.week}: published early by commissioner.`,
+            `Week ${input.week}: opening lines published early by commissioner.`,
           );
+          return;
         }
+        if (w.weekendPublishedAt) return;
+        const { moved, released } = publishWeekend(w, s.entries);
+        audit(
+          s,
+          admin.id,
+          "publish-lines",
+          `Week ${input.week}: Sunday and Monday lines published early by commissioner. ${moved.length} saved picks moved${released.length ? `, Super Spread released on ${released.length}` : ""}.`,
+        );
       });
       return json({ ok: true });
     }
@@ -273,14 +291,24 @@ export async function POST(
         .parse(await body(req));
       await mutate((s) => {
         const w = s.weeks.find((w) => w.number === input.week)!;
-        if (w.publishedAt || Date.now() >= openingKickoff(w))
-          throw new AppError("Published lines cannot be edited.");
         const g = w.games.find((g) => g.id === input.gameId);
         if (!g) throw new AppError("Game not found.");
+        // A line is final once its own snapshot has run or the game has kicked off.
+        const frozen = weekendGame(w, g) ? w.weekendPublishedAt : w.publishedAt;
+        if (frozen || Date.now() >= Date.parse(g.kickoff))
+          throw new AppError("This game’s lines are already frozen.");
         g.homeSpread = input.homeSpread;
         g.total = input.total;
         g.provider = "Commissioner";
         g.linesOverride = { homeSpread: input.homeSpread, total: input.total };
+        // Weekend games already carry a provisional opening number; show the
+        // correction right away. The weekend snapshot rebases saved picks onto it.
+        if (w.publishedAt && weekendGame(w, g))
+          w.lines[g.id] = {
+            homeSpread: input.homeSpread,
+            total: input.total,
+            provider: "Commissioner",
+          };
         audit(s, admin.id, "line-correction", JSON.stringify(input));
       });
       return json({ ok: true });
