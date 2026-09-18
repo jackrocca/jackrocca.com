@@ -1,6 +1,6 @@
 # Architecture
 
-One Next.js application serves Jack Rocca’s public personal site and his single Pick 4 league. No account is required for public pages. Google sign-in creates one account and automatically enrolls that user in the league; the verified owner email controls commissioner access.
+One Next.js application serves Jack Rocca’s public personal site and his single Pick 4 league. No account is required for public pages. Google sign-in creates one jackrocca.com account (`lib/accounts.ts`, keyed by Google `sub`); Pick 4 membership is a league concern layered on that account. During the 2026 season every account is enrolled in the league at sign-in; the verified owner email controls commissioner access.
 
 | Directory                        | Responsibility                                                                             |
 | -------------------------------- | ------------------------------------------------------------------------------------------ |

@@ -18,7 +18,7 @@ npm run dev -- --port 3106
 
 Without a Blob token, development stores data in `work/league.local.json`. Production refuses to start its API without private cloud storage. Never use local filesystem persistence on Vercel.
 
-Open `http://localhost:3106` for the personal site or `/pick4` for the league. Every successful Google sign-in creates or resumes one account in this league. There is no league creation, invitation, username, or app-password flow. Only the verified Google email configured as `OWNER_EMAIL` receives commissioner access; the first person to sign in is not automatically the commissioner. Players can update their league display name in **Your account**. Sessions use HTTP-only cookies and expire after 14 days.
+Open `http://localhost:3106` for the personal site or `/pick4` for the league. Every successful Google sign-in creates or resumes one jackrocca.com account; during the 2026 season that account is also enrolled in the league. There is no league creation, invitation, username, or app-password flow. Only the verified Google email configured as `OWNER_EMAIL` receives commissioner access; the first person to sign in is not automatically the commissioner. One display name and photo are used across the site and the league; edit them in **Your account**. Sessions use HTTP-only cookies and expire after 14 days.
 
 ## Google sign-in configuration
 
@@ -26,9 +26,9 @@ Open `http://localhost:3106` for the personal site or `/pick4` for the league. E
 2. Create an OAuth **Web application** client. Register the exact production redirect URI: `https://fantasy-football-pickem-sigma.vercel.app/api/auth/callback/google`. For local work, also register `http://localhost:3106/api/auth/callback/google`.
 3. Set server-only `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OWNER_EMAIL=jrocca98@gmail.com`, and `APP_URL=https://fantasy-football-pickem-sigma.vercel.app` in Vercel production. Local `APP_URL` is `http://localhost:3106`.
 4. Use the app homepage and `/privacy` for branding links. Publish the OAuth audience for general Google-account access; **Testing** restricts sign-in to explicitly listed test users. Complete any verification Google requires for the chosen branding/domain.
-5. Redeploy after environment changes and test a real Google login as the owner and as a player. Successful login automatically enrolls the person. Legacy setup, invite, password, and recovery endpoints return 410.
+5. Redeploy after environment changes and test a real Google login as the owner and as a player. A successful login creates the site account and, for 2026, enrolls the person in the league. Legacy setup, invite, password, and recovery endpoints return 410.
 
-The OAuth authorization-code flow uses PKCE, a signed short-lived state cookie, and a nonce. The official Google library verifies the ID token signature, issuer, audience, and expiry; the app also requires a verified email and matching nonce. Accounts bind to Google’s stable `sub`, never a supplied email or name. Google tokens are not persisted. This app remains standalone; shared sessions with the future personal website are not implemented yet.
+The OAuth authorization-code flow uses PKCE, a signed short-lived state cookie, and a nonce. The official Google library verifies the ID token signature, issuer, audience, and expiry; the app also requires a verified email and matching nonce. Accounts bind to Google’s stable `sub`, never a supplied email or name. Google tokens are not persisted. One session cookie covers the personal site, Pick 4, photography, and Atlas; see `lib/auth.ts` and `docs/architecture.md`.
 
 ## Vercel deployment
 

@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { findAccount } from "@/lib/accounts";
 import { session, requireUser, sameOrigin } from "@/lib/auth";
 import { AVATAR_MAX_UPLOAD_BYTES, processAvatar } from "@/lib/avatar";
 import { deleteAvatar, writeAvatar } from "@/lib/avatar-store";
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     const processed = await processAvatar(Buffer.from(await photo.arrayBuffer()));
     await writeAvatar(member.id, processed);
     const avatarRevision = await mutate((s) => {
-      const account = s.users.find((u) => u.id === member.id)!;
+      const account = findAccount(s, member.id)!;
       account.avatarRevision = (account.avatarRevision ?? 0) + 1;
       audit(s, member.id, "update-avatar", "Profile photo updated.");
       return account.avatarRevision;
@@ -45,7 +46,7 @@ export async function DELETE(req: NextRequest) {
     await rateLimit(`user:${member.id}`, 90, 60_000);
     await deleteAvatar(member.id);
     await mutate((s) => {
-      const account = s.users.find((u) => u.id === member.id)!;
+      const account = findAccount(s, member.id)!;
       account.avatarRevision = 0;
       audit(s, member.id, "remove-avatar", "Profile photo removed.");
     });

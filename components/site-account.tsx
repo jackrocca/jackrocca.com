@@ -78,10 +78,7 @@ export function SiteAccount() {
     );
   }
   return (
-    <Editorial
-      title="Your account"
-      intro="One Google account for this website and Jack’s Pick 4 league."
-    >
+    <Editorial title="Your account" intro="Your jackrocca.com account.">
       <div className="max-w-xl border-t pt-8">
         {error && (
           <p role="alert" className="mb-5 text-sm text-destructive">
@@ -141,11 +138,10 @@ export function SiteAccount() {
             </CustomButton>
           </form>
           <div className="border-t pt-6">
-            <p className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <h2 className="text-base font-semibold">Pick 4</h2>
+            <p className="mb-4 mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck size={17} />
-              {data.user.role === "admin"
-                ? "You’re the league commissioner."
-                : "You’re a member of Jack’s league."}
+              {data.user.role === "admin" ? "Commissioner" : "Member"}
             </p>
             <CustomButton href="/pick4" variant="outline" rightIcon={ArrowRight}>
               Open Pick 4

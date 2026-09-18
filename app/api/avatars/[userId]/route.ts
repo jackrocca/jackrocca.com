@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { findAccount } from "@/lib/accounts";
 import { session, requireUser } from "@/lib/auth";
 import { avatarUserId } from "@/lib/avatar";
 import { readAvatar } from "@/lib/avatar-store";
@@ -17,8 +18,8 @@ export async function GET(
     const { state } = await readState();
     requireUser(await session(req, state));
     const userId = avatarUserId((await params).userId);
-    const member = state.users.find((user) => user.id === userId);
-    if (!member || !(member.avatarRevision ?? 0)) throw new AppError("Not found.", 404);
+    const account = findAccount(state, userId);
+    if (!account || !(account.avatarRevision ?? 0)) throw new AppError("Not found.", 404);
     const data = await readAvatar(userId);
     if (!data) throw new AppError("Not found.", 404);
     return new NextResponse(new Uint8Array(data), {

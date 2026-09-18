@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { session } from "@/lib/auth";
+import { hasSessionCookie, session } from "@/lib/auth";
 import { readState } from "@/lib/store";
 import { servePhotos } from "@/lib/photo-http";
 import { readCatalog, readPreview } from "@/lib/photo-store";
@@ -16,7 +16,7 @@ export async function GET(
 ) {
   try {
     // Never trust a client flag, an image URL, or a cached member response.
-    const user = req.cookies.has("pick4-session")
+    const user = hasSessionCookie(req)
       ? await session(req, (await readState()).state)
       : null;
     const signedIn = Boolean(user);

@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError } from "zod";
 import { readState, mutate, audit, rateLimit } from "@/lib/store";
-import { session, requireUser, requireAdmin, sameOrigin, safeSecret } from "@/lib/auth";
+import {
+  session,
+  requireUser,
+  requireAdmin,
+  sameOrigin,
+  safeSecret,
+  logoutResponse,
+} from "@/lib/auth";
+import { findAccount, publicAccount } from "@/lib/accounts";
 import {
   AppError,
   confirmBuyIn,
@@ -91,15 +99,7 @@ export async function GET(
     const user = await session(req, state);
     if (route === "account")
       return json({
-        user: user
-          ? {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-              avatarRevision: user.avatarRevision ?? 0,
-            }
-          : null,
+        user: user ? publicAccount(user) : null,
         authentication: { provider: "google", ready: googleConfigured() },
       });
     if (route === "health")
@@ -175,12 +175,8 @@ export async function POST(
         route,
       )
     )
-      throw new AppError("Use Google sign-in to join the league.", 410);
-    if (route === "logout") {
-      const response = json({ ok: true });
-      response.cookies.delete("pick4-session");
-      return response;
-    }
+      throw new AppError("Use Google sign-in.", 410);
+    if (route === "logout") return logoutResponse(json({ ok: true }));
     const member = requireUser(user);
     await rateLimit(`user:${member.id}`, 90, 60_000);
     if (route === "picks") {
@@ -203,7 +199,7 @@ export async function POST(
         .object({ name: z.string().trim().min(2).max(40) })
         .parse(await body(req));
       await mutate((s) => {
-        const account = s.users.find((u) => u.id === member.id)!;
+        const account = findAccount(s, member.id)!;
         account.name = input.name;
         audit(s, member.id, "update-profile", "Display name updated.");
       });

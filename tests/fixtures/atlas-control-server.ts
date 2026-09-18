@@ -6,6 +6,7 @@ import { handleAtlasInterface } from "../../lib/atlas-interface";
 import { handleAtlasRPC } from "../../lib/atlas-rpc";
 import { handleAtlasControl } from "../../lib/atlas-control";
 import { handleAtlasTransfer } from "../../lib/atlas-transfers";
+import { LEGACY_SESSION_COOKIE } from "../../lib/auth";
 import { initialState } from "../../lib/store";
 import type { User } from "../../lib/types";
 
@@ -100,8 +101,8 @@ server.listen(0, "127.0.0.1", async () => {
   console.log(
     JSON.stringify({
       origin: `http://127.0.0.1:${address.port}`,
-      ownerCookie: "pick4-session=" + (await token(owner)),
-      memberCookie: "pick4-session=" + (await token(member)),
+      ownerCookie: `${LEGACY_SESSION_COOKIE}=${await token(owner)}`,
+      memberCookie: `${LEGACY_SESSION_COOKIE}=${await token(member)}`,
     }),
   );
 });

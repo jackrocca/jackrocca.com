@@ -2,9 +2,9 @@ import { OAuth2Client, CodeChallengeMethod } from "google-auth-library";
 import { SignJWT, jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { newToken, safeSecret, secret, loginResponse, tokenHash } from "./auth";
-import { googleProfileSchema, joinLeagueWithGoogle } from "./google-account";
+import { googleProfileSchema, signInWithGoogle } from "./accounts";
 import { mutate, audit, rateLimit } from "./store";
-import { authReturnPath } from "./auth-navigation";
+import { authReturnPath, DEFAULT_AUTH_RETURN_PATH } from "./auth-navigation";
 const FLOW_COOKIE = "pick4-google-flow";
 export function googleConfigured() {
   return Boolean(
@@ -94,15 +94,20 @@ export async function validateGoogleFlow(flow: string, state: string) {
 }
 export async function finishGoogle(req: NextRequest) {
   const origin = appOrigin();
-  let response = NextResponse.redirect(`${origin}/pick4?authError=failed`);
+  let response = NextResponse.redirect(
+    `${origin}${DEFAULT_AUTH_RETURN_PATH}?authError=failed`,
+  );
   try {
     const flow = req.cookies.get(FLOW_COOKIE)?.value;
     const state = req.nextUrl.searchParams.get("state");
     if (!flow || !state) throw new Error("Missing OAuth state.");
     const { nonce, codeVerifier, returnTo } = await validateGoogleFlow(flow, state);
-    response = NextResponse.redirect(`${origin}${returnTo}?authError=failed`);
+    // Atlas has no signed-out screen: a signed-out GET /atlas bounces straight
+    // back to Google, so its failures land on the account page instead.
+    const errorReturn = returnTo === "/atlas" ? DEFAULT_AUTH_RETURN_PATH : returnTo;
+    response = NextResponse.redirect(`${origin}${errorReturn}?authError=failed`);
     if (req.nextUrl.searchParams.get("error")) {
-      response = NextResponse.redirect(`${origin}${returnTo}?authError=canceled`);
+      response = NextResponse.redirect(`${origin}${errorReturn}?authError=canceled`);
     } else {
       const code = req.nextUrl.searchParams.get("code");
       if (!code || code.length > 4096) throw new Error("Missing OAuth code.");
@@ -125,7 +130,7 @@ export async function finishGoogle(req: NextRequest) {
       const profile = googleProfileSchema.parse(payload);
       const user = await mutate((state) => {
         const existed = state.users.some((u) => u.googleSub === profile.sub);
-        const user = joinLeagueWithGoogle(state, profile, process.env.OWNER_EMAIL!);
+        const user = signInWithGoogle(state, profile, process.env.OWNER_EMAIL!);
         if (!existed)
           audit(state, user.id, "join", `${user.name} joined the league with Google.`);
         return user;

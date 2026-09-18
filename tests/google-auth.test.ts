@@ -1,10 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SignJWT } from "jose";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { initialState } from "../lib/store";
+import { findAccount, publicAccount, signInWithGoogle } from "../lib/accounts";
 import { joinLeagueWithGoogle } from "../lib/google-account";
-import { loginResponse, session, secret } from "../lib/auth";
+import {
+  LEGACY_SESSION_COOKIE,
+  SESSION_COOKIE,
+  hasSessionCookie,
+  loginResponse,
+  logoutResponse,
+  session,
+  secret,
+} from "../lib/auth";
 import { validateGoogleFlow, finishGoogle } from "../lib/google-auth";
 import { view } from "../lib/view";
 process.env.SESSION_SECRET = "test-only-session-secret-with-at-least-32-characters";
@@ -20,23 +29,18 @@ const profile = (sub = "google-player", email = "player@gmail.com") => ({
 test("first Google sign-in joins the single league as player; only owner is commissioner", () => {
   const s = initialState();
   assert.equal(
-    joinLeagueWithGoogle(s, { ...profile(), role: "admin", leagueId: "other" }, owner)
-      .role,
+    signInWithGoogle(s, { ...profile(), role: "admin", leagueId: "other" }, owner).role,
     "player",
   );
-  assert.equal(joinLeagueWithGoogle(s, profile("owner-id", owner), owner).role, "admin");
+  assert.equal(signInWithGoogle(s, profile("owner-id", owner), owner).role, "admin");
   assert.equal(s.users.length, 2);
   assert.equal(s.invites.length, 0);
 });
 test("repeated sign-in uses stable Google subject and preserves chosen display name", () => {
   const s = initialState();
-  const first = joinLeagueWithGoogle(s, profile(), owner);
+  const first = signInWithGoogle(s, profile(), owner);
   first.name = "League nickname";
-  const again = joinLeagueWithGoogle(
-    s,
-    profile("google-player", "updated@gmail.com"),
-    owner,
-  );
+  const again = signInWithGoogle(s, profile("google-player", "updated@gmail.com"), owner);
   assert.equal(again.id, first.id);
   assert.equal(again.email, "updated@gmail.com");
   assert.equal(again.name, "League nickname");
@@ -50,36 +54,55 @@ test("unverified email and missing provider identity cannot create accounts", ()
     { ...profile(), email: "invalid" },
   ]) {
     const s = initialState();
-    assert.throws(() => joinLeagueWithGoogle(s, invalid, owner));
+    assert.throws(() => signInWithGoogle(s, invalid, owner));
     assert.equal(s.users.length, 0);
   }
 });
 test("different Google subjects cannot take over an existing account through email", () => {
   const s = initialState();
-  const user = joinLeagueWithGoogle(s, profile(), owner);
+  const user = signInWithGoogle(s, profile(), owner);
   assert.throws(
-    () => joinLeagueWithGoogle(s, profile("different-sub"), owner),
+    () => signInWithGoogle(s, profile("different-sub"), owner),
     /different account/,
   );
-  joinLeagueWithGoogle(s, profile("other-sub", "other@gmail.com"), owner);
+  signInWithGoogle(s, profile("other-sub", "other@gmail.com"), owner);
   assert.throws(
-    () => joinLeagueWithGoogle(s, profile("other-sub", "player@gmail.com"), owner),
+    () => signInWithGoogle(s, profile("other-sub", "player@gmail.com"), owner),
     /different account/,
   );
   assert.equal(s.users[0].id, user.id);
   assert.equal(s.users.length, 2);
 });
+test("the account directory exposes only self-visible fields and keeps the league alias", () => {
+  const s = initialState();
+  const user = signInWithGoogle(s, profile(), owner);
+  user.avatarRevision = 3;
+  assert.equal(findAccount(s, user.id), user);
+  assert.equal(findAccount(s, "missing"), undefined);
+  assert.deepEqual(publicAccount(user), {
+    id: user.id,
+    name: "Player",
+    email: "player@gmail.com",
+    role: "player",
+    avatarRevision: 3,
+  });
+  assert.equal(publicAccount(signInWithGoogle(s, profile(), owner)).avatarRevision, 3);
+  assert.equal(publicAccount({ ...user, avatarRevision: undefined }).avatarRevision, 0);
+  assert.ok(!("googleSub" in publicAccount(user)));
+  assert.ok(!("sessionVersion" in publicAccount(user)));
+  assert.equal(joinLeagueWithGoogle, signInWithGoogle);
+});
 test("owner email is normalized and role changes invalidate prior sessions", () => {
   const s = initialState();
-  const user = joinLeagueWithGoogle(s, profile("owner-id", "Owner@gmail.com"), owner);
+  const user = signInWithGoogle(s, profile("owner-id", "Owner@gmail.com"), owner);
   assert.equal(user.role, "admin");
-  joinLeagueWithGoogle(s, profile("owner-id", owner), "new-owner@gmail.com");
+  signInWithGoogle(s, profile("owner-id", owner), "new-owner@gmail.com");
   assert.equal(user.role, "player");
   assert.equal(user.sessionVersion, 1);
 });
 test("Google sessions are HTTP-only and version checked; legacy sessions are rejected", async () => {
   const s = initialState();
-  const user = joinLeagueWithGoogle(s, profile(), owner);
+  const user = signInWithGoogle(s, profile(), owner);
   const response = await loginResponse(user);
   const cookie = response.headers.get("set-cookie")!;
   assert.match(cookie, /HttpOnly/);
@@ -100,12 +123,58 @@ test("Google sessions are HTTP-only and version checked; legacy sessions are rej
   assert.equal(
     await session(
       new NextRequest("http://localhost:3106", {
-        headers: { cookie: `pick4-session=${legacy}` },
+        headers: { cookie: `${LEGACY_SESSION_COOKIE}=${legacy}` },
       }),
       s,
     ),
     null,
   );
+});
+test("session rename phase A: both cookie names and issuers are read; only the league cookie is issued", async () => {
+  const s = initialState();
+  const user = signInWithGoogle(s, profile(), owner);
+  const issued = await loginResponse(user);
+  assert.ok(issued.cookies.has(LEGACY_SESSION_COOKIE));
+  assert.equal(issued.cookies.has(SESSION_COOKIE), false);
+  const legacyToken = issued.cookies.get(LEGACY_SESSION_COOKIE)!.value;
+  const siteToken = await new SignJWT({
+    version: user.sessionVersion,
+    provider: "google",
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuer("jackrocca.com")
+    .setAudience("jackrocca.com")
+    .setExpirationTime("1h")
+    .sign(secret());
+  const request = (cookie: string) =>
+    new NextRequest("http://localhost:3106", { headers: { cookie } });
+  for (const cookie of [
+    `${SESSION_COOKIE}=${siteToken}`,
+    `${SESSION_COOKIE}=${legacyToken}`,
+    `${LEGACY_SESSION_COOKIE}=${siteToken}`,
+    `${SESSION_COOKIE}=expired-or-garbage; ${LEGACY_SESSION_COOKIE}=${legacyToken}`,
+  ]) {
+    assert.ok(hasSessionCookie(request(cookie)), cookie);
+    assert.equal((await session(request(cookie), s))?.id, user.id, cookie);
+  }
+  const anonymous = new NextRequest("http://localhost:3106", {
+    headers: { cookie: "other=1" },
+  });
+  assert.equal(hasSessionCookie(anonymous), false);
+  assert.equal(await session(anonymous, s), null);
+  const foreign = await new SignJWT({ version: user.sessionVersion, provider: "google" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuer("someone-else")
+    .setAudience("jackrocca.com")
+    .setExpirationTime("1h")
+    .sign(secret());
+  assert.equal(await session(request(`${SESSION_COOKIE}=${foreign}`), s), null);
+  const logout = logoutResponse(NextResponse.json({ ok: true }));
+  const cleared = logout.headers.getSetCookie();
+  assert.ok(cleared.some((c) => c.startsWith(`${SESSION_COOKIE}=;`)));
+  assert.ok(cleared.some((c) => c.startsWith(`${LEGACY_SESSION_COOKIE}=;`)));
 });
 async function flow(expiration = "10m", issuer = "pick4-oauth", returnTo = "/pick4") {
   return new SignJWT({
@@ -144,9 +213,9 @@ test("unsolicited callback cannot log in and clears temporary flow cookie", asyn
   );
   assert.equal(
     result.headers.get("location"),
-    "http://localhost:3106/pick4?authError=failed",
+    "http://localhost:3106/account?authError=failed",
   );
-  assert.equal(result.cookies.has("pick4-session"), false);
+  assert.equal(result.cookies.has(LEGACY_SESSION_COOKIE), false);
   assert.match(result.headers.get("set-cookie")!, /Max-Age=0/);
   assert.equal(result.headers.get("cache-control"), "no-store");
 });
@@ -161,12 +230,12 @@ test("canceled Google flow returns a safe error instead of creating an account",
     result.headers.get("location"),
     "http://localhost:3106/pick4?authError=canceled",
   );
-  assert.equal(result.cookies.has("pick4-session"), false);
+  assert.equal(result.cookies.has(LEGACY_SESSION_COOKIE), false);
 });
 test("members see only their own email and no Google identifiers; commissioner sees member emails", () => {
   const s = initialState();
-  const player = joinLeagueWithGoogle(s, profile(), owner);
-  const admin = joinLeagueWithGoogle(s, profile("owner-sub", owner), owner);
+  const player = signInWithGoogle(s, profile(), owner);
+  const admin = signInWithGoogle(s, profile("owner-sub", owner), owner);
   const memberView = JSON.stringify(view(s, player, 1, true));
   assert.ok(!memberView.includes(owner));
   assert.ok(!memberView.includes("googleSub"));
@@ -179,17 +248,45 @@ test("members see only their own email and no Google identifiers; commissioner s
 
 import { authReturnPath } from "../lib/auth-navigation";
 test("OAuth return destinations allow site pages and reject external or unrecognized URLs", () => {
-  for (const value of ["/", "/account", "/pick4"])
+  for (const value of ["/", "/photography", "/projects", "/account", "/pick4", "/atlas"])
     assert.equal(authReturnPath(value), value);
   for (const value of [
     "https://evil.example",
     "//evil.example",
     "/\\evil.example",
     "/api/export",
+    "/atlas/",
+    "/atlas/index.html",
     "javascript:alert(1)",
     null,
   ])
-    assert.equal(authReturnPath(value), "/pick4");
+    assert.equal(authReturnPath(value), "/account");
+});
+
+test("Atlas sign-in returns to /atlas on success and to the account page on failure", async () => {
+  const cookie = await flow("10m", "pick4-oauth", "/atlas");
+  assert.equal((await validateGoogleFlow(cookie, "random-state")).returnTo, "/atlas");
+  const canceled = await finishGoogle(
+    new NextRequest(
+      "http://localhost:3106/api/auth/callback/google?error=access_denied&state=random-state",
+      { headers: { cookie: `pick4-google-flow=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    canceled.headers.get("location"),
+    "http://localhost:3106/account?authError=canceled",
+  );
+  const failed = await finishGoogle(
+    new NextRequest(
+      "http://localhost:3106/api/auth/callback/google?code=attacker&state=random-state",
+      { headers: { cookie: `pick4-google-flow=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    failed.headers.get("location"),
+    "http://localhost:3106/account?authError=failed",
+  );
+  assert.equal(failed.cookies.has(LEGACY_SESSION_COOKIE), false);
 });
 
 test("signed OAuth flow preserves the account destination on cancellation", async () => {
@@ -212,6 +309,6 @@ test("signed OAuth flow preserves the account destination on cancellation", asyn
         "random-state",
       )
     ).returnTo,
-    "/pick4",
+    "/account",
   );
 });

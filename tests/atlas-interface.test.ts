@@ -6,6 +6,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { SignJWT } from "jose";
 import { NextRequest } from "next/server";
+import { LEGACY_SESSION_COOKIE } from "../lib/auth";
 import { initialState } from "../lib/store";
 import { handleAtlasInterface } from "../lib/atlas-interface";
 import { handleAtlasRPC } from "../lib/atlas-rpc";
@@ -46,7 +47,7 @@ async function req(pathname: string, user: User | null = owner, origin = policy.
         .sign(new TextEncoder().encode(process.env.SESSION_SECRET))
     : "";
   return new NextRequest(origin + pathname, {
-    headers: token ? { cookie: "pick4-session=" + token } : {},
+    headers: token ? { cookie: `${LEGACY_SESSION_COOKIE}=${token}` } : {},
   });
 }
 
