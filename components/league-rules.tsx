@@ -37,11 +37,14 @@ const slotStories: Record<PickType, string> = {
 
 export function Rules({
   deadlineText,
+  weekendFreezeText,
   weekNumber,
   onTour,
 }: {
   /** Deadline of the week being viewed, already formatted in Pacific time. */
   deadlineText: string;
+  /** Saturday weekend snapshot of the week being viewed, formatted in Pacific time. */
+  weekendFreezeText: string;
   weekNumber: number;
   onTour: () => void;
 }) {
@@ -220,29 +223,47 @@ export function Rules({
         <h2>What a week looks like</h2>
         <ol className="rules-timeline">
           <li>
-            <b>Wednesday, 9 AM PT · Lines freeze</b>
+            <b>Wednesday, 9 AM PT · The board opens</b>
             <span>
-              The spreads and totals for the week lock in for everyone. (The commissioner
-              can freeze them earlier.) From here on the numbers don’t move, whatever the
-              sportsbooks do. Everyone in the league plays the same numbers.
+              Every game gets its spread and total and picks open. (The commissioner can
+              open the board earlier.) For the Thursday game, and any other game played
+              before Sunday’s main slate, these are the final numbers.
             </span>
           </li>
           <li>
-            <b>Until kickoff · Make your picks</b>
+            <b>Saturday, 9 AM PT · Sunday and Monday lines freeze</b>
             <span>
-              Open the board, choose your four, and save your card. You can change your
-              mind and save again as often as you like, right up to the deadline. The
-              deadline is the first kickoff of the week. For Week {weekNumber}, that’s{" "}
-              {deadlineText} PT.
-              {weekNumber === 1 &&
-                " Week 1 is the one exception: the Wednesday and Thursday opening games don’t lock your card, so you have until the Sunday games. You still can’t pick a game that has already started, and a started game already on your card stays locked."}
+              The Sunday and Monday games take one last snapshot so the whole league plays
+              the same numbers, whenever they saved. If you picked one of those games
+              earlier in the week, your pick moves to the final line and your card flags
+              it, so you can take another look before the deadline. For Week {weekNumber},
+              that’s {weekendFreezeText} PT.
             </span>
           </li>
           <li>
-            <b>At the deadline · Cards are revealed</b>
+            <b>Sunday, first kickoff · Your card is due</b>
             <span>
-              Your picks stay private until the deadline. Then every card locks and the
-              whole league can see them.
+              Open the board, choose your four, and save your card. Change your mind and
+              save again as often as you like until the first Sunday game kicks off
+              (normally 10 AM PT). For Week {weekNumber}, that’s {deadlineText} PT. Every
+              slot is due then, Sunday night and Monday night games included.
+            </span>
+          </li>
+          <li>
+            <b>Early games · Lock at their own kickoff</b>
+            <span>
+              Thursday night, the odd Friday or Saturday game, and the early international
+              Sunday games are optional. If you put one on your card, that slot locks when
+              the game kicks off and the rest of your card stays open until Sunday. You
+              can’t add a game that has already started.
+            </span>
+          </li>
+          <li>
+            <b>Picks are revealed</b>
+            <span>
+              Your picks stay private until Sunday’s deadline, with one exception: once an
+              early game kicks off, everyone can see who has that game. At the deadline
+              every card locks and the whole league can see them.
             </span>
           </li>
           <li>
@@ -259,9 +280,12 @@ export function Rules({
         <h2>Powerups</h2>
         <p>
           You get three powerups for the whole season, and each can be used{" "}
-          <strong>once</strong>. Turn one on when you save your card, before the deadline,
-          and it applies to that week only. Think of them as three chances to make a week
-          count for more, so pick your spots.
+          <strong>once</strong>. Turn one on when you save your card and it applies to
+          that week only. A powerup has to be set before the game it touches kicks off:
+          Super Spread on a Thursday favorite goes on before Thursday night, and Perfect
+          Prediction locks as soon as any game on your card starts. Otherwise you have
+          until the Sunday deadline. Think of them as three chances to make a week count
+          for more, so pick your spots.
         </p>
         <div className="rules-powerup-grid">
           {powerups.map(({ key, name, icon: Icon, detail, example }) => (
@@ -305,6 +329,13 @@ export function Rules({
             <b>Missed the deadline?</b> You can still submit one late card, using four
             games that haven’t started yet. It costs a point (your week can’t go below
             zero), it can’t use powerups, and it locks the moment you save it.
+          </li>
+          <li>
+            <b>A line moved on you.</b> If the Saturday snapshot moves a Sunday or Monday
+            line you already picked, you play the new number like everyone else. Your card
+            shows the old line next to the new one until you save again. If your Super
+            Spread favorite is no longer giving 5, that powerup switches off and stays
+            available for another week.
           </li>
           <li>
             <b>Canceled games.</b> If a game is canceled, that pick is void: you get half

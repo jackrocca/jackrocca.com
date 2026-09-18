@@ -113,16 +113,26 @@ async function main() {
       );
       if (i !== 5) confirmBuyIn(s, u.id, now + 1);
     });
-    // Week 2: three cards that stay private until the Thursday kickoff.
+    // Week 2: three cards. The first two carry the Thursday game, so once it has
+    // kicked off that slot shows as locked (and revealed) while the rest stays open
+    // and private until the Sunday deadline.
     users.slice(0, 3).forEach((u, i) => {
+      const picks = card(week2, [i, i + 3, i + 6, i + 9]);
+      const thursday = week2.games[0];
+      if (
+        i < 2 &&
+        week2.lines[thursday.id]?.homeSpread &&
+        !PICK_TYPES.some((t) => picks[t] === thursday.id)
+      )
+        picks[i === 0 ? "favorite" : "underdog"] = thursday.id;
       saveEntry(
         s,
         u.id,
         {
           week: 2,
-          picks: card(week2, [i, i + 3, i + 6, i + 9]),
+          picks,
           superSpread: false,
-          totalHelper: null,
+          totalHelper: i === 1 ? "over" : null,
           perfectPrediction: false,
           revision: 0,
         },
@@ -154,7 +164,7 @@ async function main() {
   const week1 = deadline((await import("../lib/store")).initialState().weeks[0]);
   console.log(`Seeded ${users.length} members into ${localLeagueDir()}.`);
   console.log(
-    `Week 1 picks reveal after ${new Date(week1).toISOString()}; Week 2 cards stay private until Thursday.`,
+    `Week 1 picks reveal after ${new Date(week1).toISOString()}; Week 2 cards reveal slot by slot as games kick off, all by Sunday's first kickoff.`,
   );
   console.log(
     "\nSign in locally by setting one of these cookies on http://localhost:3106",

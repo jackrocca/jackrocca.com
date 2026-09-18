@@ -1,14 +1,34 @@
 import { onboardingFlags } from "./onboarding";
-import { buyInStatus, currentWeek, deadline, freezeTime, scoreEntry } from "./rules";
-import { BUY_IN_DOLLARS, Entry, PICK_TYPES, PickType, State, User } from "./types";
+import {
+  buyInStatus,
+  currentWeek,
+  deadline,
+  entryLate,
+  freezeTime,
+  scoreEntry,
+  slotLockTime,
+  weekendFreezeTime,
+} from "./rules";
+import {
+  BUY_IN_DOLLARS,
+  Entry,
+  PICK_TYPES,
+  PickType,
+  Selection,
+  State,
+  User,
+} from "./types";
 export type GamePicker = { userId: string; name: string; avatarRevision: number };
 export type GamePicks = Record<string, Record<PickType, GamePicker[]>>;
+/** A card as another member may see it: hidden slots are null until they reveal. */
+export type RedactedPicks = Record<PickType, Selection | null>;
 /**
  * Members grouped by the game and slot they picked. Callers pass only entries
- * whose picks the viewer may see, so redaction happens before grouping.
+ * whose picks the viewer may see, so redaction happens before grouping; a
+ * redacted (null) slot is simply skipped.
  */
 export function gamePicks(
-  entries: Entry[],
+  entries: { userId: string; picks: RedactedPicks | Entry["picks"] | null }[],
   users: User[],
   viewerId: string | null,
 ): GamePicks {
@@ -20,7 +40,7 @@ export function gamePicks(
     const member = users.find((u) => u.id === entry.userId);
     if (!member) continue;
     for (const type of PICK_TYPES) {
-      const gameId = entry.picks[type]?.gameId;
+      const gameId = entry.picks?.[type]?.gameId;
       if (!gameId) continue;
       byGame[gameId] ??= { favorite: [], underdog: [], over: [], under: [] };
       byGame[gameId][type].push({
@@ -41,11 +61,22 @@ export function view(
 ) {
   const week = state.weeks.find((w) => w.number === weekNumber)!;
   const reveal = now >= deadline(week);
+  // A slot reveals at its game's kickoff or at the deadline, whichever is first.
+  // A canceled game is void for everyone and can no longer be picked, so it
+  // reveals at once; otherwise its half point would leak the slot through `score`.
+  const slotRevealed = (pick: Selection) => {
+    const game = week.games.find((g) => g.id === pick.gameId);
+    if (!game) return reveal;
+    return game.state === "canceled" || now >= slotLockTime(week, game);
+  };
+  const anyRevealed = reveal || week.games.some((g) => now >= slotLockTime(week, g));
   const allGames = state.weeks.flatMap((w) => w.games);
-  const allScores = state.entries.map((e) => ({
-    ...e,
-    score: scoreEntry(e, allGames),
-  }));
+  const weekOf = (entry: Entry) => state.weeks.find((w) => w.number === entry.week);
+  const allScores = state.entries.map((raw) => {
+    const home = weekOf(raw);
+    const e = home ? { ...raw, late: entryLate(raw, home) } : raw;
+    return { ...e, score: scoreEntry(e, allGames) };
+  });
   const scores = allScores.filter((entry) => buyInStatus(entry) === "confirmed");
   // Week 2+ cards omit buyIn (treated as confirmed); the pot follows Week 1.
   const paidPlayers = new Set(
@@ -85,10 +116,27 @@ export function view(
             a.name.localeCompare(b.name),
         )
     : [];
+  // Other members' cards, slot by slot as the viewer may see them right now.
+  const redact = <T extends Entry>(e: T, own: boolean) => {
+    if (own || reveal) return { ...e, picks: e.picks as RedactedPicks | null };
+    const picks = Object.fromEntries(
+      PICK_TYPES.map((t) => [t, slotRevealed(e.picks[t]) ? e.picks[t] : null]),
+    ) as RedactedPicks;
+    const shown = (t: PickType) => picks[t] !== null;
+    return {
+      ...e,
+      picks: PICK_TYPES.some(shown) ? picks : null,
+      superSpread: shown("favorite") ? e.superSpread : false,
+      totalHelper: e.totalHelper && shown(e.totalHelper) ? e.totalHelper : null,
+      perfectPrediction: PICK_TYPES.some(shown) ? e.perfectPrediction : false,
+    };
+  };
+  // Once any game has kicked off every card's slot for it is public (even as
+  // "not picked"), so every visible card counts toward pick shares.
   const pickCards = user
-    ? visibleScores.filter(
-        (e) => e.week === weekNumber && (e.userId === user.id || reveal),
-      )
+    ? visibleScores
+        .filter((e) => e.week === weekNumber && (e.userId === user.id || anyRevealed))
+        .map((e) => redact(e, e.userId === user.id))
     : [];
   return {
     season: 2026,
@@ -109,8 +157,12 @@ export function view(
       error: week.error
         ? "The live feed is temporarily unavailable. Showing the last successful update."
         : null,
+      weekendPublishedAt: week.weekendPublishedAt ?? null,
       deadline: deadline(week),
       freezeAt: freezeTime(week),
+      weekendFreezeAt: weekendFreezeTime(week),
+      // The whole board is public once the deadline passes; single games reveal
+      // earlier at their own kickoff (see `slotLockTime`).
       picksRevealed: reveal,
     },
     pot: {
@@ -124,7 +176,7 @@ export function view(
           .map((e) => {
             const own = e.userId === user.id;
             return {
-              ...e,
+              ...redact(e, own),
               buyIn: own
                 ? {
                     status: buyInStatus(e),
@@ -132,14 +184,10 @@ export function view(
                     confirmedAt: e.buyIn?.confirmedAt,
                   }
                 : undefined,
-              picks: own || reveal ? e.picks : null,
-              superSpread: own || reveal ? e.superSpread : false,
-              totalHelper: own || reveal ? e.totalHelper : null,
-              perfectPrediction: own || reveal ? e.perfectPrediction : false,
             };
           })
       : [],
-    // Same redaction as `entries`: a member's own card always, others only after the deadline.
+    // Same redaction as `entries`: a member's own card always, other slots as they reveal.
     gamePicks: user ? gamePicks(pickCards, state.users, user.id) : {},
     // Denominator for pick shares: the very cards `gamePicks` was built from, so a
     // viewer whose own buy-in is still pending never sees "2 of 1 cards".

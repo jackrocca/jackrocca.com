@@ -89,6 +89,17 @@ const money = (value: number) =>
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(value);
+/** "2d 6h left", "5h 12m left", "8m left" — coarse on purpose; the board ticks every 15 s. */
+function countdown(until: number, now: number) {
+  const ms = until - now;
+  if (ms <= 0) return null;
+  const minutes = Math.ceil(ms / 60_000),
+    hours = Math.floor(minutes / 60),
+    days = Math.floor(hours / 24);
+  if (days >= 1) return `${days}d ${hours % 24}h left`;
+  if (hours >= 1) return `${hours}h ${minutes % 60}m left`;
+  return `${minutes}m left`;
+}
 const toastMotion = 400;
 function LeagueToast({
   message,
@@ -315,8 +326,22 @@ export default function League() {
       const game = w.games.find((item) => item.id === savedId);
       return Boolean(game && !gameOpen(game, tick));
     },
+    anySlotLocked = PICK_TYPES.some(slotLocked),
+    // A game's picks reveal at its own kickoff or at the card deadline, whichever comes first.
+    revealAt = (game: { kickoff: string }) =>
+      Math.min(Date.parse(game.kickoff), w.deadline),
+    earlyGame = (game: { kickoff: string }) => Date.parse(game.kickoff) < w.deadline,
+    hasEarlyGames = w.games.some(earlyGame),
+    // Sunday and Monday numbers are provisional until the Saturday snapshot.
+    weekendPending = Boolean(w.publishedAt) && !w.weekendPublishedAt && tick < w.deadline,
+    movedPicks = PICK_TYPES.filter(
+      (t) => own?.picks?.[t]?.movedFrom !== undefined && own.picks?.[t]?.gameId,
+    ),
     count = PICK_TYPES.filter((t) => draft.picks[t]).length,
-    buyInPending = week === 1 && own?.buyIn?.status === "pending";
+    buyInPending = week === 1 && own?.buyIn?.status === "pending",
+    detailGame = w.games.find((g) => g.id === detailGameId) ?? null,
+    // The commissioner may still set a line until the week's last snapshot has run.
+    linesFrozen = Boolean(w.weekendPublishedAt) || tick >= w.deadline;
   // Week 1 progress, independent of which week is being viewed.
   const opener = data.history.find((e) => e.week === 1),
     openerBuyIn: "none" | "pending" | "confirmed" = !opener
@@ -331,6 +356,8 @@ export default function League() {
     showChecklist =
       Boolean(user) && data.currentWeek === 1 && !checklistComplete(checklist);
   const deadlineText = date(w.deadline, true);
+  const weekendFreezeText = date(w.weekendFreezeAt, true);
+  const timeLeft = countdown(w.deadline, tick);
   const sampleGame = (() => {
     for (const g of w.games) {
       const odds = w.publishedAt
@@ -590,7 +617,7 @@ export default function League() {
                         : late
                           ? "−1 point · No powerups · Unstarted games only"
                           : w.publishedAt
-                            ? `Submit by ${date(w.deadline, true)} PT`
+                            ? `Card due ${deadlineText} PT${timeLeft ? ` · ${timeLeft}` : ""}${hasEarlyGames ? " · Early games lock at kickoff" : ""}`
                             : `Lines freeze ${date(w.freezeAt, true)} PT`}
                     </span>
                   </div>
@@ -652,9 +679,10 @@ export default function League() {
                         const hasPicks = Boolean(
                           cardPicks && PICK_TYPES.some((t) => cardPicks[t].length > 0),
                         );
+                        const revealed = tick >= revealAt(g);
                         // Before the reveal the row only carries the viewer's own pick and the reveal time.
                         const showPicks =
-                          Boolean(w.publishedAt) && (hasPicks || !w.picksRevealed);
+                          Boolean(w.publishedAt) && (hasPicks || !revealed);
                         return (
                           <article
                             className={`game-card ${selected ? "has-pick" : ""}`}
@@ -766,7 +794,7 @@ export default function League() {
                             </div>
                             {showPicks && (
                               <div
-                                className={`game-picks ${w.picksRevealed ? "" : "private"}`}
+                                className={`game-picks ${revealed ? "" : "private"}`}
                                 aria-label="League picks"
                               >
                                 {hasPicks && (
@@ -782,10 +810,12 @@ export default function League() {
                                     ))}
                                   </div>
                                 )}
-                                {!w.picksRevealed && (
+                                {!revealed && (
                                   <p className="game-picks-hint">
                                     <LockKeyhole size={10} />
-                                    League picks reveal {date(w.deadline, true)} PT
+                                    {earlyGame(g)
+                                      ? `Locks and reveals at kickoff · ${date(g.kickoff, true)} PT`
+                                      : `League picks reveal ${deadlineText} PT`}
                                   </p>
                                 )}
                               </div>
@@ -797,8 +827,15 @@ export default function League() {
                     <p className="source-note">
                       DraftKings lines via ESPN ·{" "}
                       {w.publishedAt
-                        ? `Frozen ${date(w.publishedAt, true)} PT`
+                        ? hasEarlyGames
+                          ? `Early games frozen ${date(w.publishedAt, true)} PT`
+                          : `Frozen ${date(w.publishedAt, true)} PT`
                         : "Preview lines may move until published"}
+                      {w.publishedAt && weekendPending
+                        ? ` · Sunday & Monday lines final ${weekendFreezeText} PT`
+                        : w.weekendPublishedAt
+                          ? ` · Sunday & Monday frozen ${date(w.weekendPublishedAt, true)} PT`
+                          : ""}
                       <br />
                       Scores updated {updated} PT · All times Pacific
                     </p>
@@ -823,8 +860,22 @@ export default function League() {
                       </div>
                       {PICK_TYPES.map((t) => {
                         const g = w.games.find((g) => g.id === draft.picks[t]);
+                        const saved = own?.picks?.[t];
+                        // The saved selection is the source of truth for a saved slot: it
+                        // carries the member's team even after a favorite/underdog flip.
+                        const showSaved = !dirty && saved && saved.gameId === g?.id;
                         let text = "Choose a game";
-                        if (g) {
+                        if (g && showSaved) {
+                          const team =
+                            saved.teamId === g.home.id
+                              ? g.home
+                              : saved.teamId === g.away.id
+                                ? g.away
+                                : null;
+                          text = team
+                            ? `${team.short} ${signed(saved.line)}`
+                            : `${g.away.abbreviation} @ ${g.home.abbreviation} · ${t === "over" ? "Over" : "Under"} ${saved.line}`;
+                        } else if (g) {
                           const odds = w.lines[g.id];
                           const spread = odds?.homeSpread ?? g.homeSpread ?? 0;
                           const home = (t === "favorite") === spread < 0;
@@ -834,6 +885,7 @@ export default function League() {
                               : `${g.away.abbreviation} @ ${g.home.abbreviation} · ${t === "over" ? "Over" : "Under"} ${odds?.total ?? g.total}`;
                         }
                         const Icon = slotIcons[t];
+                        const moved = showSaved ? saved.movedFrom : undefined;
                         return (
                           <div className={`slip-slot ${g ? "filled" : ""}`} key={t}>
                             <span className="slot-icon">
@@ -842,6 +894,11 @@ export default function League() {
                             <div>
                               <small>{labels[t]}</small>
                               <strong>{text}</strong>
+                              {moved !== undefined && (
+                                <span className="line-moved" role="status">
+                                  Line moved since you picked · was {signed(moved)}
+                                </span>
+                              )}
                               {own && own.score.outcomes[t] !== "pending" && !dirty && (
                                 <span className={`outcome ${own.score.outcomes[t]}`}>
                                   {own.score.outcomes[t]}
@@ -886,7 +943,8 @@ export default function League() {
                           <ChevronDown size={16} />
                         </summary>
                         <p className="powerups-note">
-                          Optional · Editable with your picks until the weekly deadline.
+                          Optional · Set before the game it affects kicks off, and by the
+                          card deadline at the latest.
                         </p>
                         <label className="power-row">
                           <span>
@@ -895,12 +953,19 @@ export default function League() {
                             <small>
                               {used("superSpread")
                                 ? "Used this season"
-                                : "Double the spread · 2.5 pts"}
+                                : slotLocked("favorite")
+                                  ? "Locked · your favorite has kicked off"
+                                  : "Double the spread · 2.5 pts"}
                             </small>
                           </span>
                           <Checkbox
                             checked={draft.superSpread}
-                            disabled={!canPick || late || used("superSpread")}
+                            disabled={
+                              !canPick ||
+                              late ||
+                              used("superSpread") ||
+                              slotLocked("favorite")
+                            }
                             onCheckedChange={(checked) => {
                               setDirty(true);
                               setDraft((d) => ({
@@ -917,13 +982,20 @@ export default function League() {
                             <small>
                               {used("totalHelper")
                                 ? "Used this season"
-                                : "5 points in your favor"}
+                                : own?.totalHelper && slotLocked(own.totalHelper)
+                                  ? `Locked · your ${own.totalHelper} has kicked off`
+                                  : "5 points in your favor"}
                             </small>
                           </span>
                           <select
                             aria-label="Total Helper target"
                             value={draft.totalHelper ?? ""}
-                            disabled={!canPick || late || used("totalHelper")}
+                            disabled={
+                              !canPick ||
+                              late ||
+                              used("totalHelper") ||
+                              Boolean(own?.totalHelper && slotLocked(own.totalHelper))
+                            }
                             onChange={(e) => {
                               setDirty(true);
                               setDraft((d) => ({
@@ -934,8 +1006,12 @@ export default function League() {
                             }}
                           >
                             <option value="">Off</option>
-                            <option value="over">Over</option>
-                            <option value="under">Under</option>
+                            <option value="over" disabled={slotLocked("over")}>
+                              Over
+                            </option>
+                            <option value="under" disabled={slotLocked("under")}>
+                              Under
+                            </option>
                           </select>
                         </label>
                         <label className="power-row">
@@ -945,12 +1021,19 @@ export default function League() {
                             <small>
                               {used("perfectPrediction")
                                 ? "Used this season"
-                                : "Call a perfect week · 8 pts"}
+                                : anySlotLocked
+                                  ? "Locked · a game on your card has kicked off"
+                                  : "Call a perfect week · 8 pts"}
                             </small>
                           </span>
                           <Checkbox
                             checked={draft.perfectPrediction}
-                            disabled={!canPick || late || used("perfectPrediction")}
+                            disabled={
+                              !canPick ||
+                              late ||
+                              used("perfectPrediction") ||
+                              anySlotLocked
+                            }
                             onCheckedChange={(checked) => {
                               setDirty(true);
                               setDraft((d) => ({
@@ -984,14 +1067,28 @@ export default function League() {
                       </CustomButton>
                       <p className="slip-foot">
                         {buyInPending
-                          ? `Payment is pending · You can edit until ${date(w.deadline, true)} PT`
+                          ? `Payment is pending · You can edit until ${deadlineText} PT`
                           : locked
                             ? "Your card is final for this week."
                             : own
-                              ? `Saved ${date(own.updatedAt, true)} PT · Editable until ${date(w.deadline, true)} PT`
+                              ? `Saved ${date(own.updatedAt, true)} PT · Editable until ${deadlineText} PT${anySlotLocked ? " · Started games stay locked" : hasEarlyGames ? " · Early games lock at kickoff" : ""}`
                               : w.publishedAt
-                                ? "Your picks stay private until the weekly deadline."
+                                ? `Picks stay private until ${deadlineText} PT. An early game's pick shows once it kicks off.`
                                 : "Picks open when the weekly lines are published."}
+                        {!locked && movedPicks.length > 0 && !dirty ? (
+                          <span className="slip-warning">
+                            A line moved since you saved. Review your card before the
+                            deadline.
+                          </span>
+                        ) : (
+                          !locked &&
+                          weekendPending && (
+                            <span className="slip-warning">
+                              Sunday & Monday lines are final {weekendFreezeText} PT.
+                              Saved picks move to the final number.
+                            </span>
+                          )
+                        )}
                       </p>
                     </section>
                   </aside>
@@ -1087,20 +1184,34 @@ export default function League() {
                           <b>{e.score.points} pts</b>
                         </div>
                         {e.picks ? (
-                          PICK_TYPES.map((t) => (
-                            <div className="entry-pick" key={t}>
-                              <span>
-                                <small>{labels[t]}</small>
-                                {e.picks![t].label}
-                              </span>
-                              <span className={`outcome ${e.score.outcomes[t]}`}>
-                                {e.score.outcomes[t]}
-                              </span>
-                            </div>
-                          ))
+                          PICK_TYPES.map((t) => {
+                            const pick = e.picks![t];
+                            return (
+                              <div className="entry-pick" key={t}>
+                                <span>
+                                  <small>{labels[t]}</small>
+                                  {pick ? (
+                                    pick.label
+                                  ) : (
+                                    <em className="hidden-pick">
+                                      <LockKeyhole size={11} /> Reveals by {deadlineText}{" "}
+                                      PT
+                                    </em>
+                                  )}
+                                </span>
+                                {pick && (
+                                  <span className={`outcome ${e.score.outcomes[t]}`}>
+                                    {e.score.outcomes[t]}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })
                         ) : (
                           <p>
-                            <LockKeyhole size={16} /> Picks reveal at the weekly deadline.
+                            <LockKeyhole size={16} /> Picks reveal {deadlineText} PT.
+                            {hasEarlyGames &&
+                              " An early game's pick shows at its kickoff."}
                           </p>
                         )}
                       </div>
@@ -1196,6 +1307,7 @@ export default function League() {
             {tab === "rules" && (
               <Rules
                 deadlineText={deadlineText}
+                weekendFreezeText={weekendFreezeText}
                 weekNumber={w.number}
                 onTour={() => openTour("rules")}
               />
@@ -1269,13 +1381,22 @@ export default function League() {
                   <div className="operation-status">
                     <span className="live-dot" />
                     <strong>
-                      {w.publishedAt ? "Lines are frozen" : "Lines are in preview"}
+                      {!w.publishedAt
+                        ? "Lines are in preview"
+                        : w.weekendPublishedAt
+                          ? "All lines are frozen"
+                          : hasEarlyGames
+                            ? "Early games frozen · Sunday & Monday provisional"
+                            : "Opening lines frozen · Sunday & Monday provisional"}
                     </strong>
                   </div>
                   <p>
-                    {w.publishedAt
-                      ? `Published ${date(w.publishedAt, true)} PT. Everyone plays the same lines.`
-                      : `Automatic publication: ${date(w.freezeAt, true)} PT. You can publish the current lines early to open picks now.`}
+                    {!w.publishedAt
+                      ? `Opening snapshot: ${date(w.freezeAt, true)} PT freezes every game's line and opens picks. Publish early to open picks now.`
+                      : `Opening snapshot ${date(w.publishedAt, true)} PT. ` +
+                        (w.weekendPublishedAt
+                          ? `Weekend snapshot ${date(w.weekendPublishedAt, true)} PT. Everyone plays the same numbers.`
+                          : `Weekend snapshot ${weekendFreezeText} PT refreezes Sunday and Monday games and moves saved picks to the final line. Cards are due ${deadlineText} PT.`)}
                   </p>
                   <CustomButton
                     variant="unstyled"
@@ -1285,18 +1406,46 @@ export default function League() {
                       act(async () => {
                         if (
                           !(await ask(
-                            `Freeze the current Week ${week} lines and open picks? Published lines cannot be changed.`,
+                            `Freeze the current Week ${week} lines and open picks? Early games keep these numbers; Sunday and Monday games refreeze Saturday.`,
                           ))
                         )
                           return;
-                        await api("admin/publish", { week });
+                        await api("admin/publish", { week, snapshot: "opening" });
                         await load(week);
-                        setNotice(`Week ${week} lines published. Picks are open.`);
+                        setNotice(
+                          `Week ${week} opening lines published. Picks are open.`,
+                        );
                       })
                     }
                   >
-                    Publish lines now
+                    Publish opening lines now
                     <Flag size={17} />
+                  </CustomButton>
+                  <CustomButton
+                    variant="unstyled"
+                    className={w.publishedAt ? "primary" : "secondary"}
+                    disabled={
+                      busy ||
+                      !w.publishedAt ||
+                      Boolean(w.weekendPublishedAt) ||
+                      tick >= w.deadline
+                    }
+                    onClick={() =>
+                      act(async () => {
+                        if (
+                          !(await ask(
+                            `Freeze the current Sunday and Monday lines for Week ${week}? Saved picks on those games move to the new numbers and members are told which lines moved. This cannot be undone.`,
+                          ))
+                        )
+                          return;
+                        await api("admin/publish", { week, snapshot: "weekend" });
+                        await load(week);
+                        setNotice(`Week ${week} Sunday and Monday lines are frozen.`);
+                      })
+                    }
+                  >
+                    Publish Sunday & Monday lines now
+                    <LockKeyhole size={17} />
                   </CustomButton>
                   <CustomButton
                     variant="unstyled"
@@ -1346,8 +1495,9 @@ export default function League() {
                   <h2>Set a missing line</h2>
                   <p>
                     Use a verified pregame line when the feed is unavailable. Home spread
-                    is negative when the home team is favored. Published lines cannot be
-                    changed.
+                    is negative when the home team is favored. A line is final once its
+                    snapshot has run: early games at the opening snapshot, Sunday and
+                    Monday games at the weekend snapshot.
                   </p>
                   <form
                     onSubmit={(e) => {
@@ -1372,11 +1522,7 @@ export default function League() {
                   >
                     <label>
                       Matchup
-                      <LeagueSelect
-                        name="gameId"
-                        required
-                        disabled={Boolean(w.publishedAt)}
-                      >
+                      <LeagueSelect name="gameId" required disabled={linesFrozen}>
                         <option value="">Select a game</option>
                         {w.games.map((g) => (
                           <option key={g.id} value={g.id}>
@@ -1395,7 +1541,7 @@ export default function League() {
                           max={50}
                           step={0.5}
                           placeholder="−3.5"
-                          disabled={Boolean(w.publishedAt)}
+                          disabled={linesFrozen}
                         />
                       </label>
                       <label>
@@ -1407,7 +1553,7 @@ export default function League() {
                           max={150}
                           step={0.5}
                           placeholder="44.5"
-                          disabled={Boolean(w.publishedAt)}
+                          disabled={linesFrozen}
                         />
                       </label>
                     </div>
@@ -1418,14 +1564,14 @@ export default function League() {
                         minLength={8}
                         maxLength={300}
                         required
-                        disabled={Boolean(w.publishedAt)}
+                        disabled={linesFrozen}
                         placeholder="Verified source for this line"
                       />
                     </label>
                     <CustomButton
                       variant="unstyled"
                       className="secondary"
-                      disabled={busy || Boolean(w.publishedAt) || tick >= w.deadline}
+                      disabled={busy || linesFrozen}
                     >
                       Save pregame line
                     </CustomButton>
@@ -1535,12 +1681,12 @@ export default function League() {
       )}
       {user && (
         <GameDetailSheet
-          game={w.games.find((g) => g.id === detailGameId) ?? null}
+          game={detailGame}
           line={detailGameId ? gameLine(w, detailGameId) : null}
           published={Boolean(w.publishedAt)}
           picks={detailGameId ? data.gamePicks[detailGameId] : undefined}
-          revealed={w.picksRevealed}
-          deadline={w.deadline}
+          revealed={detailGame ? tick >= revealAt(detailGame) : w.picksRevealed}
+          deadline={detailGame ? revealAt(detailGame) : w.deadline}
           viewerId={user.id}
           cardsSubmitted={data.pickCardCount}
           open={detailOpen}
