@@ -117,6 +117,53 @@ async function main() {
       publishWeek(w);
       return users;
     });
+    // The commissioner publish path refreshes from the feed first. Serve the
+    // seeded schedule back as an ESPN scoreboard (one total moved) so the check
+    // never depends on the network and the weekend rebase has something to move.
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input instanceof Request ? input.url : input);
+      if (!url.includes("site.api.espn.com")) return realFetch(input, init);
+      const week = (await readState()).state.weeks[0];
+      const events = week.games.map((g, i) => ({
+        id: g.id,
+        date: g.kickoff,
+        season: { year: 2026, type: 2 },
+        week: { number: 1 },
+        status: {
+          type: { name: "STATUS_SCHEDULED", state: "pre", completed: false },
+        },
+        competitions: [
+          {
+            timeValid: true,
+            competitors: (["home", "away"] as const).map((side) => ({
+              homeAway: side,
+              team: {
+                id: g[side].id,
+                displayName: g[side].name,
+                shortDisplayName: g[side].short,
+                abbreviation: g[side].abbreviation,
+              },
+            })),
+            odds: [
+              {
+                provider: { name: "DraftKings" },
+                spread: g.homeSpread ?? undefined,
+                overUnder: (g.total ?? 40) + (i === 2 ? 3 : 0),
+              },
+            ],
+          },
+        ],
+      }));
+      return new Response(
+        JSON.stringify({
+          season: { year: 2026, type: 2 },
+          week: { number: 1 },
+          events,
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
     const cookies = await Promise.all(
       users.map(
         async (u) => (await loginResponse(u)).headers.get("set-cookie")!.split(";")[0],
@@ -298,9 +345,45 @@ async function main() {
     );
     assert.ok(!JSON.stringify(saved).includes("fixture-"));
     assert.ok(!JSON.stringify(saved).includes("owner@gmail.com"));
+    // Weekend snapshot: commissioner only, validated stage, refreezes and then blocks line edits.
+    await request("admin/publish", { week: 1, snapshot: "weekend" }, 403, player);
+    await request("admin/publish", { week: 1, snapshot: "sunday" }, 400, admin);
+    assert.equal(saved.week.weekendPublishedAt, null);
+    await request("admin/publish", { week: 1, snapshot: "weekend" }, 200, admin);
+    const refrozen = await (await request("state?week=1", undefined, 200, player)).json();
+    assert.ok(refrozen.week.weekendPublishedAt);
+    assert.equal(typeof refrozen.week.weekendFreezeAt, "number");
+    // The player's over sat on the game whose total moved: rebased, flagged, still editable.
+    const rebased = refrozen.entries.find(
+      (e: { userId: string }) => e.userId === users[1].id,
+    );
+    assert.equal(rebased.picks.over.line, refrozen.week.lines[ids[2]].total);
+    assert.equal(rebased.picks.over.movedFrom, rebased.picks.over.line - 3);
+    await request("picks", { ...input, revision: 1 }, 200, player);
+    const resaved = await (await request("state?week=1", undefined, 200, player)).json();
+    assert.equal(
+      resaved.entries.find((e: { userId: string }) => e.userId === users[1].id).picks.over
+        .movedFrom,
+      undefined,
+    );
+    await request(
+      "admin/lines",
+      {
+        week: 1,
+        gameId: ids[0],
+        homeSpread: -3,
+        total: 44.5,
+        reason: "Verified pregame line from the book",
+      },
+      400,
+      admin,
+    );
     const exported = await (await request("export", undefined, 200, admin)).json();
     assert.equal(exported.entries.length, 2);
     assert.ok(!JSON.stringify(exported).includes("googleSub"));
+    assert.ok(
+      exported.audit.some((a: { detail: string }) => /Sunday and Monday/.test(a.detail)),
+    );
     const logout = await request("logout", {}, 200, player);
     assert.match(logout.headers.get("set-cookie")!, /pick4-session=;/);
     await mutate((s) => {

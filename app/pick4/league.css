@@ -927,6 +927,25 @@
   .slip-slot .locked-pick:hover {
     background: transparent;
   }
+  .slip-slot .line-moved {
+    display: block;
+    margin-top: 4px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #b25f1f;
+  }
+  .entry-pick .hidden-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #a1a1a1;
+    font-style: normal;
+  }
+  .slip-foot .slip-warning {
+    display: block;
+    margin-top: 4px;
+    color: #b25f1f;
+  }
   .powerups {
     margin: 22px 0;
   }

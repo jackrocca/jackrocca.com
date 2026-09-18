@@ -118,9 +118,10 @@ export function WelcomeTour({
       title: "Tap a line. Fill a slot.",
       body: (
         <>
-          Lines freeze Wednesday morning, so everyone plays the same numbers. Pick from
-          the board until {deadlineText} PT, when the week locks. Your card stays private
-          until then, and you can change it as often as you like.
+          The board opens Wednesday morning and Sunday’s lines finalize Saturday morning,
+          so everyone plays the same numbers. Your card is due at the first Sunday kickoff
+          ({deadlineText} PT this week). Early games are optional and lock at their own
+          kickoff; the rest of your card stays private and editable until Sunday.
         </>
       ),
       visual: <SampleCard sample={sampleGame} />,
@@ -129,8 +130,9 @@ export function WelcomeTour({
       title: "Three powerups. Once each.",
       body: (
         <>
-          Turn one on with your card any week before the deadline. Each is spent once for
-          the whole season, so pick your spot.
+          Turn one on with your card before the game it touches kicks off, and by the
+          Sunday deadline at the latest. Each is spent once for the whole season, so pick
+          your spot.
         </>
       ),
       visual: (
